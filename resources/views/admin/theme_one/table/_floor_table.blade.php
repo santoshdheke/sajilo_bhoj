@@ -16,7 +16,7 @@
             @foreach($top as $c)
             <div class="chair-tok" data-cid="{{ $c->id }}" title="Click to remove"
                  onclick="removeChair({{ $c->id }},this)">
-                <i class="bi bi-x ct-icon"></i>
+                <i class="bi bi-x ct-del"></i>
             </div>
             @endforeach
             <div class="drop-hint"><i class="bi bi-plus"></i></div>
@@ -26,7 +26,7 @@
                 @foreach($lft as $c)
                 <div class="chair-tok" data-cid="{{ $c->id }}" title="Click to remove"
                      onclick="removeChair({{ $c->id }},this)">
-                    <i class="bi bi-x ct-icon"></i>
+                    <i class="bi bi-x ct-del"></i>
                 </div>
                 @endforeach
                 <div class="drop-hint"><i class="bi bi-plus"></i></div>
@@ -44,7 +44,7 @@
                 @foreach($rgt as $c)
                 <div class="chair-tok" data-cid="{{ $c->id }}" title="Click to remove"
                      onclick="removeChair({{ $c->id }},this)">
-                    <i class="bi bi-x ct-icon"></i>
+                    <i class="bi bi-x ct-del"></i>
                 </div>
                 @endforeach
                 <div class="drop-hint"><i class="bi bi-plus"></i></div>
@@ -54,7 +54,7 @@
             @foreach($bot as $c)
             <div class="chair-tok" data-cid="{{ $c->id }}" title="Click to remove"
                  onclick="removeChair({{ $c->id }},this)">
-                <i class="bi bi-x ct-icon"></i>
+                <i class="bi bi-x ct-del"></i>
             </div>
             @endforeach
             <div class="drop-hint"><i class="bi bi-plus"></i></div>

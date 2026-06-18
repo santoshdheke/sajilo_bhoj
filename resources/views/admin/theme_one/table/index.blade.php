@@ -134,14 +134,21 @@
 .chair-zone.lft-zone,.chair-zone.rgt-zone { flex-direction:column; }
 .chair-zone.ui-droppable-hover { background:rgba(25,135,84,.15);
                                   outline:2px dashed #198754; outline-offset:1px; }
-.chair-tok      { width:22px; height:22px; background:#dee2e6; border:2px solid #adb5bd;
-                  border-radius:5px; cursor:pointer; display:flex; align-items:center;
-                  justify-content:center; transition:.15s; flex-shrink:0; }
+.chair-tok      { width:18px; height:18px; background:linear-gradient(160deg,#e9d7b8,#cdab7c);
+                  border:1.5px solid #a9824f; border-radius:5px; cursor:pointer;
+                  display:flex; align-items:center; justify-content:center;
+                  transition:.15s; flex-shrink:0; position:relative;
+                  box-shadow:0 1px 3px rgba(0,0,0,.25); }
+.chair-tok::after { content:''; position:absolute; background:#a9824f; border-radius:2px; }
+.top-zone .chair-tok::after { top:-4px; left:50%; transform:translateX(-50%); width:12px; height:4px; }
+.bot-zone .chair-tok::after { bottom:-4px; left:50%; transform:translateX(-50%); width:12px; height:4px; }
+.lft-zone .chair-tok::after { left:-4px; top:50%; transform:translateY(-50%); width:4px; height:12px; }
+.rgt-zone .chair-tok::after { right:-4px; top:50%; transform:translateY(-50%); width:4px; height:12px; }
 .chair-tok:hover { background:#f8d7da; border-color:#dc3545; }
-.chair-tok .ct-chair { color:#6c757d; pointer-events:none; }
-.chair-tok .ct-del   { display:none; color:#dc3545; font-size:11px; pointer-events:none; }
-.chair-tok:hover .ct-chair { display:none; }
-.chair-tok:hover .ct-del   { display:block; }
+.chair-tok:hover::after { background:#dc3545; }
+.chair-tok .ct-del   { display:none; color:#dc3545; font-size:10px; pointer-events:none;
+                       position:relative; z-index:1; }
+.chair-tok:hover .ct-del { display:block; }
 .drop-hint      { width:22px; height:22px; border:2px dashed #adb5bd; border-radius:5px;
                   display:flex; align-items:center; justify-content:center;
                   color:#adb5bd; font-size:13px; flex-shrink:0; pointer-events:none; }
@@ -841,7 +848,7 @@ function buildTableEl(ft) {
     </div>`;
     return d;
 }
-const CHAIR_TOK_ICON = '<svg class="ct-chair" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v8"/><path d="M6 11h12"/><path d="M6 11v8"/><path d="M18 11v8"/></svg><i class="bi bi-x ct-del"></i>';
+const CHAIR_TOK_ICON = '<i class="bi bi-x ct-del"></i>';
 function chairToken(c){ return `<div class="chair-tok" data-cid="${c.id}" onclick="removeChair(${c.id},this)">${CHAIR_TOK_ICON}</div>`; }
 function activateTable(el) {
     $(el).draggable({containment:'parent',stack:'.floor-table',cancel:'.ft-del,.ft-edit,.chair-tok,.chair-zone',
