@@ -1,0 +1,14 @@
+
+:root{
+  --sb-green-dark:#0f4d2f;
+  --sb-green:#1f7a4f;
+  --sb-green-soft:#dff1e7;
+  --sb-green-pale:#edf7f0;
+  --sb-accent:#d9922c;
+  --sb-text:#153b29;
+  --sb-muted:#6a7c73;
+  --sb-white:#ffffff;
+  --sb-border:#d9e8df;
+  --sb-shadow:0 16px 45px rgba(15,77,47,.10);
+  --sb-radius:22px;
+}
