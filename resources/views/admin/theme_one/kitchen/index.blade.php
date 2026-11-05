@@ -78,7 +78,7 @@
 .kds-body        { padding:12px; display:flex; flex-direction:column; gap:10px;
                    min-height:180px; border-radius:0 0 22px 22px; }
 .kds-empty       { display:flex; flex-direction:column; align-items:center;
-                   justify-content:center; gap:6px; color:#adb5bd; min-height:140px;
+                   justify-content:center; gap:6px; color:#5f6b64; min-height:140px;
                    font-size:.84rem; }
 .kds-empty i     { font-size:1.8rem; opacity:.4; }
 

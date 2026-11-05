@@ -124,3 +124,22 @@ body.sb-collapsed .main{margin-left:0}
 body.sb-collapsed .admin-deco{left:0}
 .sidebar,.main{transition:transform .25s ease,margin-left .25s ease}
 @media (max-width:991px){.topbar{margin:0 -16px 16px;padding:12px 16px}.topbar-wave{width:80%}}
+
+/* ═══ Readable text: same tones as the dashboard ═══ */
+:root{--text:#14201a;--muted:#4b5a51}
+body{color:var(--text)}
+.main .text-muted,.main .text-secondary,.main .text-body-secondary{color:var(--muted)!important}
+.main small,.main .small{color:inherit}
+.main .text-muted small,.main small.text-muted,.main small.text-secondary{color:var(--muted)!important}
+.main h1,.main h2,.main h3,.main h4,.main h5,.main h6{color:var(--text)}
+.main .form-label,.main label{color:#1c2620;font-weight:500}
+.main .form-control,.main .form-select{color:var(--text)}
+.main .form-control::placeholder{color:#7a867f;opacity:1}
+.main .table{--bs-table-color:var(--text);color:var(--text)}
+.main .table thead th{color:#1c2620}
+.main .table tbody td{color:var(--text)}
+.main .card-soft .card-header small,.main .page-title p{color:var(--muted)}
+.main .badge.text-bg-light{color:var(--text)!important}
+.main .nav-tabs .nav-link,.main .nav-pills .nav-link:not(.active){color:#1c2620}
+.main .dropdown-item{color:var(--text)}
+.main .empty-state,.main .text-center.text-muted{color:var(--muted)!important}

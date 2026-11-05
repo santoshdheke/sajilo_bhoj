@@ -96,7 +96,7 @@
 .fp-canvas.drop-over { border-color:#198754; background-color:#f0fff6; }
 .fp-canvas.d-none    { display:none !important; }
 .fp-empty       { position:absolute; inset:0; display:flex; flex-direction:column;
-                  align-items:center; justify-content:center; color:#adb5bd;
+                  align-items:center; justify-content:center; color:#5f6b64;
                   pointer-events:none; gap:6px; }
 .fp-empty i     { font-size:40px; }
 .floor-table    { position:absolute; cursor:move; user-select:none; z-index:10; }
