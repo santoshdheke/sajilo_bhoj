@@ -143,3 +143,9 @@ body{color:var(--text)}
 .main .nav-tabs .nav-link,.main .nav-pills .nav-link:not(.active){color:#1c2620}
 .main .dropdown-item{color:var(--text)}
 .main .empty-state,.main .text-center.text-muted{color:var(--muted)!important}
+
+/* Modal fix: don't create a stacking layer on .main (it trapped modals under the backdrop) */
+.main{z-index:auto}
+.admin-deco{z-index:-1}
+.modal{z-index:1060}
+.modal-backdrop{z-index:1055}

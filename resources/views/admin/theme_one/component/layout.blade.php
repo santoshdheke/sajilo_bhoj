@@ -157,6 +157,11 @@
         else { document.body.classList.toggle('sb-collapsed'); try { localStorage.setItem('sbCollapsed', document.body.classList.contains('sb-collapsed') ? '1' : ''); } catch (e) {} }
     });
     try { if (localStorage.getItem('sbCollapsed') === '1' && window.innerWidth >= 992) document.body.classList.add('sb-collapsed'); } catch (e) {}
+
+    // Bootstrap modals must live directly under <body>, otherwise the backdrop can cover them.
+    document.addEventListener('show.bs.modal', function (e) {
+        if (e.target.parentElement !== document.body) document.body.appendChild(e.target);
+    });
     </script>
     @stack('js')
 </body>
