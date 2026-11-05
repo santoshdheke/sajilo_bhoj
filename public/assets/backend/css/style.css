@@ -149,3 +149,10 @@ body{color:var(--text)}
 .admin-deco{z-index:-1}
 .modal{z-index:1060}
 .modal-backdrop{z-index:1055}
+
+/* Profile dropdown fix: header must not clip its dropdown menu */
+.topbar{overflow:visible;z-index:1030}
+.topbar-wave{clip-path:inset(0)}
+.topbar .dropdown-menu{z-index:1035;border:0;border-radius:14px;box-shadow:0 14px 34px rgba(15,40,25,.14);padding:8px;min-width:200px}
+.topbar .dropdown-item{border-radius:10px;padding:9px 12px;font-weight:500}
+.topbar .dropdown-item:hover{background:color-mix(in srgb,var(--primary) 10%,white);color:var(--text)}
