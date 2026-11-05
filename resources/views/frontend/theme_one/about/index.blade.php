@@ -1,20 +1,15 @@
 @extends('frontend.theme_one.component.layout')
 
 @section('content')
-    <section class="page-banner">
-        <div class="container text-center">
-            <h1>About {{ $settings['restaurant_name'] ?: 'SajiloBhoj' }}</h1>
-            <p class="mb-0 text-white-50">{{ $settings['tagline'] ?: 'A restaurant brand with a fresh, modern, and welcoming identity.' }}</p>
-        </div>
-    </section>
+    @include('frontend.theme_one.component.page-banner', ['title' => 'About ' . ($settings['restaurant_name'] ?: 'SajiloBhoj'), 'subtitle' => $settings['tagline'] ?: 'A restaurant brand with a fresh, modern, and welcoming identity.'])
 
     <section class="section-space">
         <div class="container">
             <div class="row align-items-center g-5">
-                <div class="col-lg-6 fade-up">
+                <div class="col-lg-6">
                     <img src="{{ asset('assets/frontend/img/logo.png') }}" alt="{{ $settings['restaurant_name'] ?: 'SajiloBhoj' }}" class="img-fluid rounded-4 shadow-sm">
                 </div>
-                <div class="col-lg-6 fade-up">
+                <div class="col-lg-6">
                     <span class="pill pill-green mb-3">Our Story</span>
                     <h2 class="section-title">Built around taste, service, and comfort.</h2>
                     @if($settings['about_text'])
@@ -38,7 +33,7 @@
     <section class="section-space pt-0">
         <div class="container">
             <div class="row g-4">
-                <div class="col-md-4 fade-up">
+                <div class="col-md-4">
                     <div class="feature-card">
                         <div class="icon-wrap"><i class="bi bi-eye"></i></div>
                         <h5 class="fw-bold">Our Vision</h5>
@@ -46,7 +41,7 @@
                             memorable flavors.</p>
                     </div>
                 </div>
-                <div class="col-md-4 fade-up">
+                <div class="col-md-4">
                     <div class="feature-card">
                         <div class="icon-wrap"><i class="bi bi-bullseye"></i></div>
                         <h5 class="fw-bold">Our Mission</h5>
@@ -54,7 +49,7 @@
                             experience.</p>
                     </div>
                 </div>
-                <div class="col-md-4 fade-up">
+                <div class="col-md-4">
                     <div class="feature-card">
                         <div class="icon-wrap"><i class="bi bi-heart"></i></div>
                         <h5 class="fw-bold">Our Promise</h5>

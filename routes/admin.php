@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\PurchaseOrderController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\TableController;
 use App\Http\Controllers\Admin\MenuController;
+use App\Http\Controllers\Admin\NavMenuItemController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SettingController;
@@ -114,9 +115,17 @@ Route::middleware('permission:users.manage')->group(function () {
     Route::delete('user/{user}', [UserController::class, 'destroy'])->name('user.destroy');
 });
 
-Route::middleware('permission:settings.manage')->group(function () {
-    Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
-    Route::put('settings', [SettingController::class, 'update'])->name('settings.update');
+Route::middleware('permission:settings.manage')->prefix('settings')->name('settings.')->group(function () {
+    Route::get('{section?}', [SettingController::class, 'index'])->name('index')
+        ->where('section', 'general|theme|homepage|about|contact|social');
+    Route::put('{section}', [SettingController::class, 'update'])->name('update')
+        ->where('section', 'general|theme|homepage|about|contact|social');
+
+    Route::get('navigation', [NavMenuItemController::class, 'index'])->name('navigation.index');
+    Route::post('navigation', [NavMenuItemController::class, 'store'])->name('navigation.store');
+    Route::put('navigation/{navMenuItem}', [NavMenuItemController::class, 'update'])->name('navigation.update');
+    Route::delete('navigation/{navMenuItem}', [NavMenuItemController::class, 'destroy'])->name('navigation.destroy');
+    Route::post('navigation/reorder', [NavMenuItemController::class, 'reorder'])->name('navigation.reorder');
 });
 
 Route::middleware('permission:suppliers.manage')->group(function () {

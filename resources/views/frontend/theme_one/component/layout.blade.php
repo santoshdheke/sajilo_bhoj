@@ -9,13 +9,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('assets/frontend/css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/frontend/css/style.css') }}?v={{ filemtime(public_path('assets/frontend/css/style.css')) }}">
     <style>
         :root {
             --primary: {{ $settings['theme_color'] ?? '#198754' }};
             --green: color-mix(in srgb, var(--primary) 80%, black);
             --green-two: color-mix(in srgb, var(--primary) 65%, black);
-            --footer: color-mix(in srgb, var(--primary) 62%, black);
+            --footer: color-mix(in srgb, var(--primary) 85%, black);
+            --footer-light: color-mix(in srgb, var(--primary) 75%, white);
             --banner: color-mix(in srgb, var(--primary) 88%, black);
             --sb-green-dark: color-mix(in srgb, var(--primary) 78%, black);
             --sb-green-progress: var(--primary);
@@ -43,22 +44,13 @@
         <button class="sidebar-close" onclick="closeSidebar()"><i class="bi bi-x-lg"></i></button>
     </div>
     <nav class="sidebar-nav">
-        <a href="{{ route('frontend.home.index') }}" class="{{ Request::is('/') ? 'active' : '' }}">
-            <i class="bi bi-house"></i> Home
+        @foreach($navMenuItems as $item)
+        @php($navPath = trim(parse_url($item->url, PHP_URL_PATH) ?? '/', '/'))
+        <a href="{{ $item->url }}" class="{{ Request::is($navPath === '' ? '/' : $navPath.'*') ? 'active' : '' }}"
+           @if($item->is_highlighted) style="color: var(--sb-accent); border-left-color: var(--sb-accent);" @endif>
+            <i class="bi {{ $item->icon ?: 'bi-link-45deg' }}"></i> {{ $item->label }}
         </a>
-        <a href="{{ route('frontend.about.index') }}" class="{{ Request::is('about') ? 'active' : '' }}">
-            <i class="bi bi-info-circle"></i> About
-        </a>
-        <a href="{{ route('frontend.menu.index') }}" class="{{ Request::is('menu*') ? 'active' : '' }}">
-            <i class="bi bi-grid"></i> Menu
-        </a>
-        <a href="{{ route('frontend.table.index') }}" class="{{ Request::is('table*') ? 'active' : '' }}"
-           style="color: var(--sb-accent); border-left-color: var(--sb-accent);">
-            <i class="bi bi-calendar-check"></i> Book a Table
-        </a>
-        <a href="{{ route('frontend.contact.index') }}" class="{{ Request::is('contact') ? 'active' : '' }}">
-            <i class="bi bi-envelope"></i> Contact
-        </a>
+        @endforeach
         <div class="sidebar-divider"></div>
         @auth('customer')
             <a href="{{ route('frontend.account.index') }}" class="{{ Request::is('account*') ? 'active' : '' }}">
@@ -134,12 +126,14 @@
         </a>
 
         {{-- Desktop Nav --}}
-        <ul class="navbar-nav ms-auto align-items-center desktop-nav" style="flex-direction:row;gap:4px;">
-            <li class="nav-item"><a class="nav-link {{ Request::is('/') ? 'active' : '' }}" href="{{ route('frontend.home.index') }}">Home</a></li>
-            <li class="nav-item"><a class="nav-link {{ Request::is('about') ? 'active' : '' }}" href="{{ route('frontend.about.index') }}">About</a></li>
-            <li class="nav-item"><a class="nav-link {{ Request::is('menu*') ? 'active' : '' }}" href="{{ route('frontend.menu.index') }}">Menu</a></li>
-            <li class="nav-item"><a class="nav-link {{ Request::is('table*') ? 'active' : '' }}" href="{{ route('frontend.table.index') }}" style="color:var(--sb-accent);">Book a Table</a></li>
-            <li class="nav-item"><a class="nav-link {{ Request::is('contact') ? 'active' : '' }}" href="{{ route('frontend.contact.index') }}">Contact</a></li>
+        <ul class="navbar-nav mx-auto align-items-center desktop-nav main-nav">
+            @foreach($navMenuItems as $item)
+            @php($navPath = trim(parse_url($item->url, PHP_URL_PATH) ?? '/', '/'))
+            <li class="nav-item">
+                <a class="nav-link {{ Request::is($navPath === '' ? '/' : $navPath.'*') ? 'active' : '' }}"
+                   href="{{ $item->url }}" @if($item->is_highlighted) style="color:var(--sb-accent);" @endif>{{ $item->label }}</a>
+            </li>
+            @endforeach
             @auth('customer')
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
@@ -159,19 +153,21 @@
             @else
                 <li class="nav-item"><a class="nav-link {{ Request::is('login') || Request::is('register') ? 'active' : '' }}" href="{{ route('frontend.auth.show_login_form') }}">Sign In</a></li>
             @endauth
-            <li class="nav-item ms-2">
-                <button class="cart-fab" onclick="openCartModal()">
-                    <i class="bi bi-bag"></i>
-                    <span class="cart-btn-label">Order</span>
-                    <span class="cart-badge" id="cartBadgeNav">0</span>
-                </button>
-            </li>
         </ul>
+
+        {{-- Desktop cart --}}
+        <div class="desktop-nav nav-cart">
+            <button class="cart-fab" onclick="openCartModal()">
+                <i class="bi bi-cart3"></i>
+                <span class="cart-btn-label">Order</span>
+                <span class="cart-badge" id="cartBadgeNav">0</span>
+            </button>
+        </div>
 
         {{-- Mobile right: cart + hamburger --}}
         <div class="d-flex align-items-center gap-2 d-lg-none">
-            <button class="cart-fab" onclick="openCartModal()" style="padding:8px 12px;">
-                <i class="bi bi-bag"></i>
+            <button class="cart-fab" onclick="openCartModal()" style="padding:8px 14px;">
+                <i class="bi bi-cart3"></i>
                 <span class="cart-badge" id="cartBadgeMobile">0</span>
             </button>
             <button class="hamburger" onclick="openSidebar()" aria-label="Menu">
@@ -184,46 +180,56 @@
 @yield('content')
 
 <footer class="footer">
-    <div class="container">
-        <div class="row align-items-center g-3">
-            <div class="col-lg-6">
-                <div class="d-flex align-items-start gap-3">
-                    <img src="{{ asset('assets/frontend/img/logo.png') }}" alt="SajiloBhoj"
-                         style="height:44px;filter:grayscale(100%);flex-shrink:0;">
+    <svg class="footer-wave" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0 38C200 8 420 4 700 30s520 36 740 6V90H0z" fill="var(--footer-light)"/>
+        <path d="M0 58C260 30 520 34 780 52s460 20 660 0V90H0z" fill="var(--footer)"/>
+    </svg>
+    <div class="footer-main">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col footer-brand">
+                    <svg class="footer-logo" viewBox="0 0 64 64" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M40 6 30 26M50 10 34 28"/>
+                        <path d="M18 26c0-6 5-9 9-6 2-4 9-4 10 1"/>
+                        <path d="M22 18c-2-4 0-8 4-9-1 4 1 7 4 8"/>
+                        <path d="M6 30h52c0 14-11 24-26 24S6 44 6 30z"/>
+                        <path d="M14 36c6 4 16 6 26 4"/>
+                        <path d="M20 58h24"/>
+                    </svg>
                     <div>
-                        <div class="fw-bold">{{ $settings['restaurant_name'] ?: 'SajiloBhoj Restaurant' }}</div>
-                        <div class="small" style="opacity:.75;margin-top:4px;font-size:.82rem;">
-                            {{ $settings['tagline'] ?: 'Fresh taste, warm service, elegant dining. Your neighbourhood restaurant with authentic flavours and a welcoming atmosphere for every occasion.' }}
-                        </div>
-                        @if($settings['contact_address'] || $settings['contact_phone'] || $settings['contact_email'])
-                        <div class="small mt-2" style="opacity:.7;font-size:.8rem;">
-                            @if($settings['contact_address'])<div><i class="bi bi-geo-alt me-1"></i>{{ $settings['contact_address'] }}</div>@endif
-                            @if($settings['contact_phone'])<div><i class="bi bi-telephone me-1"></i>{{ $settings['contact_phone'] }}</div>@endif
-                            @if($settings['contact_email'])<div><i class="bi bi-envelope me-1"></i>{{ $settings['contact_email'] }}</div>@endif
-                        </div>
-                        @endif
-                        @if($settings['facebook_url'] || $settings['instagram_url'] || $settings['twitter_url'])
-                        <div class="d-flex gap-2 mt-2">
-                            @if($settings['facebook_url'])<a href="{{ $settings['facebook_url'] }}" target="_blank" style="color:rgba(255,255,255,.7);"><i class="bi bi-facebook"></i></a>@endif
-                            @if($settings['instagram_url'])<a href="{{ $settings['instagram_url'] }}" target="_blank" style="color:rgba(255,255,255,.7);"><i class="bi bi-instagram"></i></a>@endif
-                            @if($settings['twitter_url'])<a href="{{ $settings['twitter_url'] }}" target="_blank" style="color:rgba(255,255,255,.7);"><i class="bi bi-twitter-x"></i></a>@endif
-                        </div>
-                        @endif
+                        <div class="footer-name">{{ $settings['restaurant_name'] ?: 'SajiloBhoj Restaurant' }}</div>
+                        <div class="footer-tagline">{{ $settings['tagline'] ?: 'Fresh taste, warm service, elegant dining.' }}</div>
                     </div>
                 </div>
-            </div>
-            <div class="col-lg-3">
-                <div class="fw-semibold mb-2" style="font-size:.88rem;">Quick Links</div>
-                <div class="d-flex flex-column gap-1" style="font-size:.82rem;">
-                    <a href="{{ route('frontend.menu.index') }}" style="color:rgba(255,255,255,.7);">Our Menu</a>
-                    <a href="{{ route('frontend.table.index') }}" style="color:rgba(255,255,255,.7);">Book a Table</a>
-                    <a href="{{ route('frontend.about.index') }}" style="color:rgba(255,255,255,.7);">About Us</a>
-                    <a href="{{ route('frontend.contact.index') }}" style="color:rgba(255,255,255,.7);">Contact</a>
+
+                <div class="footer-col footer-links">
+                    <div class="footer-title">Quick Links</div>
+                    <nav>
+                        @foreach($navMenuItems as $item)
+                        <a href="{{ $item->url }}">{{ $item->label }}</a>
+                        @endforeach
+                    </nav>
                 </div>
-            </div>
-            <div class="col-lg-3 text-lg-end">
-                <div class="small" style="opacity:.7;">© {{ date('Y') }} {{ $settings['restaurant_name'] ?: 'SajiloBhoj' }}.</div>
-                <div class="small" style="opacity:.55;margin-top:3px;">All rights reserved.</div>
+
+                <div class="footer-col footer-copy">
+                    <div>© {{ date('Y') }} {{ $settings['restaurant_name'] ?: 'SajiloBhoj' }}.</div>
+                    <div>All rights reserved.</div>
+                </div>
+
+                <div class="footer-col footer-social">
+                    @foreach ([
+                        'facebook_url'  => ['bi-facebook',  'Facebook'],
+                        'instagram_url' => ['bi-instagram', 'Instagram'],
+                        'youtube_url'   => ['bi-youtube',   'YouTube'],
+                        'twitter_url'   => ['bi-twitter-x', 'X'],
+                    ] as $socialKey => $social)
+                        @if (!empty($settings[$socialKey]))
+                        <a href="{{ $settings[$socialKey] }}" target="_blank" rel="noopener" aria-label="{{ $social[1] }}"><i class="bi {{ $social[0] }}"></i></a>
+                        @elseif ($socialKey !== 'twitter_url')
+                        <a href="#" aria-label="{{ $social[1] }}"><i class="bi {{ $social[0] }}"></i></a>
+                        @endif
+                    @endforeach
+                </div>
             </div>
         </div>
     </div>

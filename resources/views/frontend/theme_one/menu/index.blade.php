@@ -2,14 +2,7 @@
 
 @section('content')
 
-<section class="page-banner">
-    <div class="container text-center">
-        <h1>Our Menu</h1>
-        <p class="mb-0 text-white-50">
-            {{ $items->count() }} dishes across {{ $categories->count() }} categories — fresh every day.
-        </p>
-    </div>
-</section>
+    @include('frontend.theme_one.component.page-banner', ['title' => 'Our Menu', 'subtitle' => $items->count() . ' dishes across ' . $categories->count() . ' categories — fresh every day.'])
 
 <section class="section-space">
     <div class="container">
@@ -24,7 +17,7 @@
         @endif
 
         {{-- Category filter tabs --}}
-        <div class="d-flex flex-wrap justify-content-center gap-2 menu-filter mb-5 fade-up">
+        <div class="d-flex flex-wrap justify-content-center gap-2 menu-filter mb-5">
             <button class="btn active" data-filter="all">All</button>
             @foreach($categories as $cat)
             <button class="btn" data-filter="cat-{{ $cat->id }}">{{ $cat->name }}</button>
@@ -40,40 +33,23 @@
         @else
         <div class="row g-4" id="menuGrid">
             @foreach($items as $item)
-            <div class="col-md-6 col-lg-4 fade-up menu-item-card" data-category="cat-{{ $item->menu_category_id }}">
-                <div class="menu-card">
-                    <div class="menu-image" style="position:relative;">
+            <div class="col-md-6 col-xl-4 menu-item-card" data-category="cat-{{ $item->menu_category_id }}">
+                <div class="menu-card mc-h">
+                    <span class="mc-badge">{{ $item->category->name }}</span>
+                    <div class="mc-img">
                         @if($item->image)
-                        <img src="{{ Storage::url($item->image) }}" alt="{{ $item->name }}"
-                             style="height:215px;width:100%;border-radius:22px;object-fit:cover;display:block;">
+                        <img src="{{ Storage::url($item->image) }}" alt="{{ $item->name }}" loading="lazy">
                         @else
-                        <div style="height:215px;width:100%;border-radius:22px;background:var(--sb-green-pale);
-                                    display:flex;align-items:center;justify-content:center;">
-                            <i class="bi bi-egg-fried" style="font-size:3rem;color:var(--sb-muted);"></i>
-                        </div>
+                        <div class="mc-img-empty"><i class="bi bi-egg-fried"></i></div>
                         @endif
-                        <span style="position:absolute;top:10px;left:10px;background:rgba(255,255,255,.9);
-                                     padding:3px 10px;border-radius:999px;font-size:.72rem;font-weight:600;
-                                     color:var(--sb-green-dark);">
-                            {{ $item->category->name }}
-                        </span>
                     </div>
-                    <div class="d-flex justify-content-between align-items-start mb-1 mt-2">
-                        <h5 class="fw-bold mb-0">{{ $item->name }}</h5>
-                        <span class="price-tag">${{ number_format($item->price, 2) }}</span>
-                    </div>
-                    @if($item->description)
-                    <p class="section-subtitle mb-3 order-item-content"
-                       style="font-size:.83rem;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
-                        {{ $item->description }}
-                    </p>
-                    @else
-                    <p class="section-subtitle mb-3" style="font-size:.83rem;">{{ $item->category->name }}</p>
-                    @endif
-                    <div class="d-flex justify-content-end">
-                        <a class="btn btn-primary-o" href="javascript:void(0)"
+                    <div class="mc-body">
+                        <h5>{{ $item->name }}</h5>
+                        <div class="mc-desc">{{ $item->description ?: $item->category->name }}</div>
+                        <div class="price-tag">${{ number_format($item->price, 2) }}</div>
+                        <a class="btn btn-primary-o mc-add" href="javascript:void(0)"
                            onclick="addToCart({{ $item->id }}, '{{ addslashes($item->name) }}', {{ $item->price }}, '{{ $item->image ? Storage::url($item->image) : '' }}')">
-                            <i class="bi bi-plus-circle me-1"></i>Add to order
+                            <i class="bi bi-plus-circle"></i> Add to order
                         </a>
                     </div>
                 </div>
@@ -148,7 +124,7 @@ function updateCartUI() {
     }
     // Nav badge
     document.querySelectorAll('.cart-btn-label').forEach(el => {
-        el.textContent = count > 0 ? `View Order (${count})` : 'View Order';
+        el.textContent = count > 0 ? `Order (${count})` : 'Order';
     });
 }
 

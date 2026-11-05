@@ -34,6 +34,7 @@
 
                 <img src="{{ asset('assets/backend/img/logo-no-bg.png') }}" alt="Logo" style="height: 70px;">
             </div>
+            @if (! request()->routeIs('admin.settings.*'))
             <div class="section-title">Main</div>
             <a class="nav-link{{ Request::is('admin/dashboard') ? ' active' : '' }}" href="{{ route('admin.dashboard.index') }}"><i class="bi bi-grid"></i> Dashboard</a>
             <a class="nav-link{{ Request::is('admin/tables') ? ' active' : '' }}" href="{{ route('admin.table.index') }}"><i class="bi bi-grid-3x3-gap"></i> Tables</a>
@@ -76,9 +77,21 @@
             @endif
             <a class="nav-link{{ Request::is('admin/user') ? ' active' : '' }}" href="{{ route("admin.user.index") }}"><i class="bi bi-people"></i> Users</a>
             <a class="nav-link{{ Request::is('admin/profile') ? ' active' : '' }}" href="{{ route("admin.profile.index") }}"><i class="bi bi-person-circle"></i> Profile</a>
-            <a class="nav-link{{ Request::is('admin/settings') ? ' active' : '' }}" href="{{ route("admin.settings.index") }}"><i class="bi bi-gear"></i> Settings</a>
+            <a class="nav-link{{ request()->routeIs('admin.settings.*') ? ' active' : '' }}" href="{{ route('admin.settings.index') }}"><i class="bi bi-gear"></i> Settings</a>
             <div class="section-title">Account</div>
             <a class="nav-link" href="javascript:void(0)" onclick="document.getElementById('logout').submit()"><i class="bi bi-box-arrow-right"></i> Logout</a>
+            @else
+            <a class="nav-link" href="{{ route('admin.dashboard.index') }}"><i class="bi bi-arrow-left"></i> Back to Dashboard</a>
+            <div class="section-title">Website Settings</div>
+            @foreach (\App\Http\Controllers\Admin\SettingController::SECTIONS as $key => $sectionMeta)
+            <a class="nav-link{{ request()->routeIs('admin.settings.index') && request()->route('section', 'general') === $key ? ' active' : '' }}"
+               href="{{ route('admin.settings.index', $key) }}"><i class="bi {{ $sectionMeta['icon'] }}"></i> {{ $sectionMeta['label'] }}</a>
+            @endforeach
+            <a class="nav-link{{ request()->routeIs('admin.settings.navigation.*') ? ' active' : '' }}"
+               href="{{ route('admin.settings.navigation.index') }}"><i class="bi bi-list-ul"></i> Navigation Menu</a>
+            <div class="section-title">Account</div>
+            <a class="nav-link" href="javascript:void(0)" onclick="document.getElementById('logout').submit()"><i class="bi bi-box-arrow-right"></i> Logout</a>
+            @endif
             <form action="{{ route("admin.logout") }}" method="post" id="logout">
                 @csrf
             </form>

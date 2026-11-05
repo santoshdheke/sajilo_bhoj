@@ -19,7 +19,7 @@ class HomeController extends Controller
             ->whereHas('category')
             ->where('is_available', true)
             ->inRandomOrder()
-            ->limit(4)
+            ->limit(6)
             ->get();
 
         $categories = MenuCategory::where('is_active', true)

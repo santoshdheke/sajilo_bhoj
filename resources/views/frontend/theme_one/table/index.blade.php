@@ -45,11 +45,13 @@
     font-size: 15px;
     font-weight: 600;
 }
-.room-banner-placeholder i { font-size: 36px; }
+.room-banner-placeholder > div > i { font-size: 28px; color: var(--sb-green); }
+.room-banner-empty { height: auto; background: #fff; border: 1px solid var(--sb-border); box-shadow: var(--sb-shadow); border-radius: 16px; }
+.room-banner-empty .room-banner-placeholder { padding: 16px 22px !important; color: var(--sb-green-dark); font-size: 1rem; }
 
 /* Table cards */
 .tbl-card {
-    border-radius: var(--sb-radius);
+    border-radius: 18px;
     overflow: hidden;
     background: #fff;
     box-shadow: var(--sb-shadow);
@@ -132,12 +134,7 @@
 }
 </style>
 
-<section class="page-banner">
-    <div class="container text-center">
-        <h1>Book a Table</h1>
-        <p class="mb-0 text-white-50">Choose your preferred room and reserve your spot.</p>
-    </div>
-</section>
+    @include('frontend.theme_one.component.page-banner', ['title' => 'Book a Table', 'subtitle' => 'Choose your preferred room and reserve your spot.'])
 
 <section class="section-space">
     <div class="container">
@@ -178,7 +175,7 @@
                  role="tabpanel">
 
                 {{-- Room banner + optional description --}}
-                <div class="room-banner"
+                <div class="room-banner @unless($room->photo) room-banner-empty @endunless"
                      @if($room->photo) style="background-image: url('{{ Storage::url($room->photo) }}')" @endif>
                     @if($room->photo)
                     <div class="room-banner-overlay">
@@ -200,7 +197,7 @@
                             <span>{{ $room->name }} &mdash; {{ $room->floorTables->count() }} table(s)</span>
                         </div>
                         <a href="{{ route('frontend.room.show', $room) }}"
-                           class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                           class="btn btn-primary-o btn-sm px-3">
                             <i class="bi bi-eye me-1"></i>View Room
                         </a>
                     </div>
