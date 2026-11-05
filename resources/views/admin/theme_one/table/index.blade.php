@@ -154,6 +154,19 @@
                   color:#adb5bd; font-size:13px; flex-shrink:0; pointer-events:none; }
 .chair-zone.ui-droppable-hover .drop-hint { border-color:#198754; color:#198754; }
 .ui-draggable-dragging.tool-item { opacity:.75; box-shadow:0 6px 20px rgba(0,0,0,.2); }
+
+/* Tables page — theme refresh overrides */
+.page-tab-bar .page-tab { border-radius:999px; background:#fff; border:1px solid rgba(20,40,20,.06); box-shadow:0 4px 14px rgba(15,40,25,.05); font-weight:600; padding:9px 22px; }
+.page-tab-bar .page-tab.active { background:linear-gradient(135deg,var(--primary),color-mix(in srgb,var(--primary) 75%,black)); color:#fff; box-shadow:0 8px 18px color-mix(in srgb,var(--primary) 25%,transparent); }
+.room-filter .rm-ftab { border-radius:999px; background:#fff; color:#1f2937; padding:7px 18px; font-size:.85rem; border:1px solid rgba(20,40,20,.06); box-shadow:0 4px 14px rgba(15,40,25,.05); }
+.room-filter .rm-ftab.active { background:var(--primary); color:#fff; }
+.tbl-card { border-radius:16px; }
+.tbl-card .tbl-name { font-size:1.35rem; }
+.tbl-card .st-badge { padding:5px 12px; font-size:.8rem; }
+.tbl-card .seat-dot { width:11px; height:11px; }
+.tbl-card .tbl-seats-ico { max-width:150px; }
+.stat-ico { width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.4rem; flex-shrink:0; }
+.bk-empty-ico { width:64px; height:64px; margin:0 auto 10px; border-radius:16px; background:color-mix(in srgb,var(--primary) 8%,white); display:flex; align-items:center; justify-content:center; font-size:1.8rem; color:color-mix(in srgb,var(--primary) 45%,white); }
 </style>
 
 {{-- ── Add Booking Modal ── --}}
@@ -326,7 +339,7 @@
         <h2>Table Management</h2>
         <p>Track table status, manage bookings, and design your floor plan.</p>
     </div>
-    <button class="btn btn-primary btn-sm" onclick="openBookingModal(null,'Any')"
+    <button class="btn btn-primary" onclick="openBookingModal(null,'Any')"
             data-bs-toggle="modal" data-bs-target="#bookingModal">
         <i class="bi bi-calendar-plus me-1"></i>New Booking
     </button>
@@ -345,13 +358,12 @@
     <div class="col-6 col-lg">
         <div class="card-soft" style="padding:16px 18px;">
             <div class="d-flex align-items-center gap-3">
-                <div style="width:42px;height:42px;border-radius:13px;background:{{ $bg }};color:{{ $clr }};
-                            display:flex;align-items:center;justify-content:center;font-size:1.15rem;flex-shrink:0;">
+                <div class="stat-ico" style="background:{{ $bg }};color:{{ $clr }};">
                     <i class="bi {{ $ico }}"></i>
                 </div>
                 <div>
-                    <div style="font-size:1.5rem;font-weight:800;line-height:1.1;">{{ $val }}</div>
-                    <div style="font-size:.75rem;color:var(--muted);">{{ $lbl }}</div>
+                    <div style="font-size:1.6rem;font-weight:800;line-height:1.1;">{{ $val }}</div>
+                    <div style="font-size:.85rem;color:#4b5a51;">{{ $lbl }}</div>
                 </div>
             </div>
         </div>
@@ -452,7 +464,7 @@
     <div class="card-soft table-card">
         <div class="card-header d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center gap-2">
-                <i class="bi bi-calendar-event text-success"></i>
+                <i class="bi bi-calendar-event" style="color:var(--primary);font-size:1.3rem;"></i>
                 <h5 class="mb-0">Today's Bookings</h5>
                 <span class="badge bg-success">{{ $todayBookings->count() }}</span>
             </div>
@@ -523,7 +535,7 @@
                     @empty
                     <tr id="bkEmptyRow">
                         <td colspan="8" class="text-center py-5 text-muted">
-                            <i class="bi bi-calendar" style="font-size:2rem;display:block;margin-bottom:8px;opacity:.35;"></i>
+                            <div class="bk-empty-ico"><i class="bi bi-calendar2-week"></i></div>
                             No bookings for today yet.
                         </td>
                     </tr>
