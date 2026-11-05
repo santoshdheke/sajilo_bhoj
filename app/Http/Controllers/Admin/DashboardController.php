@@ -60,6 +60,7 @@ class DashboardController extends Controller
 
         $chartBars = $weekDays->map(fn ($d) => [
             'label' => Carbon::parse($d)->format('D'),
+            'total' => (float) ($dailyRevenue[$d]->total ?? 0),
             'pct'   => max(6, (int) round(((float) ($dailyRevenue[$d]->total ?? 0) / $maxRevenue) * 100)),
         ]);
 

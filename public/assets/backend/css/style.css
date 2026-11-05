@@ -100,3 +100,27 @@ body{background:linear-gradient(160deg,color-mix(in srgb,var(--primary) 7%,white
 /* Sidebar business logo on a light card */
 .sidebar .brand{display:flex;align-items:center;justify-content:center;background:color-mix(in srgb, #9f005400 94%, white);border-radius:16px;padding:10px 14px;margin:0 2px 18px;box-shadow:0 8px 20px rgba(0,0,0,.18)}
 .sidebar .brand img{height:62px;max-width:100%;object-fit:contain}
+
+/* ═══ Header + body background refresh ═══ */
+body{background:linear-gradient(170deg,color-mix(in srgb,var(--primary) 9%,white) 0%,#f6fbf7 40%,color-mix(in srgb,var(--primary) 7%,white) 100%);background-attachment:fixed}
+.main{padding-top:0}
+.topbar{position:relative;overflow:hidden;margin:0 -28px 22px;padding:14px 28px;background:#fff;box-shadow:0 2px 18px rgba(15,40,25,.05)}
+.topbar-wave{position:absolute;right:0;top:0;width:55%;height:100%;pointer-events:none}
+.menu-btn{width:42px;height:42px;border:0;background:none;border-radius:12px;font-size:1.6rem;color:#1c2620;display:inline-flex;align-items:center;justify-content:center}
+.menu-btn:hover{background:color-mix(in srgb,var(--primary) 10%,white)}
+.mobile-menu-btn{display:none!important}
+.search-box input{background:#f2f4f3;border:0;box-shadow:none;border-radius:999px}
+.search-box input:focus{background:#fff;box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 15%,transparent)}
+.bell-btn{position:relative;width:44px;height:44px;border:0;background:none;border-radius:50%;font-size:1.35rem;color:#1c2620}
+.bell-btn:hover{background:color-mix(in srgb,var(--primary) 10%,white)}
+.bell-btn .dot{position:absolute;top:8px;right:9px;width:9px;height:9px;border-radius:50%;background:#ef4444;border:2px solid #fff}
+.user-chip{background:transparent;box-shadow:none}
+.admin-deco .d-wave-br{position:absolute;right:0;bottom:0;width:70%;height:240px;fill:color-mix(in srgb,var(--primary) 9%,white)}
+.admin-deco .d-wave-br .w2{fill:color-mix(in srgb,var(--primary) 14%,white)}
+.admin-deco .d-leaf-1{top:auto;bottom:18%;right:3%}
+/* Desktop sidebar collapse */
+body.sb-collapsed .sidebar{transform:translateX(-100%)}
+body.sb-collapsed .main{margin-left:0}
+body.sb-collapsed .admin-deco{left:0}
+.sidebar,.main{transition:transform .25s ease,margin-left .25s ease}
+@media (max-width:991px){.topbar{margin:0 -16px 16px;padding:12px 16px}.topbar-wave{width:80%}}

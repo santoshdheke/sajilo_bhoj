@@ -105,23 +105,24 @@
         </div>
         {{-- Soft background decoration: leaves + cooking items --}}
         <div class="admin-deco" aria-hidden="true">
-            <svg class="d-cloche" viewBox="0 0 200 120"><circle cx="100" cy="14" r="9"/><path d="M20 96a80 74 0 0 1 160 0z"/><rect x="8" y="94" width="184" height="12" rx="6"/></svg>
-            <svg class="d-cutlery" viewBox="0 0 80 140"><path d="M10 4v40a10 10 0 0 0 8 10v80h8V54a10 10 0 0 0 8-10V4h-6v34h-4V4h-6v34h-4V4z"/><path d="M58 4c-10 0-16 14-16 30 0 12 5 20 12 22v78h8V56c7-2 12-10 12-22 0-16-6-30-16-30z"/></svg>
+            <svg class="d-wave-br" viewBox="0 0 800 300" preserveAspectRatio="none"><path d="M0 300C200 220 420 260 800 120V300z"/><path class="w2" d="M200 300C380 250 560 270 800 200V300z"/></svg>
             <svg class="d-leaf d-leaf-1" viewBox="0 0 40 60"><path d="M20 0C5 15 0 30 6 45c3 8 8 13 14 15 6-2 11-7 14-15C40 30 35 15 20 0z"/></svg>
             <svg class="d-leaf d-leaf-2" viewBox="0 0 40 60"><path d="M20 0C5 15 0 30 6 45c3 8 8 13 14 15 6-2 11-7 14-15C40 30 35 15 20 0z"/></svg>
             <svg class="d-leaf d-leaf-3" viewBox="0 0 40 60"><path d="M20 0C5 15 0 30 6 45c3 8 8 13 14 15 6-2 11-7 14-15C40 30 35 15 20 0z"/></svg>
-            <svg class="d-pot" viewBox="0 0 120 90"><rect x="40" y="4" width="40" height="8" rx="4"/><path d="M14 22h92v8c0 30-18 54-46 54S14 60 14 30z"/><rect x="0" y="26" width="18" height="8" rx="4"/><rect x="102" y="26" width="18" height="8" rx="4"/></svg>
         </div>
         <main class="main">
             <div class="topbar">
-                <div class="d-flex align-items-center gap-3 flex-grow-1"><button
-                        class="btn btn-soft d-lg-none mobile-menu-btn"><i class="bi bi-list"></i></button>
+                <svg class="topbar-wave" viewBox="0 0 600 80" preserveAspectRatio="none" aria-hidden="true">
+                    <path d="M120 0C220 40 330 70 600 40V0z" fill="color-mix(in srgb, var(--primary) 10%, white)"/>
+                    <path d="M260 0C340 30 440 46 600 18V0z" fill="color-mix(in srgb, var(--primary) 16%, white)"/>
+                </svg>
+                <div class="d-flex align-items-center gap-3 flex-grow-1 position-relative">
+                    <button class="menu-btn" type="button" aria-label="Toggle menu"><i class="bi bi-list"></i></button>
                     <div class="search-box"><i class="bi bi-search"></i><input class="form-control"
                             placeholder="Search orders, tables, menu items..."></div>
                 </div>
-                <div class="top-actions">
-                    <button class="btn btn-soft icon-btn" aria-label="Notifications"><i class="bi bi-bell"></i></button>
-                    <button class="btn btn-soft icon-btn" aria-label="Messages"><i class="bi bi-chat-dots"></i></button>
+                <div class="top-actions position-relative">
+                    <button class="bell-btn" type="button" aria-label="Notifications"><i class="bi bi-bell"></i><span class="dot"></span></button>
                     <div class="dropdown">
                         <button class="user-chip" data-bs-toggle="dropdown" aria-expanded="false">
                             <span class="avatar">{{ auth()->user()?->initials ?: 'U' }}</span>
@@ -149,6 +150,14 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
     <script src="{{ asset('assets/backend/js/custom.js') }}"></script>
+    <script>
+    // Header menu button: collapse the sidebar on desktop, slide it in on mobile.
+    document.querySelector('.menu-btn')?.addEventListener('click', function () {
+        if (window.innerWidth < 992) { document.getElementById('sidebar').classList.toggle('show'); }
+        else { document.body.classList.toggle('sb-collapsed'); try { localStorage.setItem('sbCollapsed', document.body.classList.contains('sb-collapsed') ? '1' : ''); } catch (e) {} }
+    });
+    try { if (localStorage.getItem('sbCollapsed') === '1' && window.innerWidth >= 992) document.body.classList.add('sb-collapsed'); } catch (e) {}
+    </script>
     @stack('js')
 </body>
 
