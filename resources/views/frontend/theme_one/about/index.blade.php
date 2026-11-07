@@ -7,7 +7,7 @@
         <div class="container">
             <div class="row align-items-center g-5">
                 <div class="col-lg-6">
-                    <div class="about-logo">@include('partials.brand-logo', ['variant' => 'color', 'height' => 150])</div>
+                    <div class="about-chef">@include('partials.chef-cooking', ['class' => 'about-chef__art'])</div>
                 </div>
                 <div class="col-lg-6">
                     <span class="pill pill-green mb-3">Our Story</span>

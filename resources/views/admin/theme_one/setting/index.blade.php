@@ -16,7 +16,7 @@
 
         @include('admin.theme_one.setting.partials.' . $section)
 
-        <div class="mt-4 d-flex flex-wrap gap-2">
+        <div class="settings-actions mt-4 d-flex flex-wrap align-items-center gap-2">
             <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Save Settings</button>
             @if ($section === 'theme')
                 @php $defaultColor = \App\Http\Controllers\Admin\SettingController::SECTIONS['theme']['fields']['theme_color']; @endphp
