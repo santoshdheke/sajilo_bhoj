@@ -678,7 +678,7 @@ document.getElementById('bkSaveBtn').addEventListener('click', async () => {
     const time    = document.getElementById('bkTime').value;
     const party   = document.getElementById('bkParty').value;
     if (!name || !date || !time || !party || !tableId) {
-        alert('Please fill in all required fields and select a table.');
+        notify.error('Please fill in all required fields and select a table.');
         return;
     }
 

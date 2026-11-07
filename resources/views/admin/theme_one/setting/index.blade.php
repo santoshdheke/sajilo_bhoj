@@ -6,9 +6,6 @@
         <p>Website settings that power the storefront pages directly.</p>
     </div>
 
-    @if (session('status'))
-        <div class="alert alert-success">{{ session('status') }}</div>
-    @endif
     @if ($errors->any())
         <div class="alert alert-danger">{{ $errors->first() }}</div>
     @endif
@@ -19,8 +16,15 @@
 
         @include('admin.theme_one.setting.partials.' . $section)
 
-        <div class="mt-4">
+        <div class="mt-4 d-flex flex-wrap gap-2">
             <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Save Settings</button>
+            @if ($section === 'theme')
+                @php $defaultColor = \App\Http\Controllers\Admin\SettingController::SECTIONS['theme']['fields']['theme_color']; @endphp
+                <button type="submit" name="reset_theme" value="1" class="btn theme-reset-btn" formnovalidate
+                        onclick="return confirm('Reset the brand colour to the default ({{ $defaultColor }})? This saves immediately.')">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>Reset to default
+                </button>
+            @endif
         </div>
     </form>
 @endsection

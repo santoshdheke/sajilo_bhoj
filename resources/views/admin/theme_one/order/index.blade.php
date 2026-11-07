@@ -606,7 +606,7 @@ document.getElementById('saveNewOrder').addEventListener('click', async () => {
             note:  inp[3].value.trim() || null,
         });
     });
-    if (!items.length) { alert('Add at least one item.'); return; }
+    if (!items.length) { notify.error('Add at least one item.'); return; }
 
     const btn = document.getElementById('saveNewOrder');
     btn.disabled = true;
@@ -627,7 +627,7 @@ document.getElementById('saveNewOrder').addEventListener('click', async () => {
     else {
         btn.disabled = false;
         btn.innerHTML = '<i class="bi bi-send me-1"></i>Place Order';
-        alert('Something went wrong. Please try again.');
+        notify.error('Something went wrong. Please try again.');
     }
 });
 

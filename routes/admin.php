@@ -36,6 +36,7 @@ Route::put('profile/password', [ProfileController::class, 'updatePassword'])->na
 
 Route::middleware('permission:dashboard.view')->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
+    Route::get('dashboard/chat-facts', [DashboardController::class, 'chatFacts'])->name('dashboard.chat_facts');
 });
 
 // Table floor-plan management

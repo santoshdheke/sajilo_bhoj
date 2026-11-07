@@ -117,6 +117,11 @@ class SettingController extends Controller
 
         $data = $request->validate($rules);
 
+        // "Reset to default" on the Theme page restores the original brand colour.
+        if ($section === 'theme' && $request->boolean('reset_theme')) {
+            $data['theme_color'] = $fields['theme_color'];
+        }
+
         foreach ($fields as $key => $default) {
             Setting::putValue($company->id, $key, $data[$key] ?? $default);
         }
@@ -125,7 +130,11 @@ class SettingController extends Controller
             $this->saveLogo($request, $company);
         }
 
-        return redirect()->route('admin.settings.index', $section)->with('status', 'Settings saved successfully.');
+        $message = $section === 'theme' && $request->boolean('reset_theme')
+            ? 'Theme colour reset to the default.'
+            : 'Settings saved successfully.';
+
+        return redirect()->route('admin.settings.index', $section)->with('status', $message);
     }
 
     /**
@@ -161,6 +170,7 @@ class SettingController extends Controller
             ],
             'theme' => [
                 'theme_color' => ['nullable', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+                'reset_theme' => 'nullable|boolean',
             ],
             'homepage' => [
                 'hero_title'              => 'nullable|string|max:255',

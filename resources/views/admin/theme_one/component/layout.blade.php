@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/notyf@3.10.0/notyf.min.css" rel="stylesheet">
     <link href="{{ asset('assets/backend/css/style.css') }}?v={{ filemtime(public_path('assets/backend/css/style.css')) }}" rel="stylesheet">
     <style>
         :root {
@@ -163,6 +164,232 @@
         if (e.target.parentElement !== document.body) document.body.appendChild(e.target);
     });
     </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/notyf@3.10.0/notyf.min.js"></script>
+    <script>
+    // Toast notifications (Notyf). Success uses the brand colour, errors stay red.
+    (function () {
+        var notyf = new Notyf({
+            duration: 4000,
+            dismissible: true,
+            ripple: false,
+            position: { x: 'right', y: 'top' },
+            types: [
+                { type: 'success', icon: { className: 'bi bi-check-circle-fill', tagName: 'i', color: '#fff' } },
+                { type: 'error', background: '#dc2626', icon: { className: 'bi bi-exclamation-circle-fill', tagName: 'i', color: '#fff' } },
+            ],
+        });
+        // Read the brand colour at show time, so toasts follow the (live) theme colour.
+        function brand() { return getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#198754'; }
+        // Skip the same message if it was just shown (e.g. page + global handler both report it).
+        var last = { msg: '', at: 0 };
+        function fresh(msg) { var now = Date.now(), dup = msg === last.msg && now - last.at < 2000; last = { msg: msg, at: now }; return !dup; }
+        window.notify = {
+            success: function (message) { if (fresh(message)) return notyf.open({ type: 'success', message: message, background: brand() }); },
+            error:   function (message) { if (fresh(message)) return notyf.error(message); },
+            dismissAll: function () { notyf.dismissAll(); },
+        };
+    })();
+    @foreach (['status', 'success', 'password_success'] as $flashKey)
+        @if (session($flashKey))
+            notify.success(@json(session($flashKey)));
+        @endif
+    @endforeach
+    @if (session('error'))
+        notify.error(@json(session('error')));
+    @endif
+    </script>
+
+
+    <script>
+    // ── Toast for every admin action (save / update / delete) ──
+    // Wraps fetch(): successful non-GET requests to /admin/... show a brand-coloured toast.
+    // A page can opt out of a request by sending the header 'X-Silent-Toast: 1'.
+    (function () {
+        var NOUNS = {
+            'bookings': 'Booking', 'chairs': 'Chair', 'coupons': 'Coupon', 'customers': 'Customer',
+            'inventory-categories': 'Category', 'inventory-items': 'Inventory item', 'kitchen/columns': 'Column',
+            'kitchen/orders': 'Order', 'menu': 'Menu item', 'menu-category': 'Category', 'orders': 'Order',
+            'payments': 'Payment', 'purchase-orders': 'Purchase order', 'rooms': 'Room', 'settings/navigation': 'Menu link',
+            'suppliers': 'Supplier', 'table-photos': 'Photo', 'tables': 'Table', 'user': 'User'
+        };
+        var PENDING = 'admin-pending-toast';
+
+        function headerOf(init, name) {
+            var h = init && init.headers; if (!h) return null;
+            if (typeof h.get === 'function') return h.get(name);
+            for (var k in h) { if (k.toLowerCase() === name.toLowerCase()) return h[k]; }
+            return null;
+        }
+        function bodyKeys(body) {
+            if (!body) return [];
+            if (body instanceof FormData) { var ks = []; body.forEach(function (v, k) { ks.push(k); }); return ks; }
+            if (typeof body === 'string') { try { return Object.keys(JSON.parse(body)); } catch (e) { return []; } }
+            return [];
+        }
+        function spoofed(body) {
+            if (body instanceof FormData && body.get('_method')) return String(body.get('_method')).toUpperCase();
+            if (typeof body === 'string') { try { var j = JSON.parse(body); if (j._method) return String(j._method).toUpperCase(); } catch (e) {} }
+            return null;
+        }
+        function describe(url, method, body) {
+            var path = new URL(url, location.href).pathname.replace(/^\/admin\//, '').replace(/\/$/, '');
+            var parts = path.split('/'), noun = null, rest = [];
+            for (var n = Math.min(parts.length, 2); n >= 1; n--) {
+                var key = parts.slice(0, n).join('/');
+                if (NOUNS[key]) { noun = NOUNS[key]; rest = parts.slice(n); break; }
+            }
+            noun = noun || 'Item';
+            var last = rest[rest.length - 1] || '', hasId = rest.some(function (p) { return /^\d+$/.test(p); });
+            var keys = bodyKeys(body).filter(function (k) { return k !== '_token' && k !== '_method'; });
+
+            if (last === 'status')  return noun + ' status updated.';
+            if (last === 'toggle')  return noun + ' updated.';
+            if (last === 'reorder') return 'New order saved.';
+            if (/^photos?$/.test(last) && method !== 'DELETE') return 'Photo uploaded.';
+            if (keys.length && keys.every(function (k) { return /^(pos_x|pos_y|room_id|table_id|x|y|rotation)$/.test(k); })) return 'Layout saved.';
+            if (method === 'DELETE') return noun + ' deleted.';
+            if (method === 'PUT' || method === 'PATCH' || (method === 'POST' && hasId)) return noun + ' updated.';
+            return noun + ' added.';
+        }
+        function show(type, msg) {
+            if (!window.notify || !msg) return;
+            notify[type](msg);
+            try { sessionStorage.setItem(PENDING, JSON.stringify({ type: type, msg: msg, ts: Date.now() })); } catch (e) {}
+        }
+
+        // Re-show a toast whose page reloaded right after the action.
+        try {
+            var pending = JSON.parse(sessionStorage.getItem(PENDING) || 'null');
+            sessionStorage.removeItem(PENDING);
+            if (pending && Date.now() - pending.ts < 2500) notify[pending.type](pending.msg);
+        } catch (e) {}
+
+        var nativeFetch = window.fetch.bind(window);
+        window.fetch = function (input, init) {
+            var url = typeof input === 'string' ? input : (input && input.url) || '';
+            var method = ((init && init.method) || (input && input.method) || 'GET').toUpperCase();
+            var body = init && init.body;
+            if (method === 'POST') method = spoofed(body) || 'POST';
+            var watch = method !== 'GET' && method !== 'HEAD' && /\/admin\//.test(new URL(url, location.href).pathname)
+                        && headerOf(init, 'X-Silent-Toast') !== '1';
+
+            var p = nativeFetch(input, init);
+            if (!watch) return p;
+            return p.then(function (res) {
+                var copy = res.clone();
+                if (res.ok) {
+                    copy.json().then(function (d) {
+                        if (d && d.success === false) show('error', d.message || 'Action could not be completed.');
+                        else show('success', (d && typeof d.message === 'string' && d.message) || describe(url, method, body));
+                    }).catch(function () { show('success', describe(url, method, body)); });
+                } else if (res.status !== 422) {
+                    copy.json().then(function (d) { return d && d.message; }).catch(function () { return null; }).then(function (m) {
+                        var fallback = res.status === 419 ? 'Your session expired. Please refresh the page.'
+                                     : res.status === 403 ? 'You do not have permission to do that.'
+                                     : 'Something went wrong. Please try again.';
+                        show('error', (res.status === 419 || res.status >= 500) ? fallback : (m || fallback));
+                    });
+                }
+                return res;
+            });
+        };
+    })();
+    </script>
+
+    {{-- ── Floating Chat Support (all admin pages) ── --}}
+    @if (auth()->user()?->hasPermission('dashboard.view'))
+    <div class="cw" id="chatWidget">
+        <div class="cw-panel" id="cwPanel" role="dialog" aria-label="Chat Support" hidden>
+            <div class="cw-head">
+                <h5><i class="bi bi-chat-dots-fill"></i>Chat Support</h5>
+                <button type="button" id="cwClose" aria-label="Close chat">&minus;</button>
+            </div>
+            <div class="cw-body" id="cwBody">
+                <div class="cw-msg bot">
+                    <span class="av"><i class="bi bi-robot"></i></span>
+                    <div class="bubble">Hello! 👋<br>How can I help you today?<time id="cwHelloTime"></time></div>
+                </div>
+            </div>
+            <div class="cw-chips" id="cwChips">
+                <button type="button">Today's sales</button>
+                <button type="button">Orders today</button>
+                <button type="button">Tables</button>
+                <button type="button">Kitchen</button>
+                <button type="button">Top items</button>
+            </div>
+            <form class="cw-foot" id="cwForm" autocomplete="off">
+                <input type="text" id="cwInput" placeholder="Type a message..." aria-label="Message">
+                <button type="submit" aria-label="Send"><i class="bi bi-send-fill"></i></button>
+            </form>
+        </div>
+        <button type="button" class="cw-fab" id="cwFab" aria-label="Open chat support" aria-expanded="false">
+            <i class="bi bi-chat-dots-fill cw-ico-open"></i><i class="bi bi-x-lg cw-ico-close"></i>
+        </button>
+    </div>
+    <script>
+    (function () {
+        var factsUrl = @json(route('admin.dashboard.chat_facts'));
+        var initials = @json(auth()->user()?->initials ?: 'U');
+        var widget = document.getElementById('chatWidget'), panel = document.getElementById('cwPanel'),
+            fab = document.getElementById('cwFab'), body = document.getElementById('cwBody'), facts = null;
+
+        function esc(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+        function time() { return new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); }
+        document.getElementById('cwHelloTime').textContent = time();
+
+        function loadFacts() {
+            return fetch(factsUrl, { headers: { 'Accept': 'application/json' } })
+                .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+                .then(function (d) { facts = d; return d; });
+        }
+        function setOpen(open) {
+            widget.classList.toggle('open', open);
+            panel.hidden = !open;
+            fab.setAttribute('aria-expanded', open ? 'true' : 'false');
+            if (open) { loadFacts().catch(function () {}); setTimeout(function () { document.getElementById('cwInput').focus(); }, 50); }
+        }
+        fab.addEventListener('click', function () { setOpen(!widget.classList.contains('open')); });
+        document.getElementById('cwClose').addEventListener('click', function () { setOpen(false); });
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && widget.classList.contains('open')) setOpen(false); });
+
+        function add(who, html) {
+            var el = document.createElement('div');
+            el.className = 'cw-msg ' + who;
+            el.innerHTML = '<span class="av">' + (who === 'bot' ? '<i class="bi bi-robot"></i>' : esc(initials)) + '</span>'
+                         + '<div class="bubble">' + html + '<time>' + time() + '</time></div>';
+            body.appendChild(el);
+            body.scrollTop = body.scrollHeight;
+        }
+        function big(label, value) { return label + '<span class="big">' + esc(String(value)) + '</span>'; }
+
+        // Answers simple questions from today's live numbers.
+        function reply(q, f) {
+            q = q.toLowerCase();
+            if (/sale|revenue|earn|income/.test(q)) return /month/.test(q) ? big("This month's revenue is:", f.month) : big("Today's sales is:", f.sales);
+            if (/order/.test(q))                 return big('Orders today:', f.orders);
+            if (/table|occup|seat/.test(q))      return big('Occupied tables:', f.tables);
+            if (/kitchen|pending|cook|queue/.test(q)) return big('Orders pending in the kitchen:', f.kitchen);
+            if (/top|best|popular|item/.test(q)) return f.top ? 'Top selling items: ' + esc(f.top) : 'No sales data yet.';
+            if (/average|avg|bill/.test(q))      return big('Average bill:', f.avgBill);
+            if (/customer/.test(q))              return big('New customers this month:', f.customers);
+            if (/^(hi|hello|hey|namaste)\b/.test(q)) return 'Hi! Ask me about sales, orders, tables, kitchen or top items.';
+            return "Sorry, I can only answer about today's sales, orders, tables, kitchen, top items, average bill and customers.";
+        }
+        function ask(text) {
+            text = text.trim(); if (!text) return;
+            add('me', esc(text));
+            // Always fetch fresh numbers so answers stay current.
+            loadFacts().then(function (f) { add('bot', reply(text, f)); })
+                       .catch(function () { add('bot', 'Sorry, I could not load the latest numbers. Please try again.'); });
+        }
+        document.getElementById('cwForm').addEventListener('submit', function (e) {
+            e.preventDefault(); var i = document.getElementById('cwInput'); ask(i.value); i.value = '';
+        });
+        document.querySelectorAll('#cwChips button').forEach(function (b) { b.addEventListener('click', function () { ask(b.textContent); }); });
+    })();
+    </script>
+    @endif
     @stack('js')
 </body>
 

@@ -173,3 +173,45 @@ body{color:var(--text)}
 .form-check-input:focus{box-shadow:0 0 0 .2rem color-mix(in srgb,var(--primary) 18%,transparent);border-color:color-mix(in srgb,var(--primary) 45%,white)}
 .page-link{color:var(--primary)}
 .active>.page-link,.page-link.active{background-color:var(--primary);border-color:var(--primary)}
+
+/* ═══ Floating Chat Support widget ═══ */
+.cw{position:fixed;right:24px;bottom:24px;z-index:1045}
+.cw-fab{width:60px;height:60px;border-radius:50%;border:0;color:#fff;font-size:1.5rem;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--primary),color-mix(in srgb,var(--primary) 70%,black));box-shadow:0 12px 28px color-mix(in srgb,var(--primary) 40%,transparent);transition:transform .2s}
+.cw-fab:hover{transform:scale(1.06)}
+.cw-fab .cw-ico-close,.cw.open .cw-fab .cw-ico-open{display:none}
+.cw.open .cw-fab .cw-ico-close{display:inline}
+.cw-panel{position:absolute;right:0;bottom:76px;width:370px;max-width:calc(100vw - 32px);height:520px;max-height:calc(100vh - 120px);display:flex;flex-direction:column;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 24px 60px rgba(15,40,25,.22);animation:cwIn .18s ease-out}
+.cw-panel[hidden]{display:none}
+@keyframes cwIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
+.cw-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;color:#fff;background:linear-gradient(135deg,color-mix(in srgb,var(--primary) 70%,black),color-mix(in srgb,var(--primary) 55%,black))}
+.cw-head h5{margin:0;font-weight:700;font-size:1.1rem;display:flex;align-items:center;gap:10px;color:#fff!important}
+.cw-head h5 .bi{width:32px;height:32px;border-radius:50%;background:#fff;color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:.95rem}
+.cw-head button{background:none;border:0;color:#fff;font-size:1.4rem;line-height:1}
+.cw-body{flex:1;padding:16px 14px;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
+.cw-msg{display:flex;gap:9px;align-items:flex-end;max-width:92%}
+.cw-msg .av{width:34px;height:34px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1rem}
+.cw-msg.bot .av{background:color-mix(in srgb,var(--primary) 12%,white);color:var(--primary)}
+.cw-msg.me{align-self:flex-end;flex-direction:row-reverse}
+.cw-msg.me .av{background:linear-gradient(135deg,var(--primary),color-mix(in srgb,var(--primary) 70%,black));color:#fff;font-size:.75rem;font-weight:700}
+.cw-msg .bubble{padding:9px 13px 5px;border-radius:14px;font-size:.9rem;line-height:1.45}
+.cw-msg.bot .bubble{background:color-mix(in srgb,var(--primary) 9%,white);color:#14201a;border-bottom-left-radius:4px}
+.cw-msg.me .bubble{background:linear-gradient(135deg,color-mix(in srgb,var(--primary) 70%,black),color-mix(in srgb,var(--primary) 55%,black));color:#fff;border-bottom-right-radius:4px}
+.cw-msg .bubble .big{display:block;font-size:1.35rem;font-weight:800;color:var(--primary)}
+.cw-msg .bubble time{display:block;text-align:right;font-size:.66rem;opacity:.6;margin-top:2px}
+.cw-chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 14px 10px}
+.cw-chips button{border:1px solid color-mix(in srgb,var(--primary) 25%,white);background:#fff;color:color-mix(in srgb,var(--primary) 70%,black);border-radius:999px;padding:4px 11px;font-size:.76rem;font-weight:600}
+.cw-chips button:hover{background:color-mix(in srgb,var(--primary) 8%,white)}
+.cw-foot{display:flex;gap:8px;padding:12px 14px;border-top:1px solid #eef1ef;background:#fafcfb}
+.cw-foot input{flex:1;border:1px solid #e5e9e7;border-radius:12px;padding:9px 13px;font-size:.9rem;background:#fff;min-width:0}
+.cw-foot input:focus{outline:none;border-color:var(--primary)}
+.cw-foot button{width:44px;height:44px;border:0;border-radius:12px;color:#fff;font-size:1.05rem;background:linear-gradient(135deg,var(--primary),color-mix(in srgb,var(--primary) 72%,black))}
+@media (max-width:575px){.cw{right:14px;bottom:14px}.cw-fab{width:54px;height:54px}.cw-panel{bottom:68px;height:70vh}}
+.btn-link{color:var(--primary)}.btn-link:hover{color:color-mix(in srgb,var(--primary) 75%,black)}
+
+/* ═══ Notyf toasts (brand colour comes from JS) ═══ */
+.notyf{padding-top:84px}
+.notyf__toast{border-radius:14px;box-shadow:0 14px 34px rgba(15,40,25,.2);max-width:380px}
+.notyf__wrapper{padding:14px 0}
+.notyf__message{font-weight:600;font-size:.92rem;line-height:1.4}
+.notyf__icon .bi{font-size:1.3rem}
+.notyf__dismiss-btn{background:rgba(255,255,255,.18)}

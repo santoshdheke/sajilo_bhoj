@@ -538,7 +538,7 @@ document.getElementById('saveNewOrder').addEventListener('click', async () => {
         const name = inp[0].value.trim();
         if (name) items.push({name, qty: parseInt(inp[1].value)||1, note: inp[2].value.trim()||null});
     });
-    if (!items.length) { alert('Add at least one item.'); return; }
+    if (!items.length) { notify.error('Add at least one item.'); return; }
 
     const btn = document.getElementById('saveNewOrder');
     btn.disabled = true;
