@@ -27,7 +27,7 @@
                      display:flex; align-items:center; gap:4px; }
 
 /* Status colors on card left border */
-.status-available .tbl-card-head { border-left:4px solid #10b981; }
+.status-available .tbl-card-head { border-left:4px solid var(--primary); }
 .status-occupied  .tbl-card-head { border-left:4px solid #ef4444; }
 .status-reserved  .tbl-card-head { border-left:4px solid #f59e0b; }
 .status-cleaning  .tbl-card-head { border-left:4px solid #94a3b8; }
@@ -35,7 +35,7 @@
 /* Status badge pills */
 .st-badge       { display:inline-flex; align-items:center; gap:4px; padding:3px 10px;
                   border-radius:999px; font-size:.74rem; font-weight:700; }
-.st-available   { background:#d1fae5; color:#065f46; }
+.st-available   { background:color-mix(in srgb, var(--primary) 14%, white); color:color-mix(in srgb, var(--primary) 70%, black); }
 .st-occupied    { background:#fee2e2; color:#991b1b; }
 .st-reserved    { background:#fef3c7; color:#92400e; }
 .st-cleaning    { background:#f1f5f9; color:#475569; }
@@ -56,8 +56,8 @@
 .tbl-action { width:28px; height:28px; border:none; border-radius:8px; font-size:.8rem;
               cursor:pointer; display:inline-flex; align-items:center;
               justify-content:center; transition:.12s; }
-.tbl-action.confirm { background:#edfaf3; color:#198754; }
-.tbl-action.confirm:hover { background:#198754; color:#fff; }
+.tbl-action.confirm { background:color-mix(in srgb, var(--primary) 10%, white); color:var(--primary); }
+.tbl-action.confirm:hover { background:var(--primary); color:#fff; }
 .tbl-action.cancel  { background:#fff8e8; color:#9a6700; }
 .tbl-action.cancel:hover  { background:#f59e0b; color:#fff; }
 .tbl-action.del     { background:#fff0f0; color:#dc3545; }
@@ -75,25 +75,25 @@
 .tool-item:hover { opacity:.85; }
 .tool-item i    { font-size:22px; }
 .tool-table     { color:#7c4a1e; border-color:#7c4a1e; background:#fdf5ee; }
-.tool-chair     { color:#198754; border-color:#198754; background:#edfaf3; }
+.tool-chair     { color:var(--primary); border-color:var(--primary); background:color-mix(in srgb, var(--primary) 10%, white); }
 .room-tabs      { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
 .room-tab       { padding:7px 14px; border-radius:10px; border:1px solid #dee2e6;
                   cursor:pointer; font-size:13px; font-weight:500; background:#f8f9fa;
                   display:flex; align-items:center; gap:6px; transition:.15s; }
-.room-tab.active{ background:#198754; color:#fff; border-color:#198754; }
+.room-tab.active{ background:var(--primary); color:#fff; border-color:var(--primary); }
 .room-tab:not(.active):hover { background:#e9ecef; }
 .rm-x           { font-size:14px; line-height:1; opacity:.55; cursor:pointer; margin-left:2px; }
 .rm-x:hover     { opacity:1; color:#dc3545; }
-.btn-add-room   { padding:7px 14px; border-radius:10px; border:2px dashed #198754;
-                  color:#198754; font-size:13px; font-weight:600; background:transparent;
+.btn-add-room   { padding:7px 14px; border-radius:10px; border:2px dashed var(--primary);
+                  color:var(--primary); font-size:13px; font-weight:600; background:transparent;
                   cursor:pointer; transition:.15s; }
-.btn-add-room:hover { background:#edfaf3; }
+.btn-add-room:hover { background:color-mix(in srgb, var(--primary) 10%, white); }
 .fp-canvas      { position:relative; min-height:560px; border-radius:16px;
                   background:#f4f6f8;
                   background-image: radial-gradient(circle, #c8cdd2 1px, transparent 1px);
                   background-size:28px 28px;
                   border:2px dashed #ced4da; overflow:hidden; transition:.2s; }
-.fp-canvas.drop-over { border-color:#198754; background-color:#f0fff6; }
+.fp-canvas.drop-over { border-color:var(--primary); background-color:color-mix(in srgb, var(--primary) 6%, white); }
 .fp-canvas.d-none    { display:none !important; }
 .fp-empty       { position:absolute; inset:0; display:flex; flex-direction:column;
                   align-items:center; justify-content:center; color:#5f6b64;
@@ -119,7 +119,7 @@
                   display:flex; align-items:center; justify-content:center; z-index:20; }
 .ft-del:hover   { background:#b02a37; }
 .ft-edit        { position:absolute; bottom:-9px; left:-9px; width:20px; height:20px;
-                  background:#198754; color:#fff; border:none; border-radius:50%;
+                  background:var(--primary); color:#fff; border:none; border-radius:50%;
                   font-size:9px; cursor:pointer; line-height:1;
                   display:flex; align-items:center; justify-content:center; z-index:20; }
 .ft-edit:hover  { background:#157347; }
@@ -133,7 +133,7 @@
 .chair-zone.top-zone,.chair-zone.bot-zone { flex-direction:row; }
 .chair-zone.lft-zone,.chair-zone.rgt-zone { flex-direction:column; }
 .chair-zone.ui-droppable-hover { background:rgba(25,135,84,.15);
-                                  outline:2px dashed #198754; outline-offset:1px; }
+                                  outline:2px dashed var(--primary); outline-offset:1px; }
 .chair-tok      { width:18px; height:18px; background:linear-gradient(160deg,#e9d7b8,#cdab7c);
                   border:1.5px solid #a9824f; border-radius:5px; cursor:pointer;
                   display:flex; align-items:center; justify-content:center;
@@ -152,7 +152,7 @@
 .drop-hint      { width:22px; height:22px; border:2px dashed #adb5bd; border-radius:5px;
                   display:flex; align-items:center; justify-content:center;
                   color:#adb5bd; font-size:13px; flex-shrink:0; pointer-events:none; }
-.chair-zone.ui-droppable-hover .drop-hint { border-color:#198754; color:#198754; }
+.chair-zone.ui-droppable-hover .drop-hint { border-color:var(--primary); color:var(--primary); }
 .ui-draggable-dragging.tool-item { opacity:.75; box-shadow:0 6px 20px rgba(0,0,0,.2); }
 
 /* Tables page — theme refresh overrides */
@@ -252,7 +252,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success" id="promptModalOk">
+                <button type="button" class="btn btn-primary" id="promptModalOk">
                     <i class="bi bi-plus-lg me-1"></i>Add Room
                 </button>
             </div>
@@ -290,7 +290,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success" id="tblSettingsSave">
+                <button type="button" class="btn btn-primary" id="tblSettingsSave">
                     <i class="bi bi-check-lg me-1"></i>Save
                 </button>
             </div>
@@ -325,7 +325,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success" id="roomSettingsSave">
+                <button type="button" class="btn btn-primary" id="roomSettingsSave">
                     <i class="bi bi-check-lg me-1"></i>Save
                 </button>
             </div>
@@ -348,11 +348,11 @@
 {{-- ── Stats ── --}}
 <div class="row g-3 mb-4">
     @php $statItems = [
-        ['Total Tables',    $stats['total'],         'bi-grid-3x3-gap', '#edfaf3', '#198754'],
-        ['Available',       $stats['available'],     'bi-check-circle',  '#d1fae5', '#065f46'],
-        ['Occupied',        $stats['occupied'],      'bi-people-fill',   '#fee2e2', '#991b1b'],
-        ['Reserved',        $stats['reserved'],      'bi-bookmark-fill', '#fef3c7', '#92400e'],
-        ['Today\'s Bookings',$stats['bookings_today'],'bi-calendar-check','#eff6ff', '#1e40af'],
+        ['Total Tables',     $stats['total'],          'bi-grid-3x3-gap',  'color-mix(in srgb, var(--primary) 14%, white)', 'var(--primary)'],
+        ['Available',        $stats['available'],      'bi-check-circle',  'color-mix(in srgb, var(--primary) 10%, white)', 'color-mix(in srgb, var(--primary) 70%, black)'],
+        ['Occupied',         $stats['occupied'],       'bi-people-fill',   'color-mix(in srgb, color-mix(in srgb, var(--primary) 80%, #f59e0b) 16%, white)', 'color-mix(in srgb, var(--primary) 80%, #f59e0b)'],
+        ['Reserved',         $stats['reserved'],       'bi-bookmark-fill', 'color-mix(in srgb, var(--primary) 8%, white)', 'color-mix(in srgb, var(--primary) 65%, white)'],
+        ['Today\'s Bookings', $stats['bookings_today'], 'bi-calendar-check','color-mix(in srgb, var(--primary) 18%, white)', 'color-mix(in srgb, var(--primary) 55%, black)'],
     ]; @endphp
     @foreach($statItems as [$lbl,$val,$ico,$bg,$clr])
     <div class="col-6 col-lg">
@@ -427,7 +427,7 @@
                     <div class="tbl-stat-row">
                         <div class="tbl-seats-ico">
                             @for($i=0;$i<min($seats,12);$i++)
-                            <div class="seat-dot" style="{{ $t->status==='available' ? 'background:#10b981' : ($t->status==='occupied' ? 'background:#ef4444' : ($t->status==='reserved' ? 'background:#f59e0b' : '')) }}"></div>
+                            <div class="seat-dot" style="{{ $t->status==='available' ? 'background:var(--primary)' : ($t->status==='occupied' ? 'background:#ef4444' : ($t->status==='reserved' ? 'background:#f59e0b' : '')) }}"></div>
                             @endfor
                             @if($seats>12)<span style="font-size:.7rem;color:var(--muted);">+{{ $seats-12 }}</span>@endif
                         </div>
@@ -466,7 +466,7 @@
             <div class="d-flex align-items-center gap-2">
                 <i class="bi bi-calendar-event" style="color:var(--primary);font-size:1.3rem;"></i>
                 <h5 class="mb-0">Today's Bookings</h5>
-                <span class="badge bg-success">{{ $todayBookings->count() }}</span>
+                <span class="badge" style="background:var(--primary);">{{ $todayBookings->count() }}</span>
             </div>
             <button class="btn btn-primary btn-sm" onclick="openBookingModal(null,'Any')"
                     data-bs-toggle="modal" data-bs-target="#bookingModal">
@@ -651,7 +651,7 @@ function setTableStatus(id, sel) {
         badge.className = `st-badge st-${status}`;
         badge.innerHTML = `<i class="bi bi-${icons[status]}"></i> ${labels[status]}`;
         // Update seat dots
-        const colors = {available:'#10b981',occupied:'#ef4444',reserved:'#f59e0b',cleaning:'#94a3b8'};
+        const colors = {available:'var(--primary)',occupied:'#ef4444',reserved:'#f59e0b',cleaning:'#94a3b8'};
         card.querySelectorAll('.seat-dot').forEach(d => d.style.background = colors[status]);
     });
 }

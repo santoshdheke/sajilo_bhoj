@@ -52,7 +52,7 @@
 }
 .tbl-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 24px 55px rgba(15,77,47,.18);
+    box-shadow: 0 24px 55px color-mix(in srgb, var(--primary) 18%, transparent);
 }
 .tbl-card-img {
     height: 200px;
@@ -106,7 +106,7 @@
 /* Status badge */
 .tbl-status-badge { position:absolute;top:10px;left:10px;padding:3px 10px;border-radius:999px;
     font-size:.72rem;font-weight:700;display:inline-flex;align-items:center;gap:4px;backdrop-filter:blur(4px); }
-.tbl-status-available { background:rgba(16,185,129,.9);color:#fff; }
+.tbl-status-available { background:color-mix(in srgb, var(--primary) 90%, transparent);color:#fff; }
 .tbl-status-occupied  { background:rgba(239,68,68,.9);color:#fff; }
 .tbl-status-reserved  { background:rgba(245,158,11,.9);color:#fff; }
 .tbl-status-cleaning  { background:rgba(100,116,139,.85);color:#fff; }

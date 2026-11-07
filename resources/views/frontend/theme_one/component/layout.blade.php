@@ -40,14 +40,13 @@
 {{-- ── Mobile Sidebar ── --}}
 <aside class="mobile-sidebar" id="mobileSidebar">
     <div class="sidebar-head">
-        <img src="{{ asset('assets/frontend/img/logo.png') }}" alt="SajiloBhoj" style="height:38px;filter:brightness(10);">
+        @include('partials.brand-logo', ['variant' => 'white', 'height' => 36])
         <button class="sidebar-close" onclick="closeSidebar()"><i class="bi bi-x-lg"></i></button>
     </div>
     <nav class="sidebar-nav">
         @foreach($navMenuItems as $item)
         @php($navPath = trim(parse_url($item->url, PHP_URL_PATH) ?? '/', '/'))
-        <a href="{{ $item->url }}" class="{{ Request::is($navPath === '' ? '/' : $navPath.'*') ? 'active' : '' }}"
-           @if($item->is_highlighted) style="color: var(--sb-accent); border-left-color: var(--sb-accent);" @endif>
+        <a href="{{ $item->url }}" class="{{ Request::is($navPath === '' ? '/' : $navPath.'*') ? 'active' : '' }}">
             <i class="bi {{ $item->icon ?: 'bi-link-45deg' }}"></i> {{ $item->label }}
         </a>
         @endforeach
@@ -122,7 +121,7 @@
     <div class="container">
         {{-- Brand --}}
         <a class="navbar-brand" href="{{ route('frontend.home.index') }}">
-            <img src="{{ asset('assets/frontend/img/logo.png') }}" alt="SajiloBhoj">
+            @include('partials.brand-logo', ['variant' => 'color', 'height' => 46])
         </a>
 
         {{-- Desktop Nav --}}
@@ -131,7 +130,7 @@
             @php($navPath = trim(parse_url($item->url, PHP_URL_PATH) ?? '/', '/'))
             <li class="nav-item">
                 <a class="nav-link {{ Request::is($navPath === '' ? '/' : $navPath.'*') ? 'active' : '' }}"
-                   href="{{ $item->url }}" @if($item->is_highlighted) style="color:var(--sb-accent);" @endif>{{ $item->label }}</a>
+                   href="{{ $item->url }}">{{ $item->label }}</a>
             </li>
             @endforeach
             @auth('customer')
@@ -188,16 +187,15 @@
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-col footer-brand">
-                    <svg class="footer-logo" viewBox="0 0 64 64" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M40 6 30 26M50 10 34 28"/>
-                        <path d="M18 26c0-6 5-9 9-6 2-4 9-4 10 1"/>
-                        <path d="M22 18c-2-4 0-8 4-9-1 4 1 7 4 8"/>
-                        <path d="M6 30h52c0 14-11 24-26 24S6 44 6 30z"/>
-                        <path d="M14 36c6 4 16 6 26 4"/>
-                        <path d="M20 58h24"/>
-                    </svg>
+                    <span class="footer-logo">
+                        @if (!empty($brandLogoUrl))
+                            <img src="{{ $brandLogoUrl }}" alt="{{ $brandName }}">
+                        @else
+                            @include('partials.brand-logo', ['variant' => 'white', 'height' => 52, 'showName' => false])
+                        @endif
+                    </span>
                     <div>
-                        <div class="footer-name">{{ $settings['restaurant_name'] ?: 'SajiloBhoj Restaurant' }}</div>
+                        <div class="footer-name">{{ $brandName }}</div>
                         <div class="footer-tagline">{{ $settings['tagline'] ?: 'Fresh taste, warm service, elegant dining.' }}</div>
                     </div>
                 </div>
@@ -212,7 +210,7 @@
                 </div>
 
                 <div class="footer-col footer-copy">
-                    <div>© {{ date('Y') }} {{ $settings['restaurant_name'] ?: 'SajiloBhoj' }}.</div>
+                    <div>© {{ date('Y') }} {{ $brandName }}.</div>
                     <div>All rights reserved.</div>
                 </div>
 

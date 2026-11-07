@@ -7,6 +7,7 @@ use App\Models\Setting;
 use App\Support\Tenancy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class SettingController extends Controller
 {
@@ -120,7 +121,31 @@ class SettingController extends Controller
             Setting::putValue($company->id, $key, $data[$key] ?? $default);
         }
 
+        if ($section === 'general') {
+            $this->saveLogo($request, $company);
+        }
+
         return redirect()->route('admin.settings.index', $section)->with('status', 'Settings saved successfully.');
+    }
+
+    /**
+     * Store, replace or remove the company logo (companies.logo, public disk).
+     */
+    private function saveLogo(Request $request, $company): void
+    {
+        $old = $company->logo;
+
+        if ($request->hasFile('logo')) {
+            $company->update(['logo' => $request->file('logo')->store("logos/{$company->id}", 'public')]);
+        } elseif ($request->boolean('remove_logo')) {
+            $company->update(['logo' => null]);
+        } else {
+            return;
+        }
+
+        if ($old && $old !== $company->logo) {
+            Storage::disk('public')->delete($old);
+        }
     }
 
     private function rulesFor(string $section): array
@@ -131,6 +156,8 @@ class SettingController extends Controller
                 'tagline'         => 'nullable|string|max:255',
                 'currency'        => 'nullable|string|max:10',
                 'tax_percent'     => 'nullable|numeric|min:0|max:100',
+                'logo'            => 'nullable|image|mimes:png,jpg,jpeg,webp|max:2048',
+                'remove_logo'     => 'nullable|boolean',
             ],
             'theme' => [
                 'theme_color' => ['nullable', 'regex:/^#[0-9A-Fa-f]{6}$/'],

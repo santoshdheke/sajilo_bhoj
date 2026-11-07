@@ -14,14 +14,14 @@
 .bill-stat .trend { font-size:.78rem; font-weight:600; margin-top:6px; }
 .bill-stat::after { content:''; position:absolute; right:-28px; bottom:-28px;
                     width:100px; height:100px; border-radius:50%;
-                    background:rgba(25,135,84,.07); pointer-events:none; }
+                    background:color-mix(in srgb, var(--primary) 7%, transparent); pointer-events:none; }
 
 /* Invoice header strip */
 .inv-header       { display:flex; align-items:center; justify-content:space-between;
                     flex-wrap:wrap; gap:10px; padding:16px 20px;
-                    background:linear-gradient(135deg,#f0fdf6,#e8f8ef);
+                    background:linear-gradient(135deg,color-mix(in srgb, var(--primary) 9%, white),color-mix(in srgb, var(--primary) 14%, white));
                     border-radius:14px; margin-bottom:18px;
-                    border:1px solid rgba(25,135,84,.12); }
+                    border:1px solid color-mix(in srgb, var(--primary) 12%, transparent); }
 .inv-meta         { display:flex; gap:18px; flex-wrap:wrap; }
 .inv-meta-item    { display:flex; flex-direction:column; }
 .inv-meta-item .k { font-size:.74rem; color:var(--muted); text-transform:uppercase;
@@ -42,7 +42,7 @@
 .qty-ctrl         { display:inline-flex; align-items:center; gap:0;
                     border:1px solid rgba(20,40,20,.12); border-radius:10px;
                     overflow:hidden; }
-.qty-btn          { width:28px; height:28px; border:none; background:#f0fdf6;
+.qty-btn          { width:28px; height:28px; border:none; background:color-mix(in srgb, var(--primary) 9%, white);
                     color:var(--primary); font-size:1rem; font-weight:700;
                     cursor:pointer; display:flex; align-items:center; justify-content:center;
                     transition:.12s; line-height:1; }
@@ -69,12 +69,12 @@
                     cursor:pointer; font-size:.82rem; font-weight:600;
                     color:var(--muted); background:#f8fbf9; transition:.15s; }
 .pay-card label i { font-size:1.35rem; }
-.pay-card input:checked + label { border-color:var(--primary); background:#edfaf3;
+.pay-card input:checked + label { border-color:var(--primary); background:color-mix(in srgb, var(--primary) 10%, white);
                                    color:var(--primary); }
-.pay-card label:hover { border-color:rgba(25,135,84,.35); background:#f0fdf6; }
+.pay-card label:hover { border-color:color-mix(in srgb, var(--primary) 35%, transparent); background:color-mix(in srgb, var(--primary) 9%, white); }
 
 /* Grand total highlight */
-.grand-total-row  { background:linear-gradient(135deg,#198754,#1aad65) !important;
+.grand-total-row  { background:linear-gradient(135deg,var(--primary),color-mix(in srgb, var(--primary) 75%, white)) !important;
                     border-radius:14px !important; padding:16px 18px !important; }
 .grand-total-row span, .grand-total-row strong { color:#fff !important; font-size:1rem; }
 .grand-total-row strong { font-size:1.25rem !important; }
@@ -95,7 +95,7 @@
 
 /* Action icon btn */
 .tbl-action       { width:30px; height:30px; border:none; border-radius:9px;
-                    background:#f0fdf6; color:var(--primary); font-size:.85rem;
+                    background:color-mix(in srgb, var(--primary) 9%, white); color:var(--primary); font-size:.85rem;
                     cursor:pointer; display:inline-flex; align-items:center;
                     justify-content:center; transition:.12s; }
 .tbl-action:hover { background:var(--primary); color:#fff; }
@@ -119,27 +119,27 @@
 <div class="row g-3 mb-4">
     <div class="col-6 col-lg-3">
         <div class="card-soft bill-stat">
-            <div class="ico" style="background:#edfaf3; color:#198754;">
+            <div class="ico" style="background:color-mix(in srgb, var(--primary) 10%, white); color:var(--primary);">
                 <i class="bi bi-currency-dollar"></i>
             </div>
             <div class="val">$1,842.50</div>
             <div class="lbl">Today's Revenue</div>
-            <div class="trend text-success"><i class="bi bi-arrow-up-short"></i>12% vs yesterday</div>
+            <div class="trend text-brand"><i class="bi bi-arrow-up-short"></i>12% vs yesterday</div>
         </div>
     </div>
     <div class="col-6 col-lg-3">
         <div class="card-soft bill-stat">
-            <div class="ico" style="background:#e8f0ff; color:#3730a3;">
+            <div class="ico" style="background:color-mix(in srgb, var(--primary) 16%, white); color:color-mix(in srgb, var(--primary) 60%, black);">
                 <i class="bi bi-receipt-cutoff"></i>
             </div>
             <div class="val">38</div>
             <div class="lbl">Bills Generated</div>
-            <div class="trend text-success"><i class="bi bi-arrow-up-short"></i>5 since morning</div>
+            <div class="trend text-brand"><i class="bi bi-arrow-up-short"></i>5 since morning</div>
         </div>
     </div>
     <div class="col-6 col-lg-3">
         <div class="card-soft bill-stat">
-            <div class="ico" style="background:#fff8e8; color:#9a6700;">
+            <div class="ico" style="background:color-mix(in srgb, color-mix(in srgb, var(--primary) 80%, #f59e0b) 16%, white); color:color-mix(in srgb, var(--primary) 80%, #f59e0b);">
                 <i class="bi bi-graph-up"></i>
             </div>
             <div class="val">$48.49</div>
@@ -167,7 +167,7 @@
         <div class="card-soft h-100">
             <div class="card-header d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center gap-2">
-                    <i class="bi bi-file-earmark-text text-success"></i>
+                    <i class="bi bi-file-earmark-text text-brand"></i>
                     <h5 class="mb-0">Invoice Builder</h5>
                 </div>
                 <span class="status-badge status-progress">Draft</span>
@@ -287,7 +287,7 @@
     <div class="col-lg-5">
         <div class="card-soft h-100">
             <div class="card-header d-flex align-items-center gap-2">
-                <i class="bi bi-wallet2 text-success"></i>
+                <i class="bi bi-wallet2 text-brand"></i>
                 <h5 class="mb-0">Payment Summary</h5>
             </div>
             <div class="card-body d-flex flex-column gap-0">
@@ -357,7 +357,7 @@
                                placeholder="0.00" oninput="calcChange()">
                         <div class="widget-item px-3 flex-shrink-0" style="min-width:110px;">
                             <span style="font-size:.78rem;" class="text-muted">Change</span>
-                            <strong id="change-display" class="text-success" style="font-size:.95rem;">$0.00</strong>
+                            <strong id="change-display" class="text-brand" style="font-size:.95rem;">$0.00</strong>
                         </div>
                     </div>
                 </div>
@@ -380,7 +380,7 @@
 <div class="card-soft table-card">
     <div class="card-header d-flex align-items-center justify-content-between">
         <div class="d-flex align-items-center gap-2">
-            <i class="bi bi-clock-history text-success"></i>
+            <i class="bi bi-clock-history text-brand"></i>
             <h5 class="mb-0">Recent Bills</h5>
         </div>
         <div class="d-flex gap-2">

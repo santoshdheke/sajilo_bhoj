@@ -10,22 +10,22 @@
 .report-stat .sub { font-size:.76rem;margin-top:6px;font-weight:600; }
 .report-stat::after { content:'';position:absolute;right:-28px;bottom:-28px;
                   width:100px;height:100px;border-radius:50%;
-                  background:rgba(25,135,84,.06);pointer-events:none; }
+                  background:color-mix(in srgb, var(--primary) 6%, transparent);pointer-events:none; }
 .bar-chart      { display:flex;align-items:flex-end;gap:4px;height:160px;padding:0 4px; }
 .bar-col        { flex:1;display:flex;flex-direction:column;align-items:center;gap:3px; }
 .bar-fill       { width:100%;border-radius:6px 6px 2px 2px;min-height:4px;
-                  background:linear-gradient(180deg,#34d399,#198754);transition:.3s; }
+                  background:linear-gradient(180deg,color-mix(in srgb, var(--primary) 55%, white),var(--primary));transition:.3s; }
 .bar-label      { font-size:.62rem;color:var(--muted);white-space:nowrap; }
 .type-row       { display:flex;align-items:center;gap:10px;margin-bottom:10px; }
 .type-dot       { width:10px;height:10px;border-radius:50%;flex-shrink:0; }
 .type-bar-bg    { flex:1;height:8px;border-radius:999px;background:#f0f0f0;overflow:hidden; }
 .type-bar-fill  { height:100%;border-radius:999px;transition:.5s; }
 .type-pct       { font-size:.78rem;font-weight:700;min-width:36px;text-align:right; }
-.rank-no        { width:28px;height:28px;border-radius:8px;background:#edfaf3;color:#198754;
+.rank-no        { width:28px;height:28px;border-radius:8px;background:color-mix(in srgb, var(--primary) 10%, white);color:var(--primary);
                   font-weight:700;font-size:.8rem;display:flex;align-items:center;
                   justify-content:center;flex-shrink:0; }
 .item-bar-bg    { flex:1;height:6px;border-radius:999px;background:#f0f0f0;overflow:hidden;max-width:100px; }
-.item-bar-fill  { height:100%;border-radius:999px;background:linear-gradient(90deg,#34d399,#198754); }
+.item-bar-fill  { height:100%;border-radius:999px;background:linear-gradient(90deg,color-mix(in srgb, var(--primary) 55%, white),var(--primary)); }
 </style>
 
 <div class="page-title mb-4">
@@ -37,11 +37,11 @@
 <div class="row g-3 mb-4">
     @php
     $statRows = [
-        ['Monthly Revenue',  '$'.number_format($monthRevenue,2),  'bi-graph-up-arrow',  '#edfaf3','#198754', 'This month'],
-        ['Today\'s Revenue', '$'.number_format($todayRevenue,2),  'bi-currency-dollar', '#e0f2fe','#0369a1', today()->format('d M Y')],
-        ['Orders Served',    $totalOrders,                         'bi-bag-check-fill',  '#fef3c7','#92400e', 'This month'],
-        ['Avg Order Value',  '$'.number_format($avgOrderValue,2), 'bi-receipt',         '#eef0ff','#3730a3', 'Per order'],
-        ['Bookings',         $totalBookings,                       'bi-calendar-check',  '#fde7ea','#9f1239', 'This month'],
+        ['Monthly Revenue',  '$'.number_format($monthRevenue,2),  'bi-graph-up-arrow',  'color-mix(in srgb, var(--primary) 12%, white)','var(--primary)', 'This month'],
+        ['Today\'s Revenue', '$'.number_format($todayRevenue,2),  'bi-currency-dollar', 'color-mix(in srgb, var(--primary) 16%, white)','color-mix(in srgb, var(--primary) 60%, black)', today()->format('d M Y')],
+        ['Orders Served',    $totalOrders,                         'bi-bag-check-fill',  'color-mix(in srgb, color-mix(in srgb, var(--primary) 80%, #f59e0b) 16%, white)','color-mix(in srgb, var(--primary) 80%, #f59e0b)', 'This month'],
+        ['Avg Order Value',  '$'.number_format($avgOrderValue,2), 'bi-receipt',         'color-mix(in srgb, var(--primary) 8%, white)','color-mix(in srgb, var(--primary) 65%, white)', 'Per order'],
+        ['Bookings',         $totalBookings,                       'bi-calendar-check',  'color-mix(in srgb, var(--primary) 20%, white)','color-mix(in srgb, var(--primary) 50%, black)', 'This month'],
     ];
     @endphp
     @foreach($statRows as [$lbl,$val,$ico,$bg,$clr,$sub])
@@ -62,7 +62,7 @@
     <div class="col-lg-8">
         <div class="card-soft h-100">
             <div class="card-header d-flex align-items-center justify-content-between">
-                <h5 class="mb-0"><i class="bi bi-bar-chart-line me-2 text-success"></i>Daily Revenue — Last 14 Days</h5>
+                <h5 class="mb-0"><i class="bi bi-bar-chart-line me-2 text-brand"></i>Daily Revenue — Last 14 Days</h5>
                 <span class="text-muted" style="font-size:.8rem;">Served orders only</span>
             </div>
             <div class="card-body">
@@ -90,12 +90,12 @@
     <div class="col-lg-4">
         <div class="card-soft h-100">
             <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-pie-chart me-2 text-success"></i>Order Types</h5>
+                <h5 class="mb-0"><i class="bi bi-pie-chart me-2 text-brand"></i>Order Types</h5>
             </div>
             <div class="card-body">
                 @php
                     $typeTotal  = $orderTypes->sum('cnt') ?: 1;
-                    $typeColors = ['dine_in'=>'#10b981','takeaway'=>'#f59e0b','delivery'=>'#6366f1'];
+                    $typeColors = ['dine_in'=>'var(--primary)','takeaway'=>'#f59e0b','delivery'=>'#6366f1'];
                     $typeLabels = ['dine_in'=>'Dine In','takeaway'=>'Takeaway','delivery'=>'Delivery'];
                 @endphp
                 @forelse($orderTypes as $t)
@@ -123,7 +123,7 @@
     <div class="col-lg-7">
         <div class="card-soft table-card">
             <div class="card-header d-flex align-items-center justify-content-between">
-                <h5 class="mb-0"><i class="bi bi-grid me-2 text-success"></i>Category Performance</h5>
+                <h5 class="mb-0"><i class="bi bi-grid me-2 text-brand"></i>Category Performance</h5>
                 <span class="text-muted" style="font-size:.8rem;">{{ now()->format('M Y') }}</span>
             </div>
             <div class="card-body p-0">
@@ -154,7 +154,7 @@
                             <tr style="background:#f8fbf9;">
                                 <td class="fw-bold">Total</td>
                                 <td class="text-center fw-bold">{{ $categoryStats->sum('items') }}</td>
-                                <td class="fw-bold text-success">${{ number_format($categoryStats->sum('revenue'),2) }}</td>
+                                <td class="fw-bold text-brand">${{ number_format($categoryStats->sum('revenue'),2) }}</td>
                                 <td class="text-center fw-bold">{{ $categoryStats->sum('orders') }}</td>
                             </tr>
                         </tfoot>
@@ -184,7 +184,7 @@
                         </div>
                     </div>
                     <div class="text-end">
-                        <div class="fw-bold text-success" style="font-size:.85rem;">${{ number_format($item->revenue,2) }}</div>
+                        <div class="fw-bold text-brand" style="font-size:.85rem;">${{ number_format($item->revenue,2) }}</div>
                     </div>
                 </div>
                 @empty

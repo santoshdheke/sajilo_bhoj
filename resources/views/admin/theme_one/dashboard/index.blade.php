@@ -78,15 +78,20 @@
     .db-stat .ghost svg { width: 100%; height: 100%; display: block; }
     .db-stat .ico svg { width: 30px; height: 30px; }
     .db-stat .ico .glyph-text { font-size: 2rem; font-weight: 800; line-height: 1; }
-    .db-stat.blue .ico svg { color: #2563eb; }
-    .db-stat.green  { background: linear-gradient(135deg, #e6f7ec, #d4f0de); border-color: #9fdcb3; }
-    .db-stat.green .ico { background: linear-gradient(135deg, #22c55e, #15803d); } .db-stat.green .ghost { color: #16a34a; }
-    .db-stat.blue   { background: linear-gradient(135deg, #e8f0ff, #d9e6ff); border-color: #a9c3f5; }
-    .db-stat.blue .ico { background: linear-gradient(135deg, #3b82f6, #1d4ed8); } .db-stat.blue .ghost { color: #2563eb; }
-    .db-stat.orange { background: linear-gradient(135deg, #fff1e4, #ffe3cc); border-color: #f8c597; }
-    .db-stat.orange .ico { background: linear-gradient(135deg, #fb923c, #ea580c); } .db-stat.orange .ghost { color: #ea580c; }
-    .db-stat.purple { background: linear-gradient(135deg, #f3ecff, #e9defd); border-color: #cdb6f5; }
-    .db-stat.purple .ico { background: linear-gradient(135deg, #8b5cf6, #6d28d9); } .db-stat.purple .ghost { color: #7c3aed; }
+    /* Brand-coloured stat cards: four shades of the theme colour (s = mix with white/black) */
+    .db-stat { --c: var(--primary); --c-dark: color-mix(in srgb, var(--c) 72%, black);
+               background: linear-gradient(135deg, color-mix(in srgb, var(--c) 7%, white), color-mix(in srgb, var(--c) 15%, white));
+               border-color: color-mix(in srgb, var(--c) 30%, white); }
+    .db-stat .ico   { background: linear-gradient(135deg, color-mix(in srgb, var(--c) 85%, white), var(--c-dark)); }
+    .db-stat .ico svg { color: var(--c-dark); }
+    .db-stat .ghost { color: var(--c); }
+    .db-stat:hover  { transform: translateY(-3px); box-shadow: 0 16px 32px color-mix(in srgb, var(--c) 18%, transparent); }
+    .db-stat        { transition: transform .2s, box-shadow .2s; }
+    .db-stat.green  { --c: var(--primary); }
+    .db-stat.blue   { --c: color-mix(in srgb, var(--primary) 70%, black); }
+    .db-stat.orange { --c: color-mix(in srgb, var(--primary) 80%, #f59e0b); }
+    .db-stat.purple { --c: color-mix(in srgb, var(--primary) 65%, white); }
+    .db-stat.purple .ico { background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 55%, white), color-mix(in srgb, var(--primary) 85%, black)); }
 
     .db-grid { display: grid; grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr); gap: 20px; align-items: stretch; }
     .db-card { background: #fff; border-radius: 20px; box-shadow: 0 10px 30px rgba(15, 40, 25, .07); }
@@ -118,7 +123,7 @@
     .db-chat.min { min-height: 0; }
     .msg { display: flex; gap: 10px; align-items: flex-end; max-width: 92%; }
     .msg .av { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 1.05rem; }
-    .msg.bot .av { background: #e8f0ff; color: #2563eb; }
+    .msg.bot .av { background: color-mix(in srgb, var(--primary) 12%, white); color: var(--primary); }
     .msg.me { align-self: flex-end; flex-direction: row-reverse; }
     .msg.me .av { background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 70%, black)); color: #fff; font-size: .78rem; font-weight: 700; }
     .msg .bubble { padding: 10px 14px 6px; border-radius: 14px; font-size: .92rem; line-height: 1.45; }
@@ -133,7 +138,7 @@
     .db-chat .cfoot .bi-paperclip { font-size: 1.2rem; color: #4b5a51; }
     .db-chat .cfoot input { flex: 1; border: 1px solid #e5e9e7; border-radius: 12px; padding: 10px 14px; font-size: .9rem; background: #fff; }
     .db-chat .cfoot input:focus { outline: none; border-color: var(--primary); }
-    .db-chat .cfoot button { width: 46px; height: 46px; border: 0; border-radius: 12px; background: linear-gradient(135deg, #22c55e, #15803d); color: #fff; font-size: 1.1rem; }
+    .db-chat .cfoot button { width: 46px; height: 46px; border: 0; border-radius: 12px; background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 72%, black)); color: #fff; font-size: 1.1rem; }
 
     @media (max-width: 1199px) {
         .db-stats { grid-template-columns: repeat(2, 1fr); }
@@ -224,9 +229,9 @@
                 <line x1="{{ $p['x'] }}" x2="{{ $p['x'] }}" y1="{{ $top }}" y2="{{ $top + $ch }}" stroke="#f0f3f1" stroke-width="1"/>
             @endforeach
             <path d="{{ $areaPath }}" fill="color-mix(in srgb, var(--primary) 12%, transparent)"/>
-            <path d="{{ $linePath }}" fill="none" stroke="#16a34a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+            <path d="{{ $linePath }}" fill="none" stroke="var(--primary)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
             @foreach ($points as $p)
-                <circle cx="{{ $p['x'] }}" cy="{{ $p['y'] }}" r="5.5" fill="#16a34a" stroke="#fff" stroke-width="2"><title>{{ $p['label'] }}: {{ number_format($p['total'], 2) }}</title></circle>
+                <circle cx="{{ $p['x'] }}" cy="{{ $p['y'] }}" r="5.5" fill="var(--primary)" stroke="#fff" stroke-width="2"><title>{{ $p['label'] }}: {{ number_format($p['total'], 2) }}</title></circle>
                 <text x="{{ $p['x'] }}" y="{{ $top + $ch + 26 }}" text-anchor="middle">{{ $p['label'] }}</text>
             @endforeach
         </svg>

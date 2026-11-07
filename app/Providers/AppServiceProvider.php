@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\SettingController;
 use App\Models\NavMenuItem;
 use App\Models\Setting;
 use App\Support\Tenancy;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -38,7 +39,8 @@ class AppServiceProvider extends ServiceProvider
                 ? NavMenuItem::forCompany($company->id)
                 : collect(NavMenuItem::defaults())->map(fn ($item) => (object) $item);
 
-            $view->with('settings', $settings)->with('navMenuItems', $navMenuItems);
+            $view->with('settings', $settings)->with('navMenuItems', $navMenuItems)
+                 ->with($this->brand($company, $settings['restaurant_name'] ?? ''));
         });
 
         View::composer('admin.theme_one.*', function ($view) {
@@ -48,7 +50,24 @@ class AppServiceProvider extends ServiceProvider
                 $themeColor = Setting::getValue($company->id, 'theme_color', $themeColor);
             }
 
-            $view->with('themeColor', $themeColor);
+            $company = Tenancy::company();
+            $name    = $company ? Setting::getValue($company->id, 'restaurant_name', '') : '';
+
+            $view->with('themeColor', $themeColor)->with($this->brand($company, $name));
         });
+    }
+
+    /**
+     * Brand data for the shared logo partial: the uploaded company logo (if any)
+     * and the business name to show next to the default logo mark.
+     */
+    private function brand($company, ?string $restaurantName): array
+    {
+        $logo = $company?->logo;
+
+        return [
+            'brandName'    => $restaurantName ?: ($company?->name ?: 'SajiloBhoj'),
+            'brandLogoUrl' => $logo && Storage::disk('public')->exists($logo) ? Storage::url($logo) : null,
+        ];
     }
 }

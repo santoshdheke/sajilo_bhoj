@@ -115,7 +115,7 @@
 }
 .tbl-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 20px 50px rgba(15,77,47,.16);
+    box-shadow: 0 20px 50px color-mix(in srgb, var(--primary) 16%, transparent);
     color: inherit;
 }
 .tbl-card-img {
@@ -142,7 +142,7 @@
 /* Status badge */
 .tbl-status-badge-lg { display:inline-flex;align-items:center;gap:6px;padding:5px 14px;
     border-radius:999px;font-size:.82rem;font-weight:700; }
-.tbl-status-available { background:#d1fae5;color:#065f46; }
+.tbl-status-available { background:color-mix(in srgb, var(--primary) 14%, white);color:color-mix(in srgb, var(--primary) 70%, black); }
 .tbl-status-occupied  { background:#fee2e2;color:#991b1b; }
 .tbl-status-reserved  { background:#fef3c7;color:#92400e; }
 .tbl-status-cleaning  { background:#f1f5f9;color:#475569; }
@@ -150,7 +150,7 @@
 /* Menu ordering section */
 .menu-order-card { border-radius:18px;background:#fff;box-shadow:var(--sb-shadow);
     border:1px solid var(--sb-border);overflow:hidden;transition:.2s; }
-.menu-order-card:hover { transform:translateY(-2px);box-shadow:0 20px 45px rgba(15,77,47,.14); }
+.menu-order-card:hover { transform:translateY(-2px);box-shadow:0 20px 45px color-mix(in srgb, var(--primary) 14%, transparent); }
 .menu-order-img { height:160px;overflow:hidden;background:var(--sb-green-pale);
     display:flex;align-items:center;justify-content:center; }
 .menu-order-img img { width:100%;height:100%;object-fit:cover; }
@@ -315,7 +315,7 @@
                 {{-- Today's bookings --}}
                 @if($todayBookings->isNotEmpty())
                 <div class="mt-4">
-                    <h6 class="fw-bold mb-3"><i class="bi bi-calendar-event me-2 text-success"></i>Today's Reservations</h6>
+                    <h6 class="fw-bold mb-3"><i class="bi bi-calendar-event me-2" style="color:var(--primary);"></i>Today's Reservations</h6>
                     @foreach($todayBookings as $bk)
                     <div class="booking-slot">
                         <span class="booking-slot-time">{{ \Carbon\Carbon::parse($bk->booking_time)->format('h:i A') }}</span>
@@ -327,8 +327,8 @@
                             </div>
                         </div>
                         <span style="font-size:.74rem;font-weight:600;padding:2px 8px;border-radius:999px;
-                              background:{{ $bk->status==='confirmed' ? '#d1fae5' : '#fef3c7' }};
-                              color:{{ $bk->status==='confirmed' ? '#065f46' : '#92400e' }};">
+                              background:{{ $bk->status==='confirmed' ? 'color-mix(in srgb, var(--primary) 14%, white)' : '#fef3c7' }};
+                              color:{{ $bk->status==='confirmed' ? 'color-mix(in srgb, var(--primary) 70%, black)' : '#92400e' }};">
                             {{ ucfirst($bk->status) }}
                         </span>
                     </div>

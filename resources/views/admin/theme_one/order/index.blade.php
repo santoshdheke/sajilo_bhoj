@@ -3,7 +3,7 @@
 @section('content')
 <style>
 /* ── Order type badges ────────────────────────────────────────── */
-.type-dine_in   { background:#edfaf3; color:#065f46; }
+.type-dine_in   { background:color-mix(in srgb, var(--primary) 12%, white); color:color-mix(in srgb, var(--primary) 65%, black); }
 .type-takeaway  { background:#fff8e8; color:#92400e; }
 .type-delivery  { background:#eff6ff; color:#1e40af; }
 .type-badge     { display:inline-flex; align-items:center; gap:4px; padding:3px 10px;
@@ -27,15 +27,15 @@
 .sfab-all.active       { background:#1f2937; color:#fff; border-color:#1f2937; }
 .sfab-pending.active   { background:#fff8e8; color:#9a6700; border-color:#f59e0b; }
 .sfab-preparing.active { background:#eef0ff; color:#3730a3; border-color:#6366f1; }
-.sfab-ready.active     { background:#edfaf3; color:#065f46; border-color:#10b981; }
-.sfab-served.active    { background:#edfaf3; color:#198754; border-color:#198754; }
+.sfab-ready.active     { background:color-mix(in srgb, var(--primary) 10%, white); color:#065f46; border-color:#10b981; }
+.sfab-served.active    { background:color-mix(in srgb, var(--primary) 10%, white); color:var(--primary); border-color:var(--primary); }
 .sfab-cancelled.active { background:#fde7ea; color:#b42318; border-color:#dc3545; }
 
 /* ── Action icon buttons ──────────────────────────────────────── */
 .tbl-action     { width:30px; height:30px; border:none; border-radius:9px;
                   font-size:.82rem; cursor:pointer; display:inline-flex;
                   align-items:center; justify-content:center; transition:.12s; }
-.tbl-action.view   { background:#f0fdf6; color:var(--primary); }
+.tbl-action.view   { background:color-mix(in srgb, var(--primary) 9%, white); color:var(--primary); }
 .tbl-action.view:hover { background:var(--primary); color:#fff; }
 .tbl-action.del    { background:#fff0f0; color:#dc3545; }
 .tbl-action.del:hover  { background:#dc3545; color:#fff; }
@@ -44,7 +44,7 @@
 .detail-item-row { display:flex; align-items:center; gap:10px; padding:10px 0;
                    border-bottom:1px solid var(--line); }
 .detail-item-row:last-child { border:none; }
-.detail-qty      { width:30px; height:30px; border-radius:10px; background:#edfaf3;
+.detail-qty      { width:30px; height:30px; border-radius:10px; background:color-mix(in srgb, var(--primary) 10%, white);
                    color:var(--primary); font-weight:700; font-size:.85rem;
                    display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .detail-name     { flex:1; font-weight:600; font-size:.9rem; }
@@ -124,7 +124,7 @@
                     </div>
                     <div class="d-flex justify-content-between" style="font-size:1rem;">
                         <span class="fw-bold">Grand Total</span>
-                        <span id="detailTotal" class="fw-bold text-success" style="font-size:1.1rem;"></span>
+                        <span id="detailTotal" class="fw-bold text-brand" style="font-size:1.1rem;"></span>
                     </div>
                 </div>
 
@@ -228,7 +228,7 @@
     <div class="col-6 col-lg-3">
         <div class="card-soft" style="padding:18px 20px;">
             <div class="d-flex align-items-center gap-3">
-                <div style="width:44px;height:44px;border-radius:14px;background:#edfaf3;color:#198754;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">
+                <div style="width:44px;height:44px;border-radius:50%;background:color-mix(in srgb, var(--primary) 12%, white);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">
                     <i class="bi bi-receipt"></i>
                 </div>
                 <div>
@@ -241,7 +241,7 @@
     <div class="col-6 col-lg-3">
         <div class="card-soft" style="padding:18px 20px;">
             <div class="d-flex align-items-center gap-3">
-                <div style="width:44px;height:44px;border-radius:14px;background:#fff8e8;color:#9a6700;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">
+                <div style="width:44px;height:44px;border-radius:50%;background:color-mix(in srgb, color-mix(in srgb, var(--primary) 80%, #f59e0b) 16%, white);color:color-mix(in srgb, var(--primary) 80%, #f59e0b);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">
                     <i class="bi bi-hourglass-split"></i>
                 </div>
                 <div>
@@ -254,7 +254,7 @@
     <div class="col-6 col-lg-3">
         <div class="card-soft" style="padding:18px 20px;">
             <div class="d-flex align-items-center gap-3">
-                <div style="width:44px;height:44px;border-radius:14px;background:#eef0ff;color:#3730a3;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">
+                <div style="width:44px;height:44px;border-radius:50%;background:color-mix(in srgb, var(--primary) 16%, white);color:color-mix(in srgb, var(--primary) 60%, black);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">
                     <i class="bi bi-fire"></i>
                 </div>
                 <div>
@@ -267,7 +267,7 @@
     <div class="col-6 col-lg-3">
         <div class="card-soft" style="padding:18px 20px;">
             <div class="d-flex align-items-center gap-3">
-                <div style="width:44px;height:44px;border-radius:14px;background:#edfaf3;color:#198754;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">
+                <div style="width:44px;height:44px;border-radius:50%;background:color-mix(in srgb, var(--primary) 12%, white);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">
                     <i class="bi bi-currency-dollar"></i>
                 </div>
                 <div>

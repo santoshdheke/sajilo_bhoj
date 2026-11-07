@@ -7,7 +7,7 @@
         <div class="container">
             <div class="row align-items-center g-5">
                 <div class="col-lg-6">
-                    <img src="{{ asset('assets/frontend/img/logo.png') }}" alt="{{ $settings['restaurant_name'] ?: 'SajiloBhoj' }}" class="img-fluid rounded-4 shadow-sm">
+                    <div class="about-logo">@include('partials.brand-logo', ['variant' => 'color', 'height' => 150])</div>
                 </div>
                 <div class="col-lg-6">
                     <span class="pill pill-green mb-3">Our Story</span>

@@ -36,10 +36,6 @@
                     <label class="form-label fw-semibold">Icon (bootstrap-icons class)</label>
                     <input type="text" class="form-control" id="editIcon" maxlength="60" placeholder="bi-house">
                 </div>
-                <div class="form-check form-switch mb-2">
-                    <input class="form-check-input" type="checkbox" id="editHighlighted">
-                    <label class="form-check-label fw-semibold" for="editHighlighted">Highlighted (accent / CTA style)</label>
-                </div>
                 <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" id="editActive" checked>
                     <label class="form-check-label fw-semibold" for="editActive">Active</label>
@@ -83,10 +79,6 @@
                     <label class="form-label fw-semibold">Icon (bootstrap-icons class)</label>
                     <input type="text" class="form-control" id="addIcon" maxlength="60" placeholder="bi-house">
                 </div>
-                <div class="form-check form-switch mb-3">
-                    <input class="form-check-input" type="checkbox" id="addHighlighted">
-                    <label class="form-check-label fw-semibold" for="addHighlighted">Highlighted (accent / CTA style)</label>
-                </div>
                 <button class="btn btn-primary w-100" id="addSaveBtn">
                     <i class="bi bi-plus-lg me-1"></i>Save Link
                 </button>
@@ -116,7 +108,6 @@
                             @forelse($navItems as $item)
                             <tr class="nav-row" data-id="{{ $item->id }}" data-label="{{ $item->label }}"
                                 data-url="{{ $item->url }}" data-icon="{{ $item->icon }}"
-                                data-highlighted="{{ $item->is_highlighted ? '1' : '0' }}"
                                 data-active="{{ $item->is_active ? '1' : '0' }}">
                                 <td>
                                     <div class="d-flex gap-1">
@@ -127,7 +118,6 @@
                                 <td>
                                     @if($item->icon)<i class="bi {{ $item->icon }} me-1"></i>@endif
                                     <span class="fw-semibold">{{ $item->label }}</span>
-                                    @if($item->is_highlighted)<span class="badge text-bg-warning ms-1">Highlighted</span>@endif
                                 </td>
                                 <td class="text-muted" style="font-size:.85rem;">{{ $item->url }}</td>
                                 <td class="text-center">
@@ -180,7 +170,6 @@ document.getElementById('addSaveBtn').addEventListener('click', async () => {
     const label       = document.getElementById('addLabel').value.trim();
     const url          = document.getElementById('addUrl').value.trim();
     const icon         = document.getElementById('addIcon').value.trim();
-    const highlighted  = document.getElementById('addHighlighted').checked;
     const err          = document.getElementById('addError');
     err.classList.add('d-none');
     if (!label || !url) { document.getElementById(!label ? 'addLabel' : 'addUrl').focus(); return; }
@@ -192,7 +181,7 @@ document.getElementById('addSaveBtn').addEventListener('click', async () => {
     const res  = await fetch('{{ route('admin.settings.navigation.store') }}', {
         method: 'POST',
         headers: {'Content-Type':'application/json','X-CSRF-TOKEN':CSRF},
-        body: JSON.stringify({label, url, icon: icon || null, is_highlighted: highlighted, is_active: true})
+        body: JSON.stringify({label, url, icon: icon || null, is_active: true})
     });
     const data = await res.json();
 
@@ -213,14 +202,13 @@ document.getElementById('addSaveBtn').addEventListener('click', async () => {
     tr.dataset.label = data.label;
     tr.dataset.url = data.url;
     tr.dataset.icon = data.icon || '';
-    tr.dataset.highlighted = data.is_highlighted ? '1' : '0';
     tr.dataset.active = '1';
     tr.innerHTML = `
         <td><div class="d-flex gap-1">
             <button class="tbl-action move" title="Move up" onclick="moveItem(${data.id},'up')"><i class="bi bi-arrow-up"></i></button>
             <button class="tbl-action move" title="Move down" onclick="moveItem(${data.id},'down')"><i class="bi bi-arrow-down"></i></button>
         </div></td>
-        <td>${data.icon ? `<i class="bi ${data.icon} me-1"></i>` : ''}<span class="fw-semibold">${data.label}</span>${data.is_highlighted ? '<span class="badge text-bg-warning ms-1">Highlighted</span>' : ''}</td>
+        <td>${data.icon ? `<i class="bi ${data.icon} me-1"></i>` : ''}<span class="fw-semibold">${data.label}</span></td>
         <td class="text-muted" style="font-size:.85rem;">${data.url}</td>
         <td class="text-center">${statusBadge(true)}</td>
         <td><div class="d-flex gap-1">
@@ -232,7 +220,6 @@ document.getElementById('addSaveBtn').addEventListener('click', async () => {
     document.getElementById('addLabel').value = '';
     document.getElementById('addUrl').value = '';
     document.getElementById('addIcon').value = '';
-    document.getElementById('addHighlighted').checked = false;
 });
 
 /* ── Edit link ── */
@@ -241,7 +228,6 @@ function openEdit(row) {
     document.getElementById('editLabel').value = row.dataset.label;
     document.getElementById('editUrl').value = row.dataset.url;
     document.getElementById('editIcon').value = row.dataset.icon;
-    document.getElementById('editHighlighted').checked = row.dataset.highlighted === '1';
     document.getElementById('editActive').checked = row.dataset.active === '1';
     _editModal.show();
 }
@@ -251,7 +237,6 @@ document.getElementById('editSaveBtn').addEventListener('click', async () => {
     const label       = document.getElementById('editLabel').value.trim();
     const url          = document.getElementById('editUrl').value.trim();
     const icon         = document.getElementById('editIcon').value.trim();
-    const highlighted  = document.getElementById('editHighlighted').checked;
     const active       = document.getElementById('editActive').checked;
     if (!label || !url) return;
 
@@ -262,7 +247,7 @@ document.getElementById('editSaveBtn').addEventListener('click', async () => {
     const res = await fetch(`/admin/settings/navigation/${id}`, {
         method: 'PUT',
         headers: {'Content-Type':'application/json','X-CSRF-TOKEN':CSRF},
-        body: JSON.stringify({label, url, icon: icon || null, is_highlighted: highlighted, is_active: active})
+        body: JSON.stringify({label, url, icon: icon || null, is_active: active})
     });
 
     btn.disabled = false;
@@ -275,9 +260,8 @@ document.getElementById('editSaveBtn').addEventListener('click', async () => {
             row.dataset.label = label;
             row.dataset.url = url;
             row.dataset.icon = icon;
-            row.dataset.highlighted = highlighted ? '1' : '0';
             row.dataset.active = active ? '1' : '0';
-            row.cells[1].innerHTML = `${icon ? `<i class="bi ${icon} me-1"></i>` : ''}<span class="fw-semibold">${label}</span>${highlighted ? '<span class="badge text-bg-warning ms-1">Highlighted</span>' : ''}`;
+            row.cells[1].innerHTML = `${icon ? `<i class="bi ${icon} me-1"></i>` : ''}<span class="fw-semibold">${label}</span>`;
             row.cells[2].textContent = url;
             row.cells[3].innerHTML = statusBadge(active);
         }

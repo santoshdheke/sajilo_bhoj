@@ -31,7 +31,7 @@
     <div class="layout">
         <div class="sidebar" id="sidebar">
             <a class="brand" href="{{ route('admin.dashboard.index') }}">
-                <img src="{{ asset('assets/frontend/img/logo.png') }}" alt="Logo">
+                @include('partials.brand-logo', ['variant' => 'light', 'height' => 44])
             </a>
             @if (! request()->routeIs('admin.settings.*'))
             <div class="section-title">Main</div>

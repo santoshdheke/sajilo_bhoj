@@ -35,7 +35,6 @@ class NavMenuItemController extends Controller
             'label'          => 'required|string|max:100',
             'url'            => 'required|string|max:255',
             'icon'           => 'nullable|string|max:60',
-            'is_highlighted' => 'boolean',
             'is_active'      => 'boolean',
         ]);
 
@@ -53,7 +52,6 @@ class NavMenuItemController extends Controller
             'label'          => 'required|string|max:100',
             'url'            => 'required|string|max:255',
             'icon'           => 'nullable|string|max:60',
-            'is_highlighted' => 'boolean',
             'is_active'      => 'boolean',
         ]);
 
