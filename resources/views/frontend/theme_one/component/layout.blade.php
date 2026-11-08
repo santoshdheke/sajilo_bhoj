@@ -184,14 +184,24 @@
         <path d="M0 58C260 30 520 34 780 52s460 20 660 0V90H0z" fill="var(--footer)"/>
     </svg>
     <div class="footer-main">
-        <div class="container">
+        <svg class="footer-leaves footer-leaves--left" viewBox="0 0 120 140" aria-hidden="true">
+            <path d="M20 0C5 15 0 30 6 45c3 8 8 13 14 15 6-2 11-7 14-15C40 30 35 15 20 0z" transform="translate(10 40) rotate(-35 20 30) scale(1.4)"/>
+            <path d="M20 0C5 15 0 30 6 45c3 8 8 13 14 15 6-2 11-7 14-15C40 30 35 15 20 0z" transform="translate(48 70) rotate(20 20 30)" opacity=".7"/>
+            <path d="M20 0C5 15 0 30 6 45c3 8 8 13 14 15 6-2 11-7 14-15C40 30 35 15 20 0z" transform="translate(0 92) rotate(-70 20 30) scale(.9)" opacity=".55"/>
+        </svg>
+        <svg class="footer-leaves footer-leaves--right" viewBox="0 0 120 140" aria-hidden="true">
+            <path d="M20 0C5 15 0 30 6 45c3 8 8 13 14 15 6-2 11-7 14-15C40 30 35 15 20 0z" transform="translate(56 30) rotate(35 20 30) scale(1.4)"/>
+            <path d="M20 0C5 15 0 30 6 45c3 8 8 13 14 15 6-2 11-7 14-15C40 30 35 15 20 0z" transform="translate(30 76) rotate(-20 20 30)" opacity=".7"/>
+            <path d="M20 0C5 15 0 30 6 45c3 8 8 13 14 15 6-2 11-7 14-15C40 30 35 15 20 0z" transform="translate(78 92) rotate(70 20 30) scale(.9)" opacity=".55"/>
+        </svg>
+        <div class="container position-relative">
             <div class="footer-grid">
                 <div class="footer-col footer-brand">
                     <span class="footer-logo">
                         @if (!empty($brandLogoUrl))
                             <img src="{{ $brandLogoUrl }}" alt="{{ $brandName }}">
                         @else
-                            @include('partials.brand-logo', ['variant' => 'white', 'height' => 52, 'showName' => false])
+                            @include('partials.brand-logo', ['variant' => 'white', 'height' => 48, 'showName' => false])
                         @endif
                     </span>
                     <div>
@@ -202,32 +212,49 @@
 
                 <div class="footer-col footer-links">
                     <div class="footer-title">Quick Links</div>
-                    <nav>
-                        @foreach($navMenuItems as $item)
-                        <a href="{{ $item->url }}">{{ $item->label }}</a>
-                        @endforeach
-                    </nav>
+                    <div class="footer-nav-clip">
+                        <nav>
+                            @foreach($navMenuItems as $item)
+                            <a href="{{ $item->url }}">{{ $item->label }}</a>
+                            @endforeach
+                        </nav>
+                    </div>
                 </div>
 
-                <div class="footer-col footer-copy">
-                    <div>© {{ date('Y') }} {{ $brandName }}.</div>
-                    <div>All rights reserved.</div>
-                </div>
-
-                <div class="footer-col footer-social">
-                    @foreach ([
-                        'facebook_url'  => ['bi-facebook',  'Facebook'],
-                        'instagram_url' => ['bi-instagram', 'Instagram'],
-                        'youtube_url'   => ['bi-youtube',   'YouTube'],
-                        'twitter_url'   => ['bi-twitter-x', 'X'],
-                    ] as $socialKey => $social)
-                        @if (!empty($settings[$socialKey]))
-                        <a href="{{ $settings[$socialKey] }}" target="_blank" rel="noopener" aria-label="{{ $social[1] }}"><i class="bi {{ $social[0] }}"></i></a>
-                        @elseif ($socialKey !== 'twitter_url')
-                        <a href="#" aria-label="{{ $social[1] }}"><i class="bi {{ $social[0] }}"></i></a>
+                <div class="footer-col footer-contact">
+                    <div class="footer-title">Contact Us</div>
+                    <ul>
+                        @if ($settings['contact_phone'])<li><i class="bi bi-telephone-fill"></i><a href="tel:{{ preg_replace('/[^0-9+]/', '', $settings['contact_phone']) }}">{{ $settings['contact_phone'] }}</a></li>@endif
+                        @if ($settings['contact_email'])<li><i class="bi bi-envelope-fill"></i><a href="mailto:{{ $settings['contact_email'] }}">{{ $settings['contact_email'] }}</a></li>@endif
+                        @if ($settings['contact_address'])<li><i class="bi bi-geo-alt-fill"></i><span>{{ $settings['contact_address'] }}</span></li>@endif
+                        @if (!$settings['contact_phone'] && !$settings['contact_email'] && !$settings['contact_address'])
+                            <li><i class="bi bi-chat-dots-fill"></i><a href="{{ route('frontend.contact.index') }}">Get in touch</a></li>
                         @endif
-                    @endforeach
+                    </ul>
                 </div>
+
+                <div class="footer-col footer-follow">
+                    <div class="footer-title">Follow Us</div>
+                    <div class="footer-social">
+                        @foreach ([
+                            'facebook_url'  => ['bi-facebook',  'Facebook'],
+                            'instagram_url' => ['bi-instagram', 'Instagram'],
+                            'youtube_url'   => ['bi-youtube',   'YouTube'],
+                            'twitter_url'   => ['bi-twitter-x', 'X'],
+                        ] as $socialKey => $social)
+                            @if (!empty($settings[$socialKey]))
+                            <a href="{{ $settings[$socialKey] }}" target="_blank" rel="noopener" aria-label="{{ $social[1] }}"><i class="bi {{ $social[0] }}"></i></a>
+                            @elseif ($socialKey !== 'twitter_url')
+                            <a href="#" aria-label="{{ $social[1] }}"><i class="bi {{ $social[0] }}"></i></a>
+                            @endif
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <span>© {{ date('Y') }} {{ $brandName }}. All rights reserved.</span>
+                <span>Made with <i class="bi bi-heart-fill"></i> in Nepal</span>
             </div>
         </div>
     </div>

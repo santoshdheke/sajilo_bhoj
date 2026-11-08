@@ -103,13 +103,21 @@ class DashboardController extends Controller
             ->limit(3)
             ->get();
 
+        // Newest customers with their order count and total spent
+        $customers = Customer::withCount('orders')
+            ->withSum(['orders as spent' => fn ($q) => $q->where('status', '!=', 'cancelled')], 'grand_total')
+            ->latest()
+            ->limit(6)
+            ->get();
+        $customersTotal = Customer::count();
+
         $capacityPct = $tablesTotal > 0 ? (int) round($tablesOccupied / $tablesTotal * 100) : 0;
 
         return view('admin.theme_one.dashboard.index', compact(
             'todaySales', 'ordersToday', 'tablesTotal', 'tablesOccupied', 'kitchenPending',
             'recentOrders', 'topItems', 'monthRevenue', 'avgBill', 'newCustomers',
             'goalPct', 'chartBars', 'weekTotal', 'liveOrders', 'orderCounts',
-            'floorTables', 'reservations', 'topToday', 'capacityPct'
+            'floorTables', 'reservations', 'topToday', 'capacityPct', 'customers', 'customersTotal'
         ));
     }
 

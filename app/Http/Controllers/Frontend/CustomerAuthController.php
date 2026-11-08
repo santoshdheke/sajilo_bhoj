@@ -32,18 +32,6 @@ class CustomerAuthController extends Controller
         ]);
 
         if (! Auth::guard('customer')->attempt($credentials, $request->boolean('remember'))) {
-            // Staff often try their admin account here; point them to the right page.
-            $isStaff = \App\Models\User::withoutGlobalScope('company')
-                ->where('email', $credentials['email'])
-                ->when(Tenancy::company(), fn ($q, $company) => $q->where('company_id', $company->id))
-                ->exists();
-
-            if ($isStaff) {
-                throw ValidationException::withMessages([
-                    'email' => 'This is a staff account. Please sign in from the staff login page.',
-                ]);
-            }
-
             throw ValidationException::withMessages([
                 'email' => 'These credentials do not match our records.',
             ]);

@@ -92,9 +92,6 @@
                         @if ($errors->any())
                             <div class="alert alert-danger py-2 small">
                                 {{ $errors->first() }}
-                                @if (str_contains($errors->first(), 'staff account'))
-                                    <a href="{{ route('admin.auth.show_login_form') }}" class="alert-link d-block mt-1">Go to staff login →</a>
-                                @endif
                             </div>
                         @endif
 
@@ -133,7 +130,6 @@
                         </form>
 
                         <p class="foot mb-0">New here? <a href="{{ route('frontend.auth.show_register_form') }}">Create an account</a></p>
-                        <p class="text-center small mt-2 mb-0" style="color:var(--sb-muted);">Restaurant staff? <a href="{{ route('admin.auth.show_login_form') }}">Staff login</a></p>
                     </div>
                 </div>
             </div>

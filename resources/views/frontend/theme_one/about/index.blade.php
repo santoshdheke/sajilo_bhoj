@@ -1,8 +1,20 @@
 @extends('frontend.theme_one.component.layout')
 
 @section('content')
-    @include('frontend.theme_one.component.page-banner', ['title' => 'About ' . ($settings['restaurant_name'] ?: 'SajiloBhoj'), 'subtitle' => $settings['tagline'] ?: 'A restaurant brand with a fresh, modern, and welcoming identity.'])
+    @php
+        $s      = $settings;
+        $brand  = $brandName ?? ($s['restaurant_name'] ?: 'SajiloBhoj');
+        $points = collect(range(1, 4))->map(fn ($i) => $s["about_point_{$i}"] ?? '')->filter();
+        $stats  = collect(range(1, 3))->map(fn ($i) => [$s["about_stat_{$i}_value"] ?? '', $s["about_stat_{$i}_label"] ?? ''])->filter(fn ($st) => $st[0] !== '' || $st[1] !== '');
+        $values = collect(range(1, 3))->map(fn ($i) => [$s["about_value_{$i}_icon"] ?: 'bi-star', $s["about_value_{$i}_title"] ?? '', $s["about_value_{$i}_desc"] ?? ''])->filter(fn ($v) => $v[1] !== '');
+    @endphp
 
+    @include('frontend.theme_one.component.page-banner', [
+        'title'    => 'About ' . $brand,
+        'subtitle' => ($s['about_banner_subtitle'] ?? '') ?: ($s['tagline'] ?: 'A restaurant with a fresh, modern and welcoming identity.'),
+    ])
+
+    {{-- ── Our story ── --}}
     <section class="section-space">
         <div class="container">
             <div class="row align-items-center g-5">
@@ -10,54 +22,71 @@
                     <div class="about-chef">@include('partials.chef-cooking', ['class' => 'about-chef__art'])</div>
                 </div>
                 <div class="col-lg-6">
-                    <span class="pill pill-green mb-3">Our Story</span>
-                    <h2 class="section-title">Built around taste, service, and comfort.</h2>
-                    @if($settings['about_text'])
-                    <p class="section-subtitle" style="white-space:pre-line;">{{ $settings['about_text'] }}</p>
-                    @else
-                    <p class="section-subtitle">{{ $settings['restaurant_name'] ?: 'SajiloBhoj' }} is designed as a complete restaurant brand presence. This website
-                        uses the same green-focused palette and soft card layout from your admin panel so customers feel one
-                        consistent identity from browsing to ordering.</p>
-                    <ul class="list-check mt-4">
-                        <li>Dashboard-matching color palette and card design.</li>
-                        <li>Restaurant homepage, about, menu, and contact pages.</li>
-                        <li>Bootstrap and jQuery based layout for easy editing.</li>
-                        <li>Ready to expand into Laravel or CMS integration later.</li>
-                    </ul>
+                    @if (!empty($s['about_badge']))<span class="pill pill-green mb-3">{{ $s['about_badge'] }}</span>@endif
+                    <h2 class="section-title">{{ $s['about_title'] ?: 'Built around taste, service, and comfort.' }}</h2>
+                    <p class="section-subtitle about-story">{{ $s['about_text'] ?: $brand . ' brings people together over honest, freshly prepared food. From our kitchen to your table, every dish is cooked with care, served with a smile and priced to keep you coming back.' }}</p>
+                    @if ($points->isNotEmpty())
+                        <ul class="about-points">
+                            @foreach ($points as $point)
+                                <li><i class="bi bi-check-circle-fill"></i>{{ $point }}</li>
+                            @endforeach
+                        </ul>
                     @endif
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="section-space pt-0">
+    {{-- ── Numbers ── --}}
+    @if ($stats->isNotEmpty())
+    <section class="pb-5">
         <div class="container">
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <div class="icon-wrap"><i class="bi bi-eye"></i></div>
-                        <h5 class="fw-bold">Our Vision</h5>
-                        <p class="section-subtitle mb-0">To offer warm hospitality with modern digital convenience and
-                            memorable flavors.</p>
+            <div class="about-stats">
+                @foreach ($stats as [$val, $label])
+                    <div class="about-stat">
+                        <strong>{{ $val }}</strong>
+                        <span>{{ $label }}</span>
                     </div>
+                @endforeach
+            </div>
+        </div>
+    </section>
+    @endif
+
+    {{-- ── Values ── --}}
+    @if ($values->isNotEmpty())
+    <section class="section-space pt-4">
+        <div class="container">
+            <div class="row g-4 justify-content-center">
+                @foreach ($values as [$icon, $title, $desc])
+                    <div class="col-md-6 col-lg-4">
+                        <div class="about-value">
+                            <span class="about-value__ico"><i class="bi {{ $icon }}"></i></span>
+                            <h5>{{ $title }}</h5>
+                            @if ($desc)<p>{{ $desc }}</p>@endif
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </section>
+    @endif
+
+    {{-- ── Call to action ── --}}
+    @if (!empty($s['about_cta_title']))
+    <section class="pb-5">
+        <div class="container">
+            <div class="about-cta">
+                <div>
+                    <h3>{{ $s['about_cta_title'] }}</h3>
+                    @if (!empty($s['about_cta_text']))<p>{{ $s['about_cta_text'] }}</p>@endif
                 </div>
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <div class="icon-wrap"><i class="bi bi-bullseye"></i></div>
-                        <h5 class="fw-bold">Our Mission</h5>
-                        <p class="section-subtitle mb-0">To serve quality dishes with quick service and a polished customer
-                            experience.</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <div class="icon-wrap"><i class="bi bi-heart"></i></div>
-                        <h5 class="fw-bold">Our Promise</h5>
-                        <p class="section-subtitle mb-0">Fresh preparation, clean presentation, and a trustworthy restaurant
-                            brand.</p>
-                    </div>
+                <div class="about-cta__actions">
+                    <a href="{{ route('frontend.menu.index') }}" class="about-cta__btn light">View menu <i class="bi bi-arrow-right"></i></a>
+                    <a href="{{ route('frontend.table.index') }}" class="about-cta__btn line"><i class="bi bi-calendar-check"></i> Book a table</a>
                 </div>
             </div>
         </div>
     </section>
+    @endif
 @endsection

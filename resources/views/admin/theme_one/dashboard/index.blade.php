@@ -82,7 +82,7 @@
     .db-stat.purple { --c: color-mix(in srgb, var(--primary) 65%, white); }
     .db-stat.purple .ico { background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 55%, white), color-mix(in srgb, var(--primary) 85%, black)); }
 
-    .db-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: stretch; }
+    .db-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 20px; align-items: stretch; }
     .db-card { background: #fff; border-radius: 20px; box-shadow: 0 10px 30px rgba(15, 40, 25, .07); }
     .db-sales { padding: 22px 22px 18px; }
     .db-sales .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
@@ -191,6 +191,18 @@
         .lo-no { grid-column: 1 / -1; }
         .lo-btn-space { display: none; }
     }
+
+    /* Customers card */
+    .db-cust { padding: 20px 22px; display: flex; flex-direction: column; }
+    .cust-count { font-size: .8rem; font-weight: 700; background: color-mix(in srgb, var(--primary) 12%, white); color: color-mix(in srgb, var(--primary) 70%, black); border-radius: 999px; padding: 2px 10px; margin-left: 6px; vertical-align: 3px; }
+    .cust-row { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-top: 1px solid #eef1ef; }
+    .cust-row:first-of-type { border-top: 0; }
+    .cust-av { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff;
+               background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 65%, black)); }
+    .cust-main { flex: 1; min-width: 0; }
+    .cust-main strong, .cust-meta strong { display: block; font-weight: 600; color: #14201a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cust-main small, .cust-meta small { color: #4b5a51; font-size: .8rem; }
+    .cust-meta { text-align: right; flex-shrink: 0; }
 </style>
 
 {{-- ── Welcome ─────────────────────────────────────── --}}
@@ -327,6 +339,29 @@
                 <text x="{{ $p['x'] }}" y="{{ $top + $ch + 26 }}" text-anchor="middle">{{ $p['label'] }}</text>
             @endforeach
         </svg>
+    </div>
+
+    {{-- ── Customers ─────────────────────────────── --}}
+    <div class="db-card db-cust">
+        <div class="db-card-head">
+            <h5>Customers <span class="cust-count">{{ number_format($customersTotal) }}</span></h5>
+            @if (auth()->user()?->hasPermission('customers.manage'))<a href="{{ route('admin.customer.index') }}" class="link">View all</a>@endif
+        </div>
+        @forelse ($customers as $c)
+            <div class="cust-row">
+                <span class="cust-av">{{ mb_strtoupper(mb_substr($c->name, 0, 1)) }}</span>
+                <div class="cust-main">
+                    <strong>{{ $c->name }}</strong>
+                    <small>{{ $c->phone ?: ($c->email ?: 'No contact') }}</small>
+                </div>
+                <div class="cust-meta">
+                    <strong>{{ number_format((float) $c->spent, 2) }}</strong>
+                    <small>{{ $c->orders_count }} {{ Str::plural('order', $c->orders_count) }}</small>
+                </div>
+            </div>
+        @empty
+            <div class="db-empty small-empty"><div class="ico"><i class="bi bi-people"></i></div><strong>No customers yet.</strong><span>They appear here when they sign up or order.</span></div>
+        @endforelse
     </div>
 </div>
 
