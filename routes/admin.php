@@ -120,7 +120,7 @@ Route::middleware('permission:settings.manage')->prefix('settings')->name('setti
     Route::get('{section?}', [SettingController::class, 'index'])->name('index')
         ->where('section', 'general|theme|homepage|about|contact|social');
     Route::put('{section}', [SettingController::class, 'update'])->name('update')
-        ->where('section', 'general|theme|homepage|about|contact|social');
+        ->where('section', 'general|theme|homepage|about|contact');
 
     Route::get('navigation', [NavMenuItemController::class, 'index'])->name('navigation.index');
     Route::post('navigation', [NavMenuItemController::class, 'store'])->name('navigation.store');

@@ -130,7 +130,7 @@
             @php($navPath = trim(parse_url($item->url, PHP_URL_PATH) ?? '/', '/'))
             <li class="nav-item">
                 <a class="nav-link {{ Request::is($navPath === '' ? '/' : $navPath.'*') ? 'active' : '' }}"
-                   href="{{ $item->url }}">{{ $item->label }}</a>
+                   href="{{ $item->url }}">@if ($item->icon)<i class="bi {{ $item->icon }}"></i>@endif{{ $item->label }}</a>
             </li>
             @endforeach
             @auth('customer')
@@ -150,7 +150,7 @@
                     </ul>
                 </li>
             @else
-                <li class="nav-item"><a class="nav-link {{ Request::is('login') || Request::is('register') ? 'active' : '' }}" href="{{ route('frontend.auth.show_login_form') }}">Sign In</a></li>
+                <li class="nav-item"><a class="nav-link {{ Request::is('login') || Request::is('register') ? 'active' : '' }}" href="{{ route('frontend.auth.show_login_form') }}"><i class="bi bi-person"></i>Sign In</a></li>
             @endauth
         </ul>
 
@@ -195,7 +195,7 @@
             <path d="M20 0C5 15 0 30 6 45c3 8 8 13 14 15 6-2 11-7 14-15C40 30 35 15 20 0z" transform="translate(78 92) rotate(70 20 30) scale(.9)" opacity=".55"/>
         </svg>
         <div class="container position-relative">
-            <div class="footer-grid">
+            <div class="footer-grid {{ $socialLinks->isEmpty() ? 'footer-grid--3' : '' }}">
                 <div class="footer-col footer-brand">
                     <span class="footer-logo">
                         @if (!empty($brandLogoUrl))
@@ -233,23 +233,16 @@
                     </ul>
                 </div>
 
+                @if ($socialLinks->isNotEmpty())
                 <div class="footer-col footer-follow">
                     <div class="footer-title">Follow Us</div>
                     <div class="footer-social">
-                        @foreach ([
-                            'facebook_url'  => ['bi-facebook',  'Facebook'],
-                            'instagram_url' => ['bi-instagram', 'Instagram'],
-                            'youtube_url'   => ['bi-youtube',   'YouTube'],
-                            'twitter_url'   => ['bi-twitter-x', 'X'],
-                        ] as $socialKey => $social)
-                            @if (!empty($settings[$socialKey]))
-                            <a href="{{ $settings[$socialKey] }}" target="_blank" rel="noopener" aria-label="{{ $social[1] }}"><i class="bi {{ $social[0] }}"></i></a>
-                            @elseif ($socialKey !== 'twitter_url')
-                            <a href="#" aria-label="{{ $social[1] }}"><i class="bi {{ $social[0] }}"></i></a>
-                            @endif
+                        @foreach ($socialLinks as $link)
+                        <a href="{{ $link['url'] }}" target="_blank" rel="noopener" aria-label="{{ $link['label'] }}" title="{{ $link['label'] }}"><i class="bi {{ $link['icon'] }}"></i></a>
                         @endforeach
                     </div>
                 </div>
+                @endif
             </div>
 
             <div class="footer-bottom">

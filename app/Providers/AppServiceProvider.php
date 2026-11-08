@@ -40,6 +40,7 @@ class AppServiceProvider extends ServiceProvider
                 : collect(NavMenuItem::defaults())->map(fn ($item) => (object) $item);
 
             $view->with('settings', $settings)->with('navMenuItems', $navMenuItems)
+                 ->with('socialLinks', \App\Support\SocialLinks::forCompany($company?->id))
                  ->with($this->brand($company, $settings['restaurant_name'] ?? ''));
         });
 

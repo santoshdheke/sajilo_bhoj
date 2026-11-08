@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
+use App\Support\SocialLinks;
 use App\Support\Tenancy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -62,7 +63,6 @@ class SettingController extends Controller
             'label'  => 'About',
             'icon'   => 'bi-file-text',
             'fields' => [
-                'about_banner_subtitle'  => '',
                 'about_badge'            => 'Our Story',
                 'about_title'            => 'Built around taste, service, and comfort.',
                 'about_text'             => '',
@@ -70,12 +70,6 @@ class SettingController extends Controller
                 'about_point_2'          => 'Recipes perfected by experienced chefs',
                 'about_point_3'          => 'A cozy space for families and friends',
                 'about_point_4'          => 'Easy online ordering and table booking',
-                'about_stat_1_value'     => '10+',
-                'about_stat_1_label'     => 'Years of flavour',
-                'about_stat_2_value'     => '50+',
-                'about_stat_2_label'     => 'Dishes on the menu',
-                'about_stat_3_value'     => '5k+',
-                'about_stat_3_label'     => 'Happy guests',
                 'about_value_1_icon'     => 'bi-eye',
                 'about_value_1_title'    => 'Our Vision',
                 'about_value_1_desc'     => 'To offer warm hospitality with modern convenience and flavours people remember.',
@@ -85,27 +79,16 @@ class SettingController extends Controller
                 'about_value_3_icon'     => 'bi-heart',
                 'about_value_3_title'    => 'Our Promise',
                 'about_value_3_desc'     => 'Fresh preparation, clean presentation and honest prices — every single visit.',
-                'about_cta_title'        => 'Ready to taste the difference?',
-                'about_cta_text'         => 'Explore our menu or reserve a table — we would love to cook for you.',
             ],
         ],
         'contact' => [
-            'label'  => 'Contact',
+            'label'  => 'Contact & Social',
             'icon'   => 'bi-envelope',
             'fields' => [
                 'contact_email'   => '',
                 'contact_phone'   => '',
                 'contact_address' => '',
-            ],
-        ],
-        'social' => [
-            'label'  => 'Social Links',
-            'icon'   => 'bi-share',
-            'fields' => [
-                'facebook_url'  => '',
-                'instagram_url' => '',
-                'twitter_url'   => '',
-                'youtube_url'   => '',
+                'social_links'    => '',
             ],
         ],
     ];
@@ -117,6 +100,10 @@ class SettingController extends Controller
 
     public function index(string $section = 'general')
     {
+        if ($section === 'social') {
+            return redirect()->route('admin.settings.index', 'contact');
+        }
+
         $company = Tenancy::company();
         $fields  = self::SECTIONS[$section]['fields'];
 
@@ -128,6 +115,7 @@ class SettingController extends Controller
             'section'  => $section,
             'sections' => self::SECTIONS,
             'settings' => $settings,
+            'socialLinks' => $section === 'contact' ? SocialLinks::forCompany($company?->id) : collect(),
         ]);
     }
 
@@ -140,6 +128,13 @@ class SettingController extends Controller
         $rules  = $this->rulesFor($section);
 
         $data = $request->validate($rules);
+
+        // Social links: keep filled rows only and store them as one JSON list.
+        if ($section === 'contact') {
+            $data['social_links'] = SocialLinks::normalize($request->input('social_links', []))
+                ->map(fn ($l) => ['platform' => $l['platform'], 'url' => $l['url']])
+                ->toJson();
+        }
 
         // "Reset to default" on the Theme page restores the original brand colour.
         if ($section === 'theme' && $request->boolean('reset_theme')) {
@@ -222,7 +217,6 @@ class SettingController extends Controller
                 'opening_hours'           => 'nullable|string|max:500',
             ],
             'about' => [
-                'about_banner_subtitle' => 'nullable|string|max:255',
                 'about_badge'           => 'nullable|string|max:60',
                 'about_title'           => 'nullable|string|max:255',
                 'about_text'            => 'nullable|string|max:5000',
@@ -230,12 +224,6 @@ class SettingController extends Controller
                 'about_point_2'         => 'nullable|string|max:150',
                 'about_point_3'         => 'nullable|string|max:150',
                 'about_point_4'         => 'nullable|string|max:150',
-                'about_stat_1_value'    => 'nullable|string|max:20',
-                'about_stat_1_label'    => 'nullable|string|max:60',
-                'about_stat_2_value'    => 'nullable|string|max:20',
-                'about_stat_2_label'    => 'nullable|string|max:60',
-                'about_stat_3_value'    => 'nullable|string|max:20',
-                'about_stat_3_label'    => 'nullable|string|max:60',
                 'about_value_1_icon'    => 'nullable|string|max:60',
                 'about_value_1_title'   => 'nullable|string|max:100',
                 'about_value_1_desc'    => 'nullable|string|max:500',
@@ -245,19 +233,14 @@ class SettingController extends Controller
                 'about_value_3_icon'    => 'nullable|string|max:60',
                 'about_value_3_title'   => 'nullable|string|max:100',
                 'about_value_3_desc'    => 'nullable|string|max:500',
-                'about_cta_title'       => 'nullable|string|max:255',
-                'about_cta_text'        => 'nullable|string|max:500',
             ],
             'contact' => [
-                'contact_email'   => 'nullable|email|max:255',
-                'contact_phone'   => 'nullable|string|max:50',
-                'contact_address' => 'nullable|string|max:500',
-            ],
-            'social' => [
-                'facebook_url'  => 'nullable|string|max:255',
-                'instagram_url' => 'nullable|string|max:255',
-                'twitter_url'   => 'nullable|string|max:255',
-                'youtube_url'   => 'nullable|string|max:255',
+                'contact_email'           => 'nullable|email|max:255',
+                'contact_phone'           => 'nullable|string|max:50',
+                'contact_address'         => 'nullable|string|max:500',
+                'social_links'            => 'nullable|array|max:20',
+                'social_links.*.platform' => 'nullable|in:' . implode(',', array_keys(SocialLinks::PLATFORMS)),
+                'social_links.*.url'      => 'nullable|url|max:255',
             ],
             default => [],
         };

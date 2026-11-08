@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Branch;
 use App\Models\Company;
+use App\Http\Controllers\Admin\SettingController;
 use App\Models\Domain;
+use App\Models\NavMenuItem;
 use App\Models\Role;
 use App\Models\Setting;
 use App\Models\User;
@@ -68,7 +70,7 @@ class CompanyRegistrationController extends Controller
                 'is_primary' => true,
             ]);
 
-            Setting::putValue($company->id, 'theme_color', $data['theme_color'] ?? '#198754');
+            $this->seedDefaults($company, $data);
 
             $role = Role::create([
                 'company_id'  => $company->id,
@@ -94,5 +96,32 @@ class CompanyRegistrationController extends Controller
         return redirect()
             ->route('admin.dashboard.index')
             ->with('status', "Workspace \"{$data['company_name']}\" is ready.");
+    }
+
+    /**
+     * Give a new company a complete set of website settings (every settings section),
+     * personalised with its name, email and chosen brand colour, plus the default
+     * navigation menu — so the storefront looks finished from the first visit.
+     */
+    private function seedDefaults(Company $company, array $data): void
+    {
+        $name = $data['company_name'];
+
+        $values = array_merge(SettingController::allDefaults(), [
+            'restaurant_name' => $name,
+            'tagline'         => 'Fresh taste, warm service, elegant dining.',
+            'theme_color'     => $data['theme_color'] ?? '#198754',
+            'contact_email'   => $data['owner_email'],
+            'opening_hours'   => "Sunday - Friday: 10:00 AM - 10:00 PM\nSaturday: 11:00 AM - 11:00 PM",
+            'about_text'      => "{$name} brings people together over honest, freshly prepared food. "
+                               . 'From our kitchen to your table, every dish is cooked with care, served with a smile '
+                               . 'and priced to keep you coming back.',
+        ]);
+
+        foreach ($values as $key => $value) {
+            Setting::putValue($company->id, $key, $value);
+        }
+
+        NavMenuItem::forCompany($company->id);
     }
 }
