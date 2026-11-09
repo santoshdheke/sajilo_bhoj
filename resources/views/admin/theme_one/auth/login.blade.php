@@ -29,6 +29,9 @@
 
     <main class="ws-card">
         @include('partials.auth-split.side', [
+            'title'     => 'Good to see you',
+            'highlight' => 'again',
+            'lead'      => 'Your kitchen is warm and your tables are waiting. Let\'s make today delicious.',
             'note' => '<i class="bi bi-shop"></i>Staff login for <strong>' . e($brandName ?? request()->getHost()) . '</strong>',
         ])
 
@@ -36,8 +39,8 @@
         <section class="ws-form">
             <form action="{{ route('admin.auth.login') }}" method="POST">
                 @csrf
-                <div class="eyebrow">Welcome back</div>
-                <h2 class="mb-4">Sign in to your workspace</h2>
+                <div class="eyebrow">Welcome back, chef</div>
+                <h2 class="mb-4">Sign in and start serving smiles</h2>
 
                 @if (session('status'))
                     <div class="alert alert-success py-2 small">{{ session('status') }}</div>
@@ -67,7 +70,7 @@
                 </div>
 
                 <button class="ws-submit" type="submit">Sign in <i class="bi bi-arrow-right"></i></button>
-                <div class="ws-secure"><i class="bi bi-shield-lock-fill"></i>Secure staff access for managers, waiters and kitchen</div>
+                <div class="ws-secure"><i class="bi bi-shield-lock-fill"></i>Safe and secure for your whole team: managers, waiters and kitchen</div>
             </form>
         </section>
     </main>

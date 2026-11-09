@@ -1,4 +1,4 @@
-{{-- Left brand panel with the cooking chef scene. Optional: $note (HTML) shown under the intro. --}}
+{{-- Left brand panel with the cooking chef scene. Optional: $title, $highlight (underlined end of the title), $lead, $note (HTML) shown under the intro. --}}
         {{-- ── Left: brand + cooking chef ── --}}
         <section class="ws-side">
             <a class="ws-logo" href="#" aria-label="SajiloBhoj">
@@ -9,8 +9,8 @@
                 <span>Sajilo<span>Bhoj</span></span>
             </a>
 
-            <h1>Bring your restaurant online <em>in minutes<svg viewBox="0 0 200 12" preserveAspectRatio="none" aria-hidden="true"><path d="M4 9C60 2 140 2 196 7" fill="none" stroke="#f5a524" stroke-width="5" stroke-linecap="round"/></svg></em></h1>
-            <p class="lead">Manage orders, tables and grow your business with ease.</p>
+            <h1>{{ $title ?? 'Bring your restaurant online' }} <em>{{ $highlight ?? 'in minutes' }}<svg viewBox="0 0 200 12" preserveAspectRatio="none" aria-hidden="true"><path d="M4 9C60 2 140 2 196 7" fill="none" stroke="#f5a524" stroke-width="5" stroke-linecap="round"/></svg></em></h1>
+            <p class="lead">{{ $lead ?? 'Manage orders, tables and grow your business with ease.' }}</p>
             @isset($note)<span class="ws-note">{!! $note !!}</span>@endisset
 
             <div class="ws-scene" aria-hidden="true">
