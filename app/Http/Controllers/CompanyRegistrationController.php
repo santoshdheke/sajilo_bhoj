@@ -10,7 +10,9 @@ use App\Models\NavMenuItem;
 use App\Models\Role;
 use App\Models\Setting;
 use App\Models\User;
+use App\Support\DefaultKitchen;
 use App\Support\DefaultMenu;
+use App\Support\DefaultTables;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,7 +24,8 @@ use Illuminate\View\View;
 
 /**
  * Public sign-up flow served on the central/marketing domain — creates a new
- * tenant (Company + default Branch + Domain + Owner role + owner User) in one
+ * tenant (Company + default Branch + Domain + Owner role + owner User, plus a
+ * starter menu, Table 1–4 and kitchen columns) in one
  * transaction so the new restaurant can immediately sign in on its own domain.
  */
 class CompanyRegistrationController extends Controller
@@ -73,6 +76,8 @@ class CompanyRegistrationController extends Controller
 
             $this->seedDefaults($company, $data);
             DefaultMenu::seed($branch);
+            DefaultTables::seed($branch);
+            DefaultKitchen::seed($branch);
 
             $role = Role::create([
                 'company_id'  => $company->id,

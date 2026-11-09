@@ -146,9 +146,27 @@
 .color-swatch.selected { border-color:#000; transform:scale(1.15); }
 .col-colors      { display:flex; gap:8px; flex-wrap:wrap; }
 
-/* Add item rows in new-order modal */
-.item-row-new    { display:grid; grid-template-columns:1fr 60px 1fr auto;
-                   gap:8px; align-items:center; }
+/* New-order modal: menu picker + chosen items */
+.mp-search       { position:relative; margin-bottom:10px; }
+.mp-search i     { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--muted); }
+.mp-search input { padding-left:34px; }
+.mp-list         { max-height:240px; overflow-y:auto; border:1px solid #eef0ee; border-radius:12px; padding:6px 10px; margin-bottom:14px; }
+.mp-cat          { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin:8px 0 4px; }
+.mp-dish         { display:flex; align-items:center; gap:8px; width:100%; border:0; background:none; padding:7px 8px; border-radius:8px;
+                   text-align:left; font-size:.88rem; }
+.mp-dish:hover   { background:#edfaf3; }
+.mp-dish .p      { margin-left:auto; color:var(--muted); font-size:.8rem; }
+.mp-dish .bi-plus-circle { color:var(--primary); }
+.mp-none         { color:var(--muted); font-size:.85rem; padding:10px 4px; }
+.item-row-new    { display:grid; grid-template-columns:1fr 110px 1fr auto; gap:8px; align-items:center; }
+.item-row-new .nm { font-weight:600; font-size:.88rem; }
+.item-row-new .nm small { display:block; color:var(--muted); font-weight:400; }
+.qty-step        { display:flex; align-items:center; border:1px solid #dee2e6; border-radius:8px; overflow:hidden; }
+.qty-step button { border:0; background:#f6f7f6; width:30px; height:31px; }
+.qty-step input  { width:100%; border:0; text-align:center; font-size:.85rem; -moz-appearance:textfield; }
+.qty-step input::-webkit-inner-spin-button { -webkit-appearance:none; }
+.chosen-empty    { color:var(--muted); font-size:.85rem; padding:6px 0; }
+.chosen-total    { display:flex; justify-content:space-between; font-weight:700; padding:8px 0 4px; border-top:1px dashed #e5e7e5; margin-top:6px; }
 </style>
 
 {{-- ── Order Detail Modal ── --}}
@@ -270,18 +288,32 @@
                         <input type="text" class="form-control" id="newCustomer" placeholder="Walk-in">
                     </div>
                 </div>
-                <label class="form-label fw-semibold">Items <span class="text-danger">*</span></label>
-                <div id="newItemsWrap" class="d-flex flex-column gap-2 mb-2">
-                    <div class="item-row-new">
-                        <input type="text" class="form-control form-control-sm" placeholder="Item name…">
-                        <input type="number" class="form-control form-control-sm" value="1" min="1" placeholder="Qty">
-                        <input type="text" class="form-control form-control-sm" placeholder="Note (optional)">
-                        <button type="button" class="act-del" onclick="this.closest('.item-row-new').remove()">&times;</button>
-                    </div>
+                <label class="form-label fw-semibold">Add dishes <span class="text-danger">*</span></label>
+                <div class="mp-search"><i class="bi bi-search"></i>
+                    <input type="search" class="form-control" id="menuSearch" placeholder="Search the menu…" autocomplete="off">
                 </div>
-                <button type="button" class="btn btn-soft btn-sm mb-3" onclick="addItemField()">
-                    <i class="bi bi-plus-lg me-1"></i>Add Item
-                </button>
+                <div class="mp-list" id="menuPick">
+                    @forelse($menuCategories as $cat)
+                    <div class="mp-group">
+                        <div class="mp-cat">{{ $cat->name }}</div>
+                        @foreach($cat->menuItems as $dish)
+                        <button type="button" class="mp-dish" data-id="{{ $dish->id }}" data-name="{{ $dish->name }}" data-price="{{ (float) $dish->price }}">
+                            <i class="bi bi-plus-circle"></i><span class="n">{{ $dish->name }}</span>
+                            <span class="p">{{ \App\Support\Money::format($dish->price, $currency) }}</span>
+                        </button>
+                        @endforeach
+                    </div>
+                    @empty
+                    <div class="mp-none">No available dishes. Add some on the <a href="{{ route('admin.menu.index') }}">Menu</a> page.</div>
+                    @endforelse
+                    <div class="mp-none d-none" id="menuNoMatch">No dishes match your search.</div>
+                </div>
+
+                <label class="form-label fw-semibold">Order items</label>
+                <div id="newItemsWrap" class="d-flex flex-column gap-2"></div>
+                <div class="chosen-empty" id="chosenEmpty">Tap a dish above to add it.</div>
+                <div class="chosen-total d-none mb-3" id="chosenTotal"><span>Total</span><span id="chosenTotalVal"></span></div>
+
                 <div>
                     <label class="form-label fw-semibold">Notes <small class="text-muted fw-normal">(optional)</small></label>
                     <textarea class="form-control" id="newNotes" rows="2"
@@ -516,46 +548,105 @@ function deleteOrder(id) {
     }).then(() => { _orderModal.hide(); location.reload(); });
 }
 
-/* ════════════ New order ════════════ */
-function addItemField() {
-    const wrap = document.getElementById('newItemsWrap');
-    const row  = document.createElement('div');
-    row.className = 'item-row-new';
-    row.innerHTML = `
-        <input type="text" class="form-control form-control-sm" placeholder="Item name…">
-        <input type="number" class="form-control form-control-sm" value="1" min="1">
-        <input type="text" class="form-control form-control-sm" placeholder="Note (optional)">
-        <button type="button" class="act-del" onclick="this.closest('.item-row-new').remove()">&times;</button>`;
-    wrap.appendChild(row);
+/* ════════════ New order: pick dishes from the menu ════════════ */
+const KDS_SYMBOL = @json(\App\Support\Money::symbol($currency));
+const kdsMoney = n => KDS_SYMBOL + ' ' + (Number(n) || 0).toLocaleString('en-US', {maximumFractionDigits: 2});
+const kdsEsc   = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function refreshChosen() {
+    const rows = document.querySelectorAll('#newItemsWrap .item-row-new');
+    let total = 0;
+    rows.forEach(r => total += Number(r.dataset.price) * (parseInt(r.querySelector('.q').value) || 1));
+    document.getElementById('chosenEmpty').classList.toggle('d-none', rows.length > 0);
+    document.getElementById('chosenTotal').classList.toggle('d-none', rows.length === 0);
+    document.getElementById('chosenTotalVal').textContent = kdsMoney(total);
 }
+
+// Tapping a dish adds it, or bumps its qty if it's already in the order.
+function addDish(id, name, price) {
+    const wrap = document.getElementById('newItemsWrap');
+    const existing = wrap.querySelector(`.item-row-new[data-id="${id}"]`);
+    if (existing) { const q = existing.querySelector('.q'); q.value = Math.min(99, (parseInt(q.value) || 1) + 1); refreshChosen(); return; }
+    const row = document.createElement('div');
+    row.className = 'item-row-new';
+    row.dataset.id = id; row.dataset.price = price;
+    row.innerHTML = `
+        <div class="nm">${kdsEsc(name)}<small>${kdsMoney(price)}</small></div>
+        <div class="qty-step">
+            <button type="button" data-step="-1" aria-label="Less">&minus;</button>
+            <input type="number" class="q" value="1" min="1" max="99" aria-label="Quantity">
+            <button type="button" data-step="1" aria-label="More">+</button>
+        </div>
+        <input type="text" class="form-control form-control-sm note" maxlength="200" placeholder="Note (e.g. less spicy)">
+        <button type="button" class="act-del" title="Remove">&times;</button>`;
+    wrap.appendChild(row);
+    refreshChosen();
+}
+
+document.getElementById('menuPick').addEventListener('click', e => {
+    const b = e.target.closest('.mp-dish');
+    if (b) addDish(b.dataset.id, b.dataset.name, b.dataset.price);
+});
+
+document.getElementById('newItemsWrap').addEventListener('click', e => {
+    const row = e.target.closest('.item-row-new');
+    if (!row) return;
+    if (e.target.closest('.act-del')) { row.remove(); refreshChosen(); return; }
+    const step = e.target.closest('[data-step]');
+    if (step) {
+        const q = row.querySelector('.q'), v = (parseInt(q.value) || 1) + Number(step.dataset.step);
+        if (v < 1) row.remove(); else q.value = Math.min(99, v);
+        refreshChosen();
+    }
+});
+document.getElementById('newItemsWrap').addEventListener('input', refreshChosen);
+
+document.getElementById('menuSearch').addEventListener('input', e => {
+    const term = e.target.value.trim().toLowerCase();
+    let any = false;
+    document.querySelectorAll('#menuPick .mp-group').forEach(g => {
+        let shown = 0;
+        g.querySelectorAll('.mp-dish').forEach(d => {
+            const hit = !term || d.dataset.name.toLowerCase().includes(term);
+            d.classList.toggle('d-none', !hit); shown += hit;
+        });
+        g.classList.toggle('d-none', !shown); any = any || shown > 0;
+    });
+    document.getElementById('menuNoMatch').classList.toggle('d-none', any || !document.querySelector('#menuPick .mp-group'));
+});
 
 document.getElementById('saveNewOrder').addEventListener('click', async () => {
     const tableId = document.getElementById('newTable').value;
-    if (!tableId) { document.getElementById('newTable').focus(); return; }
-    const items = [];
-    document.querySelectorAll('#newItemsWrap .item-row-new').forEach(row => {
-        const inp = row.querySelectorAll('input');
-        const name = inp[0].value.trim();
-        if (name) items.push({name, qty: parseInt(inp[1].value)||1, note: inp[2].value.trim()||null});
-    });
-    if (!items.length) { notify.error('Add at least one item.'); return; }
+    if (!tableId) { document.getElementById('newTable').focus(); notify.error('Please choose a table.'); return; }
+    const items = [...document.querySelectorAll('#newItemsWrap .item-row-new')].map(r => ({
+        menu_item_id: Number(r.dataset.id),
+        qty:  Math.max(1, Math.min(99, parseInt(r.querySelector('.q').value) || 1)),
+        note: r.querySelector('.note').value.trim() || null,
+    }));
+    if (!items.length) { notify.error('Add at least one dish.'); return; }
 
     const btn = document.getElementById('saveNewOrder');
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Sending…';
 
-    const res = await fetch('/admin/kitchen/orders', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json','X-CSRF-TOKEN':CSRF},
-        body: JSON.stringify({
-            table_id:      tableId,
-            customer_name: document.getElementById('newCustomer').value.trim()||null,
-            notes:         document.getElementById('newNotes').value.trim()||null,
-            items
-        })
-    });
-    if (res.ok) { _addOrderModal.hide(); location.reload(); }
-    else { btn.disabled = false; btn.innerHTML = '<i class="bi bi-send me-1"></i>Send to Kitchen'; }
+    try {
+        const res = await fetch('/admin/kitchen/orders', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':CSRF},
+            body: JSON.stringify({
+                table_id:      tableId,
+                customer_name: document.getElementById('newCustomer').value.trim()||null,
+                notes:         document.getElementById('newNotes').value.trim()||null,
+                items
+            })
+        });
+        if (res.ok) { _addOrderModal.hide(); location.reload(); return; }
+        const data = await res.json().catch(() => ({}));
+        notify.error(data.message || 'Could not send the order. Please try again.');
+    } catch (e) {
+        notify.error('Network error. Please check your connection.');
+    }
+    btn.disabled = false; btn.innerHTML = '<i class="bi bi-send me-1"></i>Send to Kitchen';
 });
 
 /* ════════════ Column management ════════════ */

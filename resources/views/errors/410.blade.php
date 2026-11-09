@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Create your restaurant - SajiloBhoj</title>
+    @include('partials.favicon')
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -12,6 +13,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     @php
         $host     = $exception->getMessage() ?: request()->getHost();
+        // Laravel renders error pages with an empty $errors bag, so read the form's
+        // validation errors from the session ourselves.
+        $errors   = session('errors') ?: $errors;
         $color    = old('theme_color', '#198754');
         $presets  = ['#198754', '#22c55e', '#f59e0b', '#2563eb', '#ec4899', '#8b5cf6', '#1e3a8a', '#64748b'];
     @endphp
@@ -33,16 +37,6 @@
                 <h2>Create your workspace</h2>
                 <p class="signin">Your kitchen, your menu, your way. Let's cook up something delicious together <i class="bi bi-heart-fill" style="color: var(--primary)"></i></p>
 
-                @if ($errors->any())
-                    <div class="alert alert-danger py-2 small">
-                        <ul class="mb-0 ps-3">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label" for="company_name">Company name</label>
@@ -50,6 +44,7 @@
                             <input class="form-control @error('company_name') is-invalid @enderror" type="text" id="company_name" name="company_name"
                                    value="{{ old('company_name') }}" placeholder="The Green Fork" required autocomplete="organization">
                         </div>
+                        @error('company_name')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-6">
                         <label class="form-label" for="owner_name">Your name</label>
@@ -57,6 +52,7 @@
                             <input class="form-control @error('owner_name') is-invalid @enderror" type="text" id="owner_name" name="owner_name"
                                    value="{{ old('owner_name') }}" placeholder="Owner full name" required autocomplete="name">
                         </div>
+                        @error('owner_name')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-12">
                         <label class="form-label" for="owner_email">Email</label>
@@ -64,6 +60,7 @@
                             <input class="form-control @error('owner_email') is-invalid @enderror" type="email" id="owner_email" name="owner_email"
                                    value="{{ old('owner_email') }}" placeholder="owner@restaurant.com" required autocomplete="email">
                         </div>
+                        @error('owner_email')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-6">
                         <label class="form-label" for="password">Password</label>
@@ -71,6 +68,7 @@
                             <input class="form-control @error('password') is-invalid @enderror" type="password" id="password" name="password"
                                    placeholder="8+ characters" required autocomplete="new-password">
                         </div>
+                        @error('password')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-6">
                         <label class="form-label" for="password_confirmation">Confirm password</label>

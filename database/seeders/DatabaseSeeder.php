@@ -10,8 +10,8 @@ use App\Models\Domain;
 use App\Models\FloorTable;
 use App\Models\InventoryCategory;
 use App\Models\InventoryItem;
-use App\Models\KitchenColumn;
 use App\Models\KitchenTicket;
+use App\Support\DefaultKitchen;
 use App\Models\MenuCategory;
 use App\Models\MenuItem;
 use App\Models\Order;
@@ -285,14 +285,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // ── Kitchen board columns ───────────────────────────────
-        $columns = [
-            ['name' => 'Pending', 'slug' => 'pending', 'color' => 'orange'],
-            ['name' => 'Preparing', 'slug' => 'preparing', 'color' => 'blue'],
-            ['name' => 'Ready', 'slug' => 'ready', 'color' => 'green'],
-        ];
-        foreach ($columns as $i => $col) {
-            KitchenColumn::create($col + ['branch_id' => $branch->id, 'sort_order' => $i]);
-        }
+        DefaultKitchen::seed($branch);
 
         // ── Menu ────────────────────────────────────────────────
         $menuItems = collect();

@@ -5,8 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\FloorTable;
 use App\Models\KitchenColumn;
+use App\Models\MenuCategory;
+use App\Models\MenuItem;
 use App\Models\Order;
+use App\Models\Setting;
+use App\Support\DefaultKitchen;
+use App\Support\Tenancy;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -14,6 +20,11 @@ class KitchenController extends Controller
 {
     public function index()
     {
+        // A branch with an empty board (e.g. signed up before defaults existed) gets the default columns.
+        if (! KitchenColumn::exists() && ($branch = Tenancy::branch())) {
+            DefaultKitchen::seed($branch);
+        }
+
         $columns = KitchenColumn::orderBy('sort_order')->get()->each(function ($col) {
             $col->setRelation('orders', Order::with(['items', 'table'])
                 ->where('status', $col->slug)
@@ -26,7 +37,14 @@ class KitchenController extends Controller
 
         $tables = FloorTable::orderBy('table_no')->get(['id', 'table_no']);
 
-        return view('admin.theme_one.kitchen.index', compact('columns', 'tables'));
+        // Dishes for the "New Kitchen Order" picker, grouped by category.
+        $menuCategories = MenuCategory::with(['menuItems' => fn ($q) => $q->where('is_available', true)->orderBy('sort_order')->orderBy('name')])
+            ->orderBy('sort_order')->orderBy('name')->get()
+            ->filter(fn ($c) => $c->menuItems->isNotEmpty())->values();
+        $companyId = Tenancy::company()?->id;
+        $currency  = ($companyId ? Setting::getValue($companyId, 'currency') : null) ?: 'NPR';
+
+        return view('admin.theme_one.kitchen.index', compact('columns', 'tables', 'menuCategories', 'currency'));
     }
 
     // ── Orders ──────────────────────────────────────────────────
@@ -42,35 +60,51 @@ class KitchenController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'table_id'      => 'required|exists:tables,id',
-            'customer_name' => 'nullable|string|max:100',
-            'notes'         => 'nullable|string|max:500',
-            'items'         => 'required|array|min:1',
-            'items.*.name'  => 'required|string|max:100',
-            'items.*.qty'   => 'required|integer|min:1',
-            'items.*.note'  => 'nullable|string|max:200',
+            'table_id'            => 'required|exists:tables,id',
+            'customer_name'       => 'nullable|string|max:100',
+            'notes'               => 'nullable|string|max:500',
+            'items'               => 'required|array|min:1',
+            'items.*.menu_item_id' => 'required|integer',
+            'items.*.qty'         => 'required|integer|min:1|max:99',
+            'items.*.note'        => 'nullable|string|max:200',
         ]);
+
+        // Name and price always come from the menu, never from the browser.
+        $dishes = MenuItem::whereHas('category')->where('is_available', true)
+            ->whereIn('id', collect($data['items'])->pluck('menu_item_id'))->get()->keyBy('id');
+        foreach ($data['items'] as $i => $item) {
+            if (! $dishes->has($item['menu_item_id'])) {
+                return response()->json(['message' => 'One of the dishes is no longer available. Please refresh and try again.',
+                    'errors' => ["items.$i.menu_item_id" => ['Dish not available.']]], 422);
+            }
+        }
 
         $firstCol = KitchenColumn::orderBy('sort_order')->value('slug') ?? 'pending';
 
-        $order = Order::create([
-            'table_id'      => $data['table_id'],
-            'customer_name' => $data['customer_name'] ?? null,
-            'order_type'    => 'dine_in',
-            'notes'         => $data['notes'] ?? null,
-            'status'        => $firstCol,
-        ]);
-
-        foreach ($data['items'] as $item) {
-            $order->items()->create([
-                'name'     => $item['name'],
-                'quantity' => $item['qty'],
-                'price'    => 0,
-                'note'     => $item['note'] ?? null,
+        $order = DB::transaction(function () use ($data, $dishes, $firstCol) {
+            $order = Order::create([
+                'table_id'      => $data['table_id'],
+                'customer_name' => $data['customer_name'] ?? null,
+                'order_type'    => 'dine_in',
+                'notes'         => $data['notes'] ?? null,
+                'status'        => $firstCol,
             ]);
-        }
 
-        $order->recalcTotals();
+            foreach ($data['items'] as $item) {
+                $dish = $dishes[$item['menu_item_id']];
+                $order->items()->create([
+                    'menu_item_id' => $dish->id,
+                    'name'         => $dish->name,
+                    'quantity'     => $item['qty'],
+                    'price'        => $dish->price,
+                    'note'         => $item['note'] ?? null,
+                ]);
+            }
+
+            $order->recalcTotals();
+
+            return $order;
+        });
 
         return response()->json($order->load(['items', 'table']));
     }

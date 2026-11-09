@@ -54,8 +54,37 @@
                    border-radius:6px; padding:2px 6px; }
 
 /* ── Add order modal items ────────────────────────────────────── */
-.item-row-new   { display:grid; grid-template-columns:1fr 56px 80px 1fr auto;
-                  gap:8px; align-items:center; }
+.item-row-new   { display:grid; grid-template-columns:minmax(0,1.7fr) 80px 110px minmax(0,1fr) auto;
+                  gap:10px; align-items:stretch; }
+.item-row-new .qty   { text-align:center; }
+.item-row-new .price { display:flex; align-items:center; justify-content:flex-end; font-weight:600; white-space:nowrap;
+                       background:color-mix(in srgb, var(--primary) 5%, white); }
+.item-row-new .price.empty { color:#7a867f; font-weight:400; }
+.item-row-new .act-del { width:34px; height:34px; align-self:center; border-radius:10px; font-size:.85rem; }
+@media (max-width:575px) { .item-row-new { grid-template-columns:1fr 70px 100px auto; } .item-row-new .note { grid-column:1 / -1; } }
+
+/* Dish picker: dish name + its category photo and name */
+.dish-pick        { position:relative; min-width:0; }
+.dish-btn         { width:100%; height:100%; display:flex; align-items:center; gap:8px; text-align:left; } /* looks like the other selects */
+.dish-btn .ph     { color:#7a867f; }
+/* Same text size and weight as the other fields in the row */
+.item-row-new .form-control, .item-row-new .form-select,
+.dish-btn .dish-name, .dish-btn .dish-cat { font-size:1rem; font-weight:400; }
+.dish-btn .dish-cat { color:var(--text); }
+.dish-menu        { position:absolute; z-index:1060; top:calc(100% + 4px); left:0; width:max(100%, 320px); max-width:90vw; display:none;
+                    background:#fff; border:1px solid #e5e7e5; border-radius:12px; box-shadow:0 12px 30px rgba(0,0,0,.12); padding:8px; }
+.dish-pick.open .dish-menu { display:block; }
+.dish-menu input  { margin-bottom:6px; }
+.dish-list        { max-height:240px; overflow-y:auto; }
+.dish-opt         { width:100%; display:flex; align-items:center; gap:8px; border:0; background:none; padding:6px 8px; border-radius:8px;
+                    text-align:left; font-size:.85rem; }
+.dish-opt:hover, .dish-opt.active { background:color-mix(in srgb, var(--primary) 8%, white); }
+.dish-name        { font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.dish-cat         { display:inline-flex; align-items:center; gap:5px; color:var(--muted); font-size:.78rem; white-space:nowrap; }
+.dish-cat img, .dish-cat .noimg { width:20px; height:20px; border-radius:50%; object-fit:cover; flex-shrink:0; }
+.dish-cat .noimg  { display:inline-flex; align-items:center; justify-content:center; background:#f1f3f1; font-size:.65rem; }
+.dish-opt .p      { margin-left:auto; color:var(--muted); font-size:.78rem; white-space:nowrap; }
+.dish-none        { color:var(--muted); font-size:.82rem; padding:8px; }
 .act-del        { width:28px; height:28px; padding:0; border:none; border-radius:8px;
                   background:#fff0f0; color:#dc3545; display:inline-flex;
                   align-items:center; justify-content:center; font-size:.85rem;
@@ -178,15 +207,7 @@
                 </div>
 
                 <label class="form-label fw-semibold">Items <span class="text-danger">*</span></label>
-                <div id="newItemsWrap" class="d-flex flex-column gap-2 mb-2">
-                    <div class="item-row-new">
-                        <input type="text"   class="form-control form-control-sm" placeholder="Item name…">
-                        <input type="number" class="form-control form-control-sm" value="1" min="1" placeholder="Qty">
-                        <input type="number" class="form-control form-control-sm" step="0.01" min="0" placeholder="Price $">
-                        <input type="text"   class="form-control form-control-sm" placeholder="Note (opt.)">
-                        <button type="button" class="act-del" onclick="this.closest('.item-row-new').remove()">&times;</button>
-                    </div>
-                </div>
+                <div id="newItemsWrap" class="d-flex flex-column gap-2 mb-2"></div>
                 <button type="button" class="btn btn-soft btn-sm mb-3" onclick="addItemField()">
                     <i class="bi bi-plus-lg me-1"></i>Add Item
                 </button>
@@ -199,7 +220,7 @@
             </div>
             <div class="modal-footer justify-content-between align-items-center">
                 <div class="text-muted" style="font-size:.82rem;">
-                    Total: <strong id="newOrderTotal">$0.00</strong>
+                    Total: <strong id="newOrderTotal">{{ $symbol }} 0</strong>
                 </div>
                 <div class="d-flex gap-2">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -565,48 +586,104 @@ function toggleTableLabel() {
 }
 toggleTableLabel();
 
+/* ══════════ New order: dish picker ══════════ */
+const MENU_ITEMS = @json($menuItems);
+const MENU_SYMBOL = @json($symbol);
+const fmtMoney = n => MENU_SYMBOL + ' ' + (Number(n) || 0).toLocaleString('en-US', {maximumFractionDigits: 2});
+const escH = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+// "Veg. Momo  (photo) Momo" — dish name, then its category photo and name.
+function dishLabel(d) {
+    const img = d.img ? `<img src="${escH(d.img)}" alt="">` : '<span class="noimg"><i class="bi bi-egg-fried"></i></span>';
+    return `<span class="dish-name">${escH(d.name)}</span><span class="dish-cat">(${img}${escH(d.cat)})</span>`;
+}
+
+function renderDishList(pick, term = '') {
+    term = term.trim().toLowerCase();
+    const hits = MENU_ITEMS.filter(d => !term || d.name.toLowerCase().includes(term) || d.cat.toLowerCase().includes(term));
+    pick.querySelector('.dish-list').innerHTML = hits.length
+        ? hits.map(d => `<button type="button" class="dish-opt" data-id="${d.id}">${dishLabel(d)}<span class="p">${fmtMoney(d.price)}</span></button>`).join('')
+        : `<div class="dish-none">${MENU_ITEMS.length ? 'No dishes match your search.' : 'No available dishes. Add some on the Menu page.'}</div>`;
+}
+
+function closePickers(except) {
+    document.querySelectorAll('.dish-pick.open').forEach(p => { if (p !== except) p.classList.remove('open'); });
+}
+
 function addItemField() {
     const wrap = document.getElementById('newItemsWrap');
     const row  = document.createElement('div');
     row.className = 'item-row-new';
     row.innerHTML = `
-        <input type="text"   class="form-control form-control-sm" placeholder="Item name…"   oninput="calcNewTotal()">
-        <input type="number" class="form-control form-control-sm" value="1" min="1"           oninput="calcNewTotal()">
-        <input type="number" class="form-control form-control-sm" step="0.01" min="0" placeholder="Price $" oninput="calcNewTotal()">
-        <input type="text"   class="form-control form-control-sm" placeholder="Note (opt.)">
-        <button type="button" class="act-del" onclick="this.closest('.item-row-new').remove();calcNewTotal()">&times;</button>`;
+        <div class="dish-pick">
+            <button type="button" class="form-select dish-btn"><span class="ph">Select dish…</span></button>
+            <div class="dish-menu">
+                <input type="search" class="form-control" placeholder="Search dish or category…" autocomplete="off">
+                <div class="dish-list"></div>
+            </div>
+        </div>
+        <input type="number" class="form-control qty" value="1" min="1" max="99" aria-label="Quantity">
+        <div class="form-control price empty" title="Price">Price</div>
+        <input type="text" class="form-control note" maxlength="200" placeholder="Note (optional)">
+        <button type="button" class="act-del" title="Remove"><i class="bi bi-x-lg"></i></button>`;
     wrap.appendChild(row);
+    return row;
 }
+
+document.getElementById('newItemsWrap').addEventListener('click', e => {
+    const row = e.target.closest('.item-row-new');
+    if (!row) return;
+    const pick = row.querySelector('.dish-pick');
+
+    if (e.target.closest('.act-del')) { row.remove(); calcNewTotal(); return; }
+
+    if (e.target.closest('.dish-btn')) {
+        const open = !pick.classList.contains('open');
+        closePickers(pick);
+        pick.classList.toggle('open', open);
+        if (open) { const s = pick.querySelector('input'); s.value = ''; renderDishList(pick); s.focus(); }
+        return;
+    }
+
+    const opt = e.target.closest('.dish-opt');
+    if (opt) {
+        const d = MENU_ITEMS.find(m => m.id === Number(opt.dataset.id));
+        row.dataset.id = d.id; row.dataset.price = d.price;
+        pick.querySelector('.dish-btn').innerHTML = dishLabel(d);
+        const price = row.querySelector('.price');
+        price.textContent = fmtMoney(d.price); price.classList.remove('empty');
+        pick.classList.remove('open');
+        calcNewTotal();
+    }
+});
+document.getElementById('newItemsWrap').addEventListener('input', e => {
+    if (e.target.matches('.dish-menu input')) renderDishList(e.target.closest('.dish-pick'), e.target.value);
+    else calcNewTotal();
+});
+document.addEventListener('click', e => { if (!e.target.closest('.dish-pick')) closePickers(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.querySelector('.dish-pick.open')) { e.stopPropagation(); closePickers(); } }, true);
 
 function calcNewTotal() {
     let total = 0;
     document.querySelectorAll('#newItemsWrap .item-row-new').forEach(row => {
-        const inp = row.querySelectorAll('input');
-        total += (parseFloat(inp[2]?.value)||0) * (parseInt(inp[1]?.value)||1);
+        total += (Number(row.dataset.price) || 0) * (parseInt(row.querySelector('.qty').value) || 1);
     });
-    document.getElementById('newOrderTotal').textContent = '$' + total.toFixed(2);
+    document.getElementById('newOrderTotal').textContent = fmtMoney(total);
 }
 
-// wire up first row inputs for live total
-document.querySelectorAll('#newItemsWrap input[type=number]').forEach(el => el.addEventListener('input', calcNewTotal));
+addItemField();
 
 document.getElementById('saveNewOrder').addEventListener('click', async () => {
     const type = document.getElementById('newType').value;
     const tableId = document.getElementById('newTable').value;
     if (type === 'dine_in' && !tableId) { document.getElementById('newTable').focus(); return; }
 
-    const items = [];
-    document.querySelectorAll('#newItemsWrap .item-row-new').forEach(row => {
-        const inp = row.querySelectorAll('input');
-        const name = inp[0].value.trim();
-        if (name) items.push({
-            name,
-            qty:   parseInt(inp[1].value) || 1,
-            price: parseFloat(inp[2].value) || 0,
-            note:  inp[3].value.trim() || null,
-        });
-    });
-    if (!items.length) { notify.error('Add at least one item.'); return; }
+    const items = [...document.querySelectorAll('#newItemsWrap .item-row-new')].filter(r => r.dataset.id).map(r => ({
+        menu_item_id: Number(r.dataset.id),
+        qty:  Math.max(1, Math.min(99, parseInt(r.querySelector('.qty').value) || 1)),
+        note: r.querySelector('.note').value.trim() || null,
+    }));
+    if (!items.length) { notify.error('Select at least one dish.'); return; }
 
     const btn = document.getElementById('saveNewOrder');
     btn.disabled = true;
@@ -614,7 +691,7 @@ document.getElementById('saveNewOrder').addEventListener('click', async () => {
 
     const res = await fetch('/admin/orders', {
         method: 'POST',
-        headers: {'Content-Type':'application/json','X-CSRF-TOKEN':CSRF},
+        headers: {'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':CSRF},
         body: JSON.stringify({
             order_type:    type,
             table_id:      type === 'dine_in' ? tableId : null,
@@ -627,7 +704,8 @@ document.getElementById('saveNewOrder').addEventListener('click', async () => {
     else {
         btn.disabled = false;
         btn.innerHTML = '<i class="bi bi-send me-1"></i>Place Order';
-        notify.error('Something went wrong. Please try again.');
+        const data = await res.json().catch(() => ({}));
+        notify.error(data.message || 'Something went wrong. Please try again.');
     }
 });
 
