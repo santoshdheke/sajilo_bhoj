@@ -71,7 +71,6 @@
         <button class="cart-fab w-100 justify-content-center" onclick="closeSidebar(); openCartModal()">
             <i class="bi bi-bag"></i>
             <span class="cart-btn-label">View Order</span>
-            <span class="cart-badge" id="cartBadgeSidebar">0</span>
         </button>
     </div>
 </aside>
@@ -159,7 +158,6 @@
             <button class="cart-fab" onclick="openCartModal()">
                 <i class="bi bi-cart3"></i>
                 <span class="cart-btn-label">Order</span>
-                <span class="cart-badge" id="cartBadgeNav">0</span>
             </button>
         </div>
 
@@ -371,7 +369,7 @@ function renderCart() {
     const count = cart.reduce((s, i) => s + i.qty, 0);
     const total = cart.reduce((s, i) => s + Number(i.price) * i.qty, 0);
 
-    ['cartBadgeNav','cartBadgeMobile','cartBadgeSidebar'].forEach(id => {
+    ['cartBadgeMobile'].forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
         el.textContent = count;
