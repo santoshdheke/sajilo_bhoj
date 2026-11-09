@@ -39,13 +39,25 @@
             </a>
             @if (! request()->routeIs('admin.settings.*'))
             <div class="section-title">Main</div>
+            @if(auth()->user()?->hasPermission('dashboard.view'))
             <a class="nav-link{{ Request::is('admin/dashboard') ? ' active' : '' }}" href="{{ route('admin.dashboard.index') }}"><i class="bi bi-house-door-fill"></i> Dashboard</a>
+            @endif
+            @if(auth()->user()?->hasPermission('tables.manage'))
             <a class="nav-link{{ Request::is('admin/tables') ? ' active' : '' }}" href="{{ route('admin.table.index') }}"><i class="bi bi-grid-3x3-gap"></i> Tables</a>
+            @endif
+            @if(auth()->user()?->hasPermission('orders.manage'))
             <a class="nav-link{{ Request::is('admin/orders') ? ' active' : '' }}" href="{{ route('admin.order.index') }}"><i class="bi bi-receipt"></i> Orders <span
                     class="badge">24</span></a>
+            @endif
+            @if(auth()->user()?->hasPermission('kitchen.manage'))
             <a class="nav-link{{ Request::is('admin/kitchen') ? ' active' : '' }}" href="{{ route('admin.kitchen.index') }}"><i class="bi bi-fire"></i> Kitchen Display</a>
+            @endif
+            @if(auth()->user()?->hasPermission('billing.view'))
             <a class="nav-link{{ Request::is('admin/billing') ? ' active' : '' }}" href="{{ route('admin.billing.index') }}"><i class="bi bi-wallet2"></i> Billing</a>
+            @endif
+            @if(auth()->user()?->hasPermission('menu.manage'))
             <a class="nav-link{{ request()->routeIs('admin.menu.*') || request()->routeIs('admin.menu_category.*') ? ' active' : '' }}" href="{{ route('admin.menu.index') }}"><i class="bi bi-journal-text"></i> Menu</a>
+            @endif
             @if(auth()->user()?->hasPermission('suppliers.manage') || auth()->user()?->hasPermission('inventory.manage') || auth()->user()?->hasPermission('purchase_orders.manage'))
             <div class="section-title">Procurement</div>
             @endif
@@ -60,16 +72,22 @@
             @endif
 
             <div class="section-title">Management</div>
+            @if(auth()->user()?->hasPermission('reports.view'))
             <a class="nav-link{{ Request::is('admin/report') ? ' active' : '' }}" href="{{ route("admin.report.index") }}"><i class="bi bi-bar-chart"></i> Reports</a>
+            @endif
             @if(auth()->user()?->hasPermission('customers.manage'))
             <a class="nav-link{{ Request::is('admin/customers') ? ' active' : '' }}" href="{{ route('admin.customer.index') }}"><i class="bi bi-person-hearts"></i> Customers</a>
             @endif
             @if(auth()->user()?->hasPermission('payments.manage'))
             <a class="nav-link{{ Request::is('admin/payments*') ? ' active' : '' }}" href="{{ route('admin.payment.index') }}"><i class="bi bi-credit-card"></i> Payments</a>
             @endif
-            <a class="nav-link{{ Request::is('admin/user') ? ' active' : '' }}" href="{{ route("admin.user.index") }}"><i class="bi bi-people"></i> Users</a>
+            @if(auth()->user()?->hasPermission('users.manage'))
+            <a class="nav-link{{ Request::is('admin/user') ? ' active' : '' }}" href="{{ route("admin.user.index") }}"><i class="bi bi-people"></i> Users &amp; Roles</a>
+            @endif
             <a class="nav-link{{ Request::is('admin/profile') ? ' active' : '' }}" href="{{ route("admin.profile.index") }}"><i class="bi bi-person-circle"></i> Profile</a>
+            @if(auth()->user()?->hasPermission('settings.manage'))
             <a class="nav-link{{ request()->routeIs('admin.settings.*') ? ' active' : '' }}" href="{{ route('admin.settings.index') }}"><i class="bi bi-gear"></i> Settings</a>
+            @endif
             <div class="section-title">Account</div>
             <a class="nav-link" href="javascript:void(0)" onclick="document.getElementById('logout').submit()"><i class="bi bi-box-arrow-right"></i> Logout</a>
             @else

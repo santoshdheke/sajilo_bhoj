@@ -12,6 +12,7 @@ use App\Models\Setting;
 use App\Models\User;
 use App\Support\DefaultKitchen;
 use App\Support\DefaultMenu;
+use App\Support\DefaultRoles;
 use App\Support\DefaultTables;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -85,6 +86,7 @@ class CompanyRegistrationController extends Controller
                 'description' => 'Full access to every module.',
                 'permissions' => ['*'],
             ]);
+            DefaultRoles::seed($company);
 
             return User::create([
                 'company_id' => $company->id,

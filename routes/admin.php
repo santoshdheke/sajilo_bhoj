@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\SubscriptionController;
+use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Middleware\EnsureSubscriptionChosen;
 use Illuminate\Support\Facades\Route;
@@ -114,6 +115,9 @@ Route::middleware('permission:users.manage')->group(function () {
     Route::put('user/{user}', [UserController::class, 'update'])->name('user.update');
     Route::patch('user/{user}/toggle', [UserController::class, 'toggleActive'])->name('user.toggle');
     Route::delete('user/{user}', [UserController::class, 'destroy'])->name('user.destroy');
+    Route::post('roles', [RoleController::class, 'store'])->name('role.store');
+    Route::put('roles/{role}', [RoleController::class, 'update'])->name('role.update');
+    Route::delete('roles/{role}', [RoleController::class, 'destroy'])->name('role.destroy');
 });
 
 Route::middleware('permission:settings.manage')->prefix('settings')->name('settings.')->group(function () {
