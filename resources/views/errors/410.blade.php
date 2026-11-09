@@ -31,7 +31,7 @@
                 @csrf
                 <div class="eyebrow">Get Started</div>
                 <h2>Create your workspace</h2>
-                <p class="signin">Have an account? <a href="{{ route('admin.auth.show_login_form') }}">Sign in <i class="bi bi-arrow-right"></i></a></p>
+                <p class="signin">Your kitchen, your menu, your way. Let's cook up something delicious together <i class="bi bi-heart-fill" style="color: var(--primary)"></i></p>
 
                 @if ($errors->any())
                     <div class="alert alert-danger py-2 small">
