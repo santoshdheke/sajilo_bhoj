@@ -1,9 +1,10 @@
 {{--
     Browser-tab icon: always the default SajiloBhoj serving-dish mark (never the uploaded
-    company logo), drawn in the restaurant's theme colour. Pass ['color' => '#hex'] to override.
+    company logo), drawn in the restaurant's theme colour. Pass ['faviconColor' => '#hex'] to override
+    (a dedicated name, so a page's own $color variable can't leak in).
 --}}
 @php
-    $fav = $color ?? $themeColor ?? ($settings['theme_color'] ?? null);
+    $fav = $faviconColor ?? $themeColor ?? ($settings['theme_color'] ?? null);
     $fav = is_string($fav) && preg_match('/^#[0-9a-f]{6}$/i', $fav) ? $fav : '#198754';
     // Same shades the logo uses: dark = 78% colour + black, soft = 30% colour + white.
     $mix = function (string $hex, int $with, float $keep) {

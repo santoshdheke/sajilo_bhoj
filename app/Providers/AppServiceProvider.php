@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\SettingController;
 use App\Models\NavMenuItem;
 use App\Models\Setting;
 use App\Support\Tenancy;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -25,6 +26,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // The app is styled with Bootstrap, not Tailwind: use Bootstrap page links.
+        Paginator::useBootstrapFive();
+
         View::composer('frontend.theme_one.*', function ($view) {
             $settings = SettingController::allDefaults();
             $company  = Tenancy::company();

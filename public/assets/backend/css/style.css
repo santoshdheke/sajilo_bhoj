@@ -218,3 +218,45 @@ body{color:var(--text)}
 
 /* Settings: save bar stays visible at the bottom */
 .settings-actions{position:sticky;bottom:12px;z-index:20;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-radius:16px;padding:12px 14px;box-shadow:0 10px 30px rgba(15,40,25,.12)}
+
+/* ═══ Mobile responsive ═══ */
+/* Let the content area shrink to the screen: wide tables/boards scroll inside their own box, not the page */
+.main{min-width:0}
+.main .table-responsive,.main .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+img,svg,video,canvas{max-width:100%}
+@media (max-width:767px){
+  /* List tables become one card per row (labels come from the layout script) */
+  .table-stack thead{display:none}
+  .table-stack,.table-stack tbody,.table-stack tr,.table-stack td{display:block;width:100%}
+  .table-stack tbody{padding:12px}
+  .table-stack tr{background:#fff;border:1px solid rgba(24,52,34,.09);border-radius:14px;margin-bottom:12px;padding:4px 14px;box-shadow:0 4px 14px rgba(15,40,25,.04)}
+  .table-stack tr:last-child{margin-bottom:0}
+  .table-stack>tbody>tr>td{display:grid;grid-template-columns:minmax(0,42%) minmax(0,1fr);align-items:center;justify-items:end;column-gap:12px;row-gap:2px;padding:9px 0;border:0;border-bottom:1px dashed rgba(24,52,34,.1);text-align:right;background:transparent;box-shadow:none;min-width:0;word-break:break-word}
+  .table-stack>tbody>tr>td>*{grid-column:2;max-width:100%}
+  .table-stack>tbody>tr>td:last-child{border-bottom:0}
+  .table-stack>tbody>tr>td::before{content:attr(data-label);grid-column:1;grid-row:1 / span 6;justify-self:start;text-align:left;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+  .table-stack>tbody>tr>td[data-label=""]::before{content:none}
+  .table-stack>tbody>tr>td[data-label=""]{display:flex;justify-content:flex-end}
+  .table-stack>tbody>tr>td[colspan]{display:block;text-align:center;border:0}
+  .table-stack>tbody>tr:has(>td[colspan]){border:0;box-shadow:none;background:transparent}
+  .table-stack>tbody>tr>td>.d-flex{flex-wrap:wrap;justify-content:flex-end}
+
+  /* Page headers & toolbars: let buttons and search boxes wrap instead of squeezing */
+  .card-header,.card-soft>.d-flex,.card-head{flex-wrap:wrap;gap:10px}
+  .pagination{flex-wrap:wrap;gap:4px}
+  .main .vr{display:none} /* filter groups wrap onto their own lines, the divider just floats */
+  .modal-dialog{margin:.6rem}
+  .modal-footer{flex-wrap:wrap}
+}
+
+/* Mobile sidebar: close button + dimmed backdrop (both only below 992px) */
+.sidebar-close,.sidebar-backdrop{display:none}
+@media (max-width:991px){
+  .sidebar-close{display:flex;align-items:center;justify-content:center;position:absolute;top:12px;right:12px;z-index:3;width:36px;height:36px;border:0;border-radius:50%;background:rgba(255,255,255,.16);color:#fff;font-size:1rem}
+  .sidebar-close:hover{background:rgba(255,255,255,.28)}
+  .sidebar .brand{margin-top:34px}
+  .sidebar-backdrop{display:block;position:fixed;inset:0;z-index:1045;background:rgba(10,20,15,.45);opacity:0;pointer-events:none;transition:opacity .25s}
+  body.sb-open .sidebar-backdrop{opacity:1;pointer-events:auto}
+  body.sb-open{overflow:hidden}
+  .sidebar{z-index:1050}
+}

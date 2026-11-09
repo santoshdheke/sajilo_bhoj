@@ -128,6 +128,8 @@
     .lo-tabs button span { opacity: .55; font-weight: 500; margin-left: 2px; }
     .lo-tabs button.active { background: var(--primary); color: #fff; }
     .lo-tabs button.active span { opacity: .8; }
+    .db-card { min-width: 0; }
+    @media (max-width: 575px) { .lo-tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; max-width: 100%; } .lo-tabs::-webkit-scrollbar { display: none; } .lo-tabs button { white-space: nowrap; flex-shrink: 0; } }
     .lo-list { display: flex; flex-direction: column; }
     .lo-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto 112px; align-items: center; gap: 12px; padding: 13px 0; border-top: 1px solid #eef1ef; }
     .lo-row.hide { display: none; }

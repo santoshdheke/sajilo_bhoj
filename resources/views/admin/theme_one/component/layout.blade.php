@@ -31,7 +31,9 @@
 
 <body>
     <div class="layout">
+        <div class="sidebar-backdrop" id="sidebarBackdrop" aria-hidden="true"></div>
         <div class="sidebar" id="sidebar">
+            <button type="button" class="sidebar-close" id="sidebarClose" aria-label="Close menu"><i class="bi bi-x-lg"></i></button>
             <a class="brand" href="{{ route('admin.dashboard.index') }}">
                 @include('partials.brand-logo', ['variant' => 'light', 'height' => 44])
             </a>
@@ -143,8 +145,20 @@
     <script src="{{ asset('assets/backend/js/custom.js') }}"></script>
     <script>
     // Header menu button: collapse the sidebar on desktop, slide it in on mobile.
+    // On mobile it closes again with the × button, a tap on the dimmed backdrop, Esc, or picking a link.
+    function setMobileSidebar(open) {
+        document.getElementById('sidebar').classList.toggle('show', open);
+        document.body.classList.toggle('sb-open', open);
+    }
+    document.getElementById('sidebarClose')?.addEventListener('click', function () { setMobileSidebar(false); });
+    document.getElementById('sidebarBackdrop')?.addEventListener('click', function () { setMobileSidebar(false); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && document.body.classList.contains('sb-open')) setMobileSidebar(false); });
+    document.querySelectorAll('#sidebar a.nav-link[href]:not([href="#"])').forEach(function (a) {
+        a.addEventListener('click', function () { if (window.innerWidth < 992) setMobileSidebar(false); });
+    });
+    window.addEventListener('resize', function () { if (window.innerWidth >= 992) setMobileSidebar(false); });
     document.querySelector('.menu-btn')?.addEventListener('click', function () {
-        if (window.innerWidth < 992) { document.getElementById('sidebar').classList.toggle('show'); }
+        if (window.innerWidth < 992) { setMobileSidebar(!document.getElementById('sidebar').classList.contains('show')); }
         else { document.body.classList.toggle('sb-collapsed'); try { localStorage.setItem('sbCollapsed', document.body.classList.contains('sb-collapsed') ? '1' : ''); } catch (e) {} }
     });
     try { if (localStorage.getItem('sbCollapsed') === '1' && window.innerWidth >= 992) document.body.classList.add('sb-collapsed'); } catch (e) {}
@@ -381,6 +395,33 @@
     })();
     </script>
     @endif
+    <script>
+    // Phones: list tables turn into one card per row. Give every cell its column name
+    // (data-label) so the CSS can show it beside the value. Rows added later by page scripts are labelled too.
+    (function () {
+        function label() {
+            document.querySelectorAll('.main table.table:not(.no-stack)').forEach(function (t) {
+                if (t.closest('.modal')) return;
+                var heads = Array.prototype.map.call(t.querySelectorAll('thead th'), function (th) { return th.textContent.trim(); });
+                if (!heads.length) return;
+                t.classList.add('table-stack');
+                t.querySelectorAll('tbody tr').forEach(function (tr) {
+                    var i = 0;
+                    Array.prototype.forEach.call(tr.children, function (td) {
+                        if (!td.hasAttribute('data-label') && !td.hasAttribute('colspan')) td.setAttribute('data-label', heads[i] || '');
+                        i += td.colSpan || 1;
+                    });
+                });
+            });
+        }
+        label();
+        var main = document.querySelector('.main'), timer;
+        if (main && window.MutationObserver) {
+            new MutationObserver(function () { clearTimeout(timer); timer = setTimeout(label, 50); })
+                .observe(main, { childList: true, subtree: true });
+        }
+    })();
+    </script>
     @stack('js')
 </body>
 

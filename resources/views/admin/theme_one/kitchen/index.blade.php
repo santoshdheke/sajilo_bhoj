@@ -6,6 +6,11 @@
 .kds-board       { display:flex; gap:16px; overflow-x:auto; align-items:flex-start;
                    padding-bottom:12px; }
 .kds-col-wrap    { flex:0 0 300px; display:flex; flex-direction:column; }
+@media (max-width:575px) {
+    /* Phones: one column per screen, swipe to the next */
+    .kds-board    { scroll-snap-type:x mandatory; gap:12px; -webkit-overflow-scrolling:touch; }
+    .kds-col-wrap, .kds-add-col { flex-basis:84vw; scroll-snap-align:start; }
+}
 
 /* Column header */
 .kds-col-head    { display:flex; align-items:center; justify-content:space-between;

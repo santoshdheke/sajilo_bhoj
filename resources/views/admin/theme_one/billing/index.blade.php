@@ -38,6 +38,17 @@
 .inv-table tbody tr:last-child td { border-bottom:none; }
 .inv-table tbody tr:hover td     { background:#f8fbf9; }
 
+/* Phones: item name on top, then qty · total · remove on one line (price per unit hidden) */
+@media (max-width:575px) {
+    #inv-items thead { display:none; }
+    #inv-items tbody tr { display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:6px 12px; padding:10px 0;
+                          border-bottom:1px solid rgba(20,40,20,.06); }
+    #inv-items tbody td { padding:0; border:0; }
+    #inv-items tbody td:first-child { grid-column:1 / -1; }
+    #inv-items tbody td:nth-child(3) { display:none; }
+    #inv-items tbody tr:hover td { background:none; }
+}
+
 /* Qty control */
 .qty-ctrl         { display:inline-flex; align-items:center; gap:0;
                     border:1px solid rgba(20,40,20,.12); border-radius:10px;

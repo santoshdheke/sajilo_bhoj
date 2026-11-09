@@ -140,6 +140,14 @@
     .mi-btn span { display:none; }
     .mi-btn { padding:8px 11px; }
     .mi-search, .mi-search input { width:100%; }
+    /* Three tabs fit on a phone: smaller padding, icon circle hidden */
+    .mi-tabs .mi-tab { padding:8px 4px; font-size:.82rem; gap:4px; }
+    .mi-tab .plus { display:none; }
+    /* Category header: name keeps its space, count drops under it, buttons stay compact */
+    .mi-head { flex-wrap:wrap; gap:8px; }
+    .mi-head h3 { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1 1 auto; max-width:calc(100% - 170px); }
+    .mi-count { order:5; flex-basis:100%; padding-left:42px; margin-top:-8px; }
+    .mi-add-btn { white-space:nowrap; padding:6px 12px; }
 }
 </style>
 
