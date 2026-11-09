@@ -55,4 +55,16 @@ class Company extends Model
     {
         return $this->hasMany(Subscription::class);
     }
+
+    /** Plan of the latest subscription, looked up once per request. */
+    public function currentPlan(): ?Plan
+    {
+        if (! array_key_exists('current_plan', $this->relations)) {
+            $sub = Subscription::withoutGlobalScope('company')->with('plan')
+                ->where('company_id', $this->id)->latest('id')->first();
+            $this->setRelation('current_plan', $sub?->plan);
+        }
+
+        return $this->relations['current_plan'];
+    }
 }

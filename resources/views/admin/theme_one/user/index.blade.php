@@ -56,6 +56,7 @@ tr.is-off td { opacity:.6; }
 .perm-item:has(input:checked) { border-color:color-mix(in srgb, var(--primary) 45%, white);background:color-mix(in srgb, var(--primary) 6%, white); }
 .perm-item input { accent-color:var(--primary);width:16px;height:16px; }
 .perm-item.locked { opacity:.65;cursor:default; }
+.perm-item .plan-tag { margin-left:auto;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:999px;background:#fff4dc;color:#9a6700; }
 @media (max-width:575px) { .perm-list { grid-template-columns:1fr; } .us-tabs { display:flex; } .us-tab { flex:1;justify-content:center; } }
 </style>
 
@@ -113,6 +114,7 @@ tr.is-off td { opacity:.6; }
                     @php $locked = in_array($key, \App\Models\Role::ALWAYS, true); @endphp
                     <label class="perm-item {{ $locked ? 'locked' : '' }}" @if($locked) title="Everyone lands on the dashboard after signing in" @endif>
                         <input type="checkbox" value="{{ $key }}" {{ $locked ? 'checked disabled' : '' }}> {{ $label }}
+                        @unless(auth()->user()->planAllows($key))<span class="plan-tag" title="Not in your current plan — upgrade to use it">Upgrade</span>@endunless
                     </label>
                     @endforeach
                 </div>

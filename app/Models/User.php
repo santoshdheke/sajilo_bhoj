@@ -53,9 +53,17 @@ class User extends Authenticatable
         return $this->hasMany(Order::class, 'created_by');
     }
 
+    /** Allowed by the user's role AND included in the restaurant's plan. */
     public function hasPermission(string $permission): bool
     {
-        return (bool) $this->role?->hasPermission($permission);
+        return (bool) $this->role?->hasPermission($permission) && $this->planAllows($permission);
+    }
+
+    public function planAllows(string $permission): bool
+    {
+        $plan = $this->company?->currentPlan();
+
+        return ! $plan || $plan->hasFeature($permission);
     }
 
     public function getInitialsAttribute(): string
