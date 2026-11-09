@@ -40,18 +40,25 @@ class CompanyRegistrationController extends Controller
     {
         $domain = $request->getHost();
 
-        if (Domain::where('domain', $domain)->exists()) {
+        $existing = Domain::with('company')->where('domain', $domain)->first();
+        if ($existing?->company && $existing->company->isVerified()) {
             throw ValidationException::withMessages([
                 'company_name' => "A workspace already exists for {$domain}.",
             ]);
+        }
+        // Someone started a sign-up here but never verified the email: start over cleanly.
+        if ($existing) {
+            DB::transaction(fn () => $existing->company ? $existing->company->purgeUnverified() : $existing->delete());
         }
 
         $data = $request->validate([
             'company_name' => 'required|string|max:255',
             'theme_color'  => ['nullable', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'owner_name'   => 'required|string|max:255',
-            'owner_email'  => 'required|email|max:255|unique:companies,email',
+            'owner_email'  => 'required|email|max:255|unique:companies,email|unique:users,email',
             'password'     => 'required|string|min:8|confirmed',
+        ], [
+            'owner_email.unique' => 'This email is already used by another workspace.',
         ]);
 
         $owner = DB::transaction(function () use ($data, $domain) {
@@ -102,9 +109,10 @@ class CompanyRegistrationController extends Controller
         Auth::guard('web')->login($owner);
         $request->session()->regenerate();
 
+        // The workspace goes live once the owner verifies their email (code is sent on that screen).
         return redirect()
-            ->route('admin.dashboard.index')
-            ->with('status', "Workspace \"{$data['company_name']}\" is ready.");
+            ->route('admin.verify_email.show')
+            ->with('status', "Almost done! We sent a code to {$data['owner_email']}.");
     }
 
     /**

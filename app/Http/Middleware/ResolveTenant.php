@@ -36,6 +36,14 @@ class ResolveTenant
             abort(410, $host);
         }
 
+        // Signed up but the owner never verified the email: the workspace doesn't exist yet,
+        // so show the "Create your workspace" (410) page again. Only the owner's own
+        // verify-code screen (and logout) stay reachable, to finish the sign-up they started.
+        if ($domain->company && ! $domain->company->isVerified()
+            && ! $request->routeIs('admin.verify_email.*', 'admin.logout')) {
+            abort(410, $host);
+        }
+
         if ($domain && $domain->company && $domain->company->status) {
             App::instance('tenant', $domain->company);
 

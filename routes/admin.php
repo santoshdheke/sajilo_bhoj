@@ -20,11 +20,20 @@ use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\SubscriptionController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\VerifyEmailController;
+use App\Http\Middleware\EnsureOwnerEmailVerified;
 use App\Http\Middleware\EnsureSubscriptionChosen;
 use Illuminate\Support\Facades\Route;
 
-Route::withoutMiddleware(EnsureSubscriptionChosen::class)->group(function () {
+// Owner email verification and logout work before the email is verified or a plan is chosen.
+Route::withoutMiddleware([EnsureOwnerEmailVerified::class, EnsureSubscriptionChosen::class])->group(function () {
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('verify-email', [VerifyEmailController::class, 'show'])->name('verify_email.show');
+    Route::post('verify-email', [VerifyEmailController::class, 'verify'])->middleware('throttle:10,1')->name('verify_email.verify');
+    Route::post('verify-email/resend', [VerifyEmailController::class, 'resend'])->middleware('throttle:5,1')->name('verify_email.resend');
+});
+
+Route::withoutMiddleware(EnsureSubscriptionChosen::class)->group(function () {
 
     Route::get('subscription/choose', [SubscriptionController::class, 'choose'])->name('subscription.choose');
     Route::post('subscription/choose', [SubscriptionController::class, 'store'])->name('subscription.store');

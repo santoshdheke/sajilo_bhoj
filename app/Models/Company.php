@@ -67,4 +67,27 @@ class Company extends Model
 
         return $this->relations['current_plan'];
     }
+
+    /** A workspace is live once its owner has verified their email. Looked up once per request. */
+    public function isVerified(): bool
+    {
+        return $this->verified ??= User::where('company_id', $this->id)->whereNotNull('email_verified_at')->exists();
+    }
+
+    /** Per-request cache for isVerified() (a plain property, never saved). */
+    private ?bool $verified = null;
+
+    /**
+     * Remove a sign-up that was never verified, with everything it created
+     * (users first: they are only unlinked, not deleted, when a company goes; then copied menu photos).
+     */
+    public function purgeUnverified(): void
+    {
+        $branchIds = Branch::withoutGlobalScopes()->where('company_id', $this->id)->pluck('id');
+        MenuCategory::withoutGlobalScopes()->whereIn('branch_id', $branchIds)->whereNotNull('image')->pluck('image')
+            ->each(fn ($path) => \Illuminate\Support\Facades\Storage::disk('public')->delete($path));
+
+        User::where('company_id', $this->id)->delete();
+        $this->delete();
+    }
 }

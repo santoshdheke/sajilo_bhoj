@@ -53,6 +53,8 @@ class UserController extends Controller
             'password'   => Hash::make($data['password']),
             'is_active'  => true,
         ]);
+        // Created by the owner, so trusted: only owners who sign up verify by email.
+        $user->forceFill(['email_verified_at' => now()])->save();
 
         return response()->json($this->payload($user));
     }

@@ -24,7 +24,11 @@ class ProfileController extends Controller
             'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $user->id],
         ]);
 
-        $user->update($request->only('name', 'email'));
+        $user->fill($request->only('name', 'email'));
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null; // a new address must be verified again (owners are asked for a code)
+        }
+        $user->save();
 
         return back()->with('success', 'Profile updated successfully.');
     }
