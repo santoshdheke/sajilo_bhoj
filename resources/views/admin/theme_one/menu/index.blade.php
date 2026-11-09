@@ -25,7 +25,15 @@
 .mi-tab .plus    { width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.8rem;
                    background:color-mix(in srgb, var(--primary) 14%, white); }
 .mi-tab.active .plus { background:var(--primary);color:#fff; }
+.mi-tabs .mi-tab { padding:8px 8px; }
 .mi-pane         { display:none; }
+
+/* QR tab */
+.qr-box          { display:flex;justify-content:center;padding:18px;border-radius:16px;margin-bottom:14px;
+                   background:color-mix(in srgb, var(--primary) 6%, white); }
+.qr-box canvas   { width:220px;height:220px;max-width:100%;background:#fff;border-radius:12px;padding:10px;box-shadow:0 4px 18px rgba(0,0,0,.06); }
+.qr-url          { font-size:.8rem;word-break:break-all;color:var(--muted);text-align:center;margin-bottom:14px; }
+.qr-url a        { color:var(--primary);font-weight:600; }
 .mi-pane.active  { display:block; }
 .mi-pane h5      { font-weight:800;margin-bottom:16px; }
 
@@ -160,6 +168,9 @@
                     <a href="{{ route('admin.menu.index', ['tab' => 'category']) }}" class="mi-tab {{ $tab === 'category' ? 'active' : '' }}" data-tab="category" role="tab">
                         <span class="plus"><i class="bi bi-plus-lg"></i></span>Category
                     </a>
+                    <a href="{{ route('admin.menu.index', ['tab' => 'qr']) }}" class="mi-tab {{ $tab === 'qr' ? 'active' : '' }}" data-tab="qr" role="tab">
+                        <span class="plus"><i class="bi bi-qr-code"></i></span>QR Code
+                    </a>
                 </div>
 
                 {{-- Add Menu Item --}}
@@ -247,6 +258,28 @@
                         Double-click a category name in the list to rename it. To change a photo or hide a category, use the <a href="{{ route('admin.menu_category.index') }}" style="color:var(--primary);font-weight:600;">Categories</a> page.
                     </p>
                 </div>
+
+                {{-- Menu QR code --}}
+                <div class="mi-pane {{ $tab === 'qr' ? 'active' : '' }}" data-pane="qr">
+                    <div class="mi-pane-head"><div><h5>Menu QR Code</h5><div class="text-secondary small">Guests scan it to open your menu.</div></div></div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="qrTable">Link to</label>
+                        <select class="form-select" id="qrTable">
+                            <option value="{{ route('frontend.menu.index') }}" data-label="menu">Whole menu (no table)</option>
+                            @foreach($tables as $t)
+                            <option value="{{ route('frontend.menu.index', $t->id) }}" data-label="table-{{ $t->table_no ?: $t->id }}">
+                                Table {{ $t->table_no }}
+                            </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="qr-box"><canvas id="qrCanvas" width="600" height="600" aria-label="Menu QR code"></canvas></div>
+                    <div class="qr-url"><a id="qrLink" href="#" target="_blank" rel="noopener"></a></div>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-primary flex-fill" id="qrDownload"><i class="bi bi-download me-1"></i>Download</button>
+                        <button type="button" class="btn btn-outline-secondary flex-fill" id="qrPrint"><i class="bi bi-printer me-1"></i>Print</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -331,6 +364,7 @@
 
 @push('js')
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <script>
 const CSRF   = '{{ csrf_token() }}';
 const SYMBOL = @json($symbol);
@@ -351,7 +385,7 @@ function showError(id, msg) {
     el.textContent = msg; el.classList.toggle('d-none', !msg);
 }
 
-/* ════════ Tabs (?tab=menu | ?tab=category) ════════ */
+/* ════════ Tabs (?tab=menu | ?tab=category | ?tab=qr) ════════ */
 function setTab(tab) {
     document.querySelectorAll('.mi-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
     document.querySelectorAll('.mi-pane').forEach(p => p.classList.toggle('active', p.dataset.pane === tab));
@@ -360,6 +394,46 @@ function setTab(tab) {
     history.replaceState(null, '', url);
 }
 document.querySelectorAll('.mi-tab').forEach(t => t.addEventListener('click', e => { e.preventDefault(); setTab(t.dataset.tab); }));
+
+/* ════════ Menu QR code ════════ */
+(function () {
+    const select = document.getElementById('qrTable'), canvas = document.getElementById('qrCanvas'), link = document.getElementById('qrLink');
+    if (!select || typeof qrcode === 'undefined') return;
+
+    // Draw the QR for the chosen link onto the canvas (white quiet zone around it).
+    function draw() {
+        const url = select.value, qr = qrcode(0, 'M');
+        qr.addData(url); qr.make();
+        const n = qr.getModuleCount(), quiet = 4, size = canvas.width, cell = size / (n + quiet * 2);
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, size, size);
+        ctx.fillStyle = '#111';
+        for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
+            if (qr.isDark(r, c)) ctx.fillRect(Math.floor((c + quiet) * cell), Math.floor((r + quiet) * cell), Math.ceil(cell), Math.ceil(cell));
+        }
+        link.href = url; link.textContent = url;
+    }
+
+    document.getElementById('qrDownload').addEventListener('click', () => {
+        const a = document.createElement('a');
+        a.download = 'qr-' + select.selectedOptions[0].dataset.label + '.png';
+        a.href = canvas.toDataURL('image/png');
+        a.click();
+    });
+
+    document.getElementById('qrPrint').addEventListener('click', () => {
+        const label = select.selectedOptions[0].textContent.trim();
+        const w = window.open('', '_blank');
+        if (!w) return;
+        w.document.write(`<!doctype html><title>Menu QR</title><body style="font-family:sans-serif;text-align:center;padding:40px">
+            <h2 style="margin:0 0 6px">Scan to see our menu</h2><p style="margin:0 0 20px;color:#555">${esc(label)}</p>
+            <img src="${canvas.toDataURL('image/png')}" style="width:320px;height:320px" onload="print()"></body>`);
+        w.document.close();
+    });
+
+    select.addEventListener('change', draw);
+    draw();
+})();
 
 /* ════════ Rows & sections ════════ */
 function rowHtml(d) {

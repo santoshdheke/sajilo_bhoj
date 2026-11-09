@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\FloorTable;
 use App\Models\MenuCategory;
 use App\Models\MenuItem;
 use App\Models\Setting;
@@ -15,15 +16,18 @@ class MenuController extends Controller
 {
     public function index(Request $request)
     {
-        // Left panel tab: ?tab=menu (default) or ?tab=category
-        $tab = $request->query('tab') === 'category' ? 'category' : 'menu';
+        // Left panel tab: ?tab=menu (default), ?tab=category or ?tab=qr
+        $tab = in_array($request->query('tab'), ['category', 'qr'], true) ? $request->query('tab') : 'menu';
 
         // Every category of this branch (hidden ones too, so their dishes stay manageable), with its dishes.
         $categories = MenuCategory::with('menuItems')->orderBy('sort_order')->orderBy('name')->get();
         $companyId  = Tenancy::company()?->id;
         $currency   = ($companyId ? Setting::getValue($companyId, 'currency') : null) ?: 'NPR';
 
-        return view('admin.theme_one.menu.index', compact('categories', 'currency', 'tab'));
+        // Tables for the QR tab, so a code can open the menu for one table.
+        $tables = FloorTable::orderBy('table_no')->get(['id', 'table_no']);
+
+        return view('admin.theme_one.menu.index', compact('categories', 'currency', 'tab', 'tables'));
     }
 
     /**
