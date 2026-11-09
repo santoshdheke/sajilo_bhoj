@@ -46,10 +46,10 @@ div.cat-thumb { display:flex;align-items:center;justify-content:center;color:var
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Photo</label>
                     <label class="cat-photo" id="editPhoto">
+                        <input type="file" accept="image/*" class="d-none">
                         <img alt="">
                         <span class="cp-empty"><i class="bi bi-image"></i>Choose a photo<small>JPG, PNG or WEBP · max 3 MB</small></span>
                         <button type="button" class="cp-remove" title="Remove photo"><i class="bi bi-x-lg"></i></button>
-                        <input type="file" accept="image/*" class="d-none">
                     </label>
                 </div>
                 <div class="mb-3">
@@ -97,10 +97,10 @@ div.cat-thumb { display:flex;align-items:center;justify-content:center;color:var
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Photo</label>
                     <label class="cat-photo" id="addPhoto">
+                        <input type="file" accept="image/*" class="d-none">
                         <img alt="">
                         <span class="cp-empty"><i class="bi bi-image"></i>Choose a photo<small>JPG, PNG or WEBP · max 3 MB</small></span>
                         <button type="button" class="cp-remove" title="Remove photo"><i class="bi bi-x-lg"></i></button>
-                        <input type="file" accept="image/*" class="d-none">
                     </label>
                 </div>
 

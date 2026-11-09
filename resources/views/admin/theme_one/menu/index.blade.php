@@ -87,8 +87,6 @@
 .mi-row.is-off .mi-avail span { color:#b02a37; }
 .mi-btns         { display:flex;gap:8px; }
 .mi-btn          { display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:999px;border:0;font-size:.85rem;font-weight:700;transition:.15s; }
-.mi-btn.edit     { background:color-mix(in srgb, var(--primary) 12%, white);color:var(--primary); }
-.mi-btn.edit:hover { background:var(--primary);color:#fff; }
 .mi-btn.del      { background:#fde7ea;color:#d6304a; }
 .mi-btn.del:hover { background:#d6304a;color:#fff; }
 .mi-empty-row    { padding:14px 16px;color:var(--muted);font-size:.85rem; }
@@ -104,6 +102,19 @@
 .mi-ghost        { opacity:.45;background:color-mix(in srgb, var(--primary) 10%, white) !important;outline:2px dashed color-mix(in srgb, var(--primary) 45%, white);outline-offset:-2px; }
 .mi-chosen       { box-shadow:0 10px 28px rgba(20,32,26,.16); }
 .no-drag-items .mi-grip, .no-drag-cats .mi-sec-grip { visibility:hidden; }
+/* Double-click inline editing */
+.mi-row .mi-info, .mi-row .mi-price, .mi-cat-name { cursor:text; }
+.mi-row:not(.editing) .mi-info, .mi-row:not(.editing) .mi-price, .mi-cat-name { user-select:none; }
+.mi-row.editing  { background:color-mix(in srgb, var(--primary) 5%, white); }
+.mi-row.editing .form-control { border-radius:10px;padding:5px 10px;font-size:.88rem; }
+.mi-row.editing .mi-in-name { font-weight:700; }
+.mi-row.saving   { opacity:.6;pointer-events:none; }
+.mi-cat-name     { border-radius:6px;padding:1px 4px;margin-left:-4px; }
+.mi-cat-name:hover { background:rgba(255,255,255,.65); }
+.mi-cat-input    { max-width:240px;height:32px;padding:3px 10px;font-weight:800;border-radius:10px; }
+.mi-cat-del      { width:32px;height:32px;border-radius:50%;border:0;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+                   background:#fff;color:#d6304a;transition:.15s; }
+.mi-cat-del:hover { background:#d6304a;color:#fff; }
 .mi-hint         { font-size:.8rem;color:var(--muted);margin:14px 2px 0;display:flex;align-items:center;gap:6px; }
 .mi-hint i       { color:var(--primary); }
 
@@ -123,54 +134,6 @@
     .mi-search, .mi-search input { width:100%; }
 }
 </style>
-
-{{-- ── Edit Item Modal ── --}}
-<div class="modal fade" id="editItemModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Edit Menu Item</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="editId">
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Item Name <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="editName" maxlength="150">
-                </div>
-                <div class="row g-3 mb-3">
-                    <div class="col-sm-6">
-                        <label class="form-label fw-semibold">Category <span class="text-danger">*</span></label>
-                        <select class="form-select" id="editCategory">
-                            @foreach($categories as $cat)
-                            <option value="{{ $cat->id }}">{{ $cat->name }}{{ $cat->is_active ? '' : ' (hidden)' }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-sm-6">
-                        <label class="form-label fw-semibold">Price <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                            <span class="input-group-text" style="border-radius:14px 0 0 14px;">{{ $symbol }}</span>
-                            <input type="number" class="form-control" id="editPrice" min="0" step="0.01" placeholder="0" style="border-radius:0 14px 14px 0;">
-                        </div>
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Description</label>
-                    <textarea class="form-control" id="editDesc" rows="3" maxlength="500" placeholder="Optional — shown under the name"></textarea>
-                </div>
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="editAvailable" checked>
-                    <label class="form-check-label fw-semibold" for="editAvailable">Available</label>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="editSaveBtn"><i class="bi bi-check-lg me-1"></i>Update Item</button>
-            </div>
-        </div>
-    </div>
-</div>
 
 <div class="page-title mb-4">
     <h2 class="mi-title">
@@ -269,10 +232,10 @@
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Photo</label>
                         <label class="cat-photo" id="catPhoto">
+                            <input type="file" accept="image/*" class="d-none">
                             <img alt="">
                             <span class="cp-empty"><i class="bi bi-image"></i>Choose a photo<small>JPG, PNG or WEBP · max 3 MB</small></span>
                             <button type="button" class="cp-remove" title="Remove photo"><i class="bi bi-x-lg"></i></button>
-                            <input type="file" accept="image/*" class="d-none">
                         </label>
                     </div>
                     <div class="mb-4">
@@ -281,7 +244,7 @@
                     </div>
                     <button class="btn btn-primary w-100" id="catSaveBtn"><i class="bi bi-plus-lg me-1"></i>Create Category</button>
                     <p class="text-secondary small text-center mt-3 mb-0">
-                        Edit or delete categories on the <a href="{{ route('admin.menu_category.index') }}" style="color:var(--primary);font-weight:600;">Categories</a> page.
+                        Double-click a category name in the list to rename it. To change a photo or hide a category, use the <a href="{{ route('admin.menu_category.index') }}" style="color:var(--primary);font-weight:600;">Categories</a> page.
                     </p>
                 </div>
             </div>
@@ -298,7 +261,7 @@
                 @foreach($categories as $cat)
                 <button type="button" class="mi-chip" data-cat="{{ $cat->id }}">
                     @if($cat->image)<img class="ci" src="{{ $cat->imageUrl() }}" alt="">@else<span class="ci"><i class="bi bi-egg-fried"></i></span>@endif
-                    {{ $cat->name }} <span class="n">(<span data-count="{{ $cat->id }}">{{ $cat->menuItems->count() }}</span>)</span>
+                    <span class="cn">{{ $cat->name }}</span> <span class="n">(<span data-count="{{ $cat->id }}">{{ $cat->menuItems->count() }}</span>)</span>
                 </button>
                 @endforeach
             </div>
@@ -317,7 +280,7 @@
         @endif
 
         @if($total)
-        <p class="mi-hint" id="dragHint"><i class="bi bi-grip-vertical"></i>Drag the handle to reorder dishes, move a dish to another category, or reorder whole categories.</p>
+        <p class="mi-hint" id="dragHint"><i class="bi bi-hand-index-thumb"></i><span><strong>Double-click</strong> a dish or category name to edit it (Enter saves, Esc cancels). <strong>Drag</strong> <i class="bi bi-grip-vertical"></i> to reorder or move dishes.</span></p>
         @endif
         <div id="sections">
             @foreach($categories as $cat)
@@ -329,26 +292,27 @@
                     @else
                     <span class="mi-ico"><i class="bi bi-egg-fried"></i></span>
                     @endif
-                    <h3>{{ $cat->name }}</h3>
+                    <h3 class="mi-cat-name" title="Double-click to rename">{{ $cat->name }}</h3>
                     <span class="mi-count"></span>
                     @unless($cat->is_active)<span class="mi-hidden" title="Hidden from the website">Hidden</span>@endunless
                     <button type="button" class="mi-add-btn" onclick="addInto({{ $cat->id }})"><i class="bi bi-plus-lg"></i>Add Item</button>
+                    <button type="button" class="mi-cat-del" title="Delete category" onclick="deleteCategory({{ $cat->id }})"><i class="bi bi-trash3"></i></button>
                 </header>
                 <ul class="mi-list">
                     @foreach($cat->menuItems as $item)
-                    <li class="mi-row {{ $item->is_available ? '' : 'is-off' }}" data-id="{{ $item->id }}" data-name="{{ Str::lower($item->name) }}">
+                    <li class="mi-row {{ $item->is_available ? '' : 'is-off' }}" data-id="{{ $item->id }}" data-name="{{ Str::lower($item->name) }}"
+                        data-title="{{ $item->name }}" data-desc="{{ $item->description }}" data-price="{{ (float) $item->price }}">
                         <span class="mi-grip" title="Drag to reorder"><i class="bi bi-grip-vertical"></i></span>
-                        <div class="min-w-0" style="min-width:0;">
+                        <div class="mi-info" style="min-width:0;" title="Double-click to edit">
                             <div class="mi-name">{{ $item->name }}</div>
                             @if($item->description)<div class="mi-desc">{{ $item->description }}</div>@endif
                         </div>
-                        <div class="mi-price">{{ \App\Support\Money::format($item->price, $currency) }}</div>
+                        <div class="mi-price" title="Double-click to edit">{{ \App\Support\Money::format($item->price, $currency) }}</div>
                         <div class="mi-avail">
                             <button class="avail-toggle {{ $item->is_available ? 'on' : 'off' }}" title="Click to change availability" onclick="toggleAvail({{ $item->id }}, this)"></button>
                             <span>{{ $item->is_available ? 'Available' : 'Unavailable' }}</span>
                         </div>
                         <div class="mi-btns">
-                            <button class="mi-btn edit" onclick="openEditItem({{ $item->id }})"><i class="bi bi-pencil-square"></i><span>Edit</span></button>
                             <button class="mi-btn del" onclick="deleteItem({{ $item->id }})"><i class="bi bi-trash3"></i><span>Delete</span></button>
                         </div>
                     </li>
@@ -371,7 +335,6 @@
 const CSRF   = '{{ csrf_token() }}';
 const SYMBOL = @json($symbol);
 const MAX_PHOTO = 3 * 1024 * 1024;
-const _editModal = new bootstrap.Modal(document.getElementById('editItemModal'));
 
 const esc   = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money = n => { n = Number(n) || 0; return SYMBOL + ' ' + n.toLocaleString('en-US', Number.isInteger(n) ? {} : {minimumFractionDigits: 2, maximumFractionDigits: 2}); };
@@ -401,13 +364,13 @@ document.querySelectorAll('.mi-tab').forEach(t => t.addEventListener('click', e 
 /* ════════ Rows & sections ════════ */
 function rowHtml(d) {
     const on = !!d.is_available;
-    return `<li class="mi-row ${on ? '' : 'is-off'}" data-id="${d.id}" data-name="${esc(d.name.toLowerCase())}">
+    return `<li class="mi-row ${on ? '' : 'is-off'}" data-id="${d.id}" data-name="${esc(d.name.toLowerCase())}"
+            data-title="${esc(d.name)}" data-desc="${esc(d.description || '')}" data-price="${Number(d.price)}">
         <span class="mi-grip" title="Drag to reorder"><i class="bi bi-grip-vertical"></i></span>
-        <div style="min-width:0;"><div class="mi-name">${esc(d.name)}</div>${d.description ? `<div class="mi-desc">${esc(d.description)}</div>` : ''}</div>
-        <div class="mi-price">${money(d.price)}</div>
+        <div class="mi-info" style="min-width:0;" title="Double-click to edit"><div class="mi-name">${esc(d.name)}</div>${d.description ? `<div class="mi-desc">${esc(d.description)}</div>` : ''}</div>
+        <div class="mi-price" title="Double-click to edit">${money(d.price)}</div>
         <div class="mi-avail"><button class="avail-toggle ${on ? 'on' : 'off'}" title="Click to change availability" onclick="toggleAvail(${d.id}, this)"></button><span>${on ? 'Available' : 'Unavailable'}</span></div>
         <div class="mi-btns">
-            <button class="mi-btn edit" onclick="openEditItem(${d.id})"><i class="bi bi-pencil-square"></i><span>Edit</span></button>
             <button class="mi-btn del" onclick="deleteItem(${d.id})"><i class="bi bi-trash3"></i><span>Delete</span></button>
         </div>
     </li>`;
@@ -609,63 +572,139 @@ document.getElementById('catSaveBtn').addEventListener('click', async () => {
     location.reload();
 });
 
-/* ════════ Edit item ════════ */
-async function openEditItem(id) {
-    const res = await fetch(`/admin/menu/${id}`, {headers: {'Accept': 'application/json'}});
-    if (!res.ok) { notify.error('This item could not be loaded.'); return; }
-    const d = await res.json();
-    document.getElementById('editId').value          = d.id;
-    document.getElementById('editName').value        = d.name;
-    document.getElementById('editCategory').value    = d.menu_category_id;
-    document.getElementById('editPrice').value       = d.price;
-    document.getElementById('editDesc').value        = d.description || '';
-    document.getElementById('editAvailable').checked = d.is_available;
-    _editModal.show();
+/* ════════ Double-click: edit a dish in its row ════════ */
+function replaceRow(old, d) {
+    const tmp = document.createElement('ul'); tmp.innerHTML = rowHtml(d).trim();
+    const li = tmp.firstElementChild;
+    old.replaceWith(li);
+    return li;
 }
+function restoreRow(li) {
+    replaceRow(li, {
+        id: +li.dataset.id, name: li.dataset.title, description: li.dataset.desc,
+        price: +li.dataset.price, is_available: !li.classList.contains('is-off'),
+    });
+}
+function startEdit(li) {
+    if (li.classList.contains('editing')) return;
+    document.querySelectorAll('.mi-row.editing').forEach(saveRow); // one row at a time
+    li.classList.add('editing');
+    li.querySelector('.mi-info').innerHTML =
+        `<input class="form-control mi-in-name" maxlength="150" value="${esc(li.dataset.title)}" aria-label="Name">
+         <input class="form-control mi-in-desc mt-1" maxlength="500" value="${esc(li.dataset.desc)}" placeholder="Description (optional)" aria-label="Description">`;
+    li.querySelector('.mi-price').innerHTML =
+        `<input type="number" class="form-control mi-in-price" min="0" step="0.01" value="${esc(li.dataset.price)}" aria-label="Price">`;
+    const name = li.querySelector('.mi-in-name');
+    name.focus(); name.select();
+}
+async function saveRow(li) {
+    if (!li.classList.contains('editing') || li.classList.contains('saving')) return;
+    const name  = li.querySelector('.mi-in-name').value.trim();
+    const desc  = li.querySelector('.mi-in-desc').value.trim();
+    const price = li.querySelector('.mi-in-price').value;
 
-document.getElementById('editSaveBtn').addEventListener('click', async () => {
-    const id    = document.getElementById('editId').value;
-    const name  = document.getElementById('editName').value.trim();
-    const catId = document.getElementById('editCategory').value;
-    const price = document.getElementById('editPrice').value;
-    if (!name || !catId || price === '') { notify.error('Name, category and price are required.'); return; }
-
-    const btn = document.getElementById('editSaveBtn');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>';
+    if (name === li.dataset.title && desc === li.dataset.desc && Number(price) === Number(li.dataset.price)) { restoreRow(li); return; }
+    if (!name || price === '' || Number(price) < 0) { notify.error('Name and a valid price are required.'); li.querySelector(name ? '.mi-in-price' : '.mi-in-name').focus(); return; }
 
     const fd = new FormData();
     fd.append('name', name);
-    fd.append('menu_category_id', catId);
+    fd.append('description', desc);
     fd.append('price', price);
-    fd.append('description', document.getElementById('editDesc').value.trim());
-    fd.append('is_available', document.getElementById('editAvailable').checked ? '1' : '0');
+    fd.append('menu_category_id', li.closest('.mi-sec').dataset.cat);
+    fd.append('is_available', li.classList.contains('is-off') ? '0' : '1');
     fd.append('_token', CSRF);
 
+    li.classList.add('saving');
     let res, data = {};
     try {
-        res  = await fetch(`/admin/menu/${id}`, {method: 'POST', body: fd, headers: {'Accept': 'application/json'}});
+        res  = await fetch(`/admin/menu/${li.dataset.id}`, {method: 'POST', body: fd, headers: {'Accept': 'application/json'}});
         data = await readJson(res);
     } catch (e) {
         res = {ok: false, status: 0};
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Update Item';
     }
-    if (!res.ok) { notify.error(saveError(res, data)); return; }
-
-    _editModal.hide();
-    const old = document.querySelector(`.mi-row[data-id="${id}"]`);
-    if (old && old.closest('.mi-sec').dataset.cat == data.menu_category_id) {
-        const tmp = document.createElement('ul'); tmp.innerHTML = rowHtml(data).trim();
-        old.replaceWith(tmp.firstElementChild);
-        flash(document.querySelector(`.mi-row[data-id="${id}"]`));
-    } else {
-        old?.remove();
-        flash(placeRow(data));
-    }
+    li.classList.remove('saving');
+    if (!res.ok) { notify.error(saveError(res, data)); li.querySelector('.mi-in-name').focus(); return; }
+    flash(replaceRow(li, data));
     applyFilter();
+}
+const sectionsEl = document.getElementById('sections');
+sectionsEl?.addEventListener('dblclick', e => {
+    if (e.target.closest('.mi-avail, .mi-btns, .mi-grip, input')) return;
+    const li = e.target.closest('.mi-row');
+    if (li) { window.getSelection()?.removeAllRanges(); startEdit(li); return; }
+    const title = e.target.closest('.mi-cat-name');
+    if (title) startRename(title);
 });
+sectionsEl?.addEventListener('keydown', e => {
+    const li = e.target.closest('.mi-row.editing');
+    if (!li) return;
+    if (e.key === 'Enter')  { e.preventDefault(); saveRow(li); }
+    if (e.key === 'Escape') { e.preventDefault(); restoreRow(li); }
+});
+// Clicking outside the row saves it
+sectionsEl?.addEventListener('focusout', e => {
+    const li = e.target.closest('.mi-row.editing');
+    if (!li) return;
+    setTimeout(() => { if (li.isConnected && !li.contains(document.activeElement)) saveRow(li); }, 120);
+});
+
+/* ════════ Double-click: rename a category ════════ */
+function startRename(h3) {
+    if (h3.querySelector('input')) return;
+    const sec = h3.closest('.mi-sec'), old = h3.textContent.trim();
+    h3.innerHTML = `<input class="form-control mi-cat-input" maxlength="100" value="${esc(old)}" aria-label="Category name">`;
+    const input = h3.querySelector('input');
+    input.focus(); input.select();
+    let done = false;
+    const finish = async (save) => {
+        if (done) return; done = true;
+        const name = input.value.trim();
+        if (!save || !name || name === old) { h3.textContent = old; return; }
+        const fd = new FormData();
+        fd.append('_method', 'PUT');
+        fd.append('name', name);
+        input.disabled = true;
+        let res, data = {};
+        try {
+            res  = await fetch(`/admin/menu-category/${sec.dataset.cat}`, {method: 'POST', body: fd, headers: {'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json'}});
+            data = await readJson(res);
+        } catch (e) {
+            res = {ok: false, status: 0};
+        }
+        if (!res.ok) { notify.error(saveError(res, data)); h3.textContent = old; return; }
+        h3.textContent = data.name;
+        const chipName = document.querySelector(`.mi-chip[data-cat="${sec.dataset.cat}"] .cn`);
+        if (chipName) chipName.textContent = data.name;
+        const opt = document.querySelector(`#addCategory option[value="${sec.dataset.cat}"]`);
+        if (opt) opt.textContent = data.name + (data.is_active ? '' : ' (hidden)');
+    };
+    input.addEventListener('keydown', e => {
+        if (e.key === 'Enter')  { e.preventDefault(); finish(true); }
+        if (e.key === 'Escape') { e.preventDefault(); finish(false); }
+    });
+    input.addEventListener('blur', () => finish(true));
+}
+
+/* ════════ Delete a category (and its dishes) ════════ */
+async function deleteCategory(id) {
+    const sec = sectionOf(id);
+    const name = sec?.querySelector('.mi-cat-name')?.textContent.trim() || 'this category';
+    const n = sec ? sec.querySelectorAll('.mi-row').length : 0;
+    const msg = n ? `Delete "${name}"? Its ${n} ${n === 1 ? 'dish' : 'dishes'} will be deleted too. This cannot be undone.` : `Delete category "${name}"?`;
+    if (!confirm(msg)) return;
+    let res;
+    try {
+        res = await fetch(`/admin/menu-category/${id}`, {method: 'DELETE', headers: {'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json'}});
+    } catch (e) {
+        res = {ok: false};
+    }
+    if (!res.ok) { notify.error('The category could not be deleted.'); return; }
+    sec?.remove();
+    document.querySelector(`.mi-chip[data-cat="${id}"]`)?.remove();
+    document.querySelector(`#addCategory option[value="${id}"]`)?.remove();
+    if (activeCat === String(id)) document.querySelector('.mi-chip[data-cat="all"]')?.click();
+    applyFilter();
+}
 
 /* ════════ Toggle availability ════════ */
 async function toggleAvail(id, btn) {
