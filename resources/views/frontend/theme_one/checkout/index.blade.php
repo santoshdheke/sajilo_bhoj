@@ -4,7 +4,7 @@
     <section class="page-banner">
         <div class="container text-center">
             <h1>Checkout</h1>
-            <p class="mb-0 text-white-50">Review your order, apply a coupon, and confirm your details.</p>
+            <p class="mb-0 text-white-50">Review your order and confirm your details.</p>
         </div>
     </section>
 
@@ -57,18 +57,9 @@
                             </div>
                         </div>
 
-                        <div class="mb-3 mt-3">
+                        <div class="mb-1 mt-3">
                             <label class="form-label fw-semibold">Notes</label>
                             <textarea class="form-control" id="orderNotes" name="notes" rows="3" placeholder="Any special request…"></textarea>
-                        </div>
-
-                        <div class="mb-1">
-                            <label class="form-label fw-semibold">Coupon Code</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="couponCode" placeholder="e.g. WELCOME10">
-                                <button type="button" class="btn btn-outline-secondary" id="applyCouponBtn">Apply</button>
-                            </div>
-                            <div id="couponMsg" class="small mt-1"></div>
                         </div>
                     </div>
                 </div>
@@ -81,10 +72,6 @@
                         <div class="cart-total-row">
                             <span class="text-muted">Subtotal</span>
                             <span id="sumSubtotal" class="fw-semibold">NRS 0</span>
-                        </div>
-                        <div class="cart-total-row" id="sumDiscountRow" style="display:none;">
-                            <span class="text-muted">Discount <span id="sumCouponCode" class="text-success"></span></span>
-                            <span id="sumDiscount" class="fw-semibold text-success">- NRS 0</span>
                         </div>
                         <div class="cart-total-row" style="margin-bottom:10px;">
                             <span class="fw-bold" style="font-size:1.05rem;">Total</span>
@@ -103,8 +90,6 @@
 @push('scripts')
 <script>
 const CSRF = '{{ csrf_token() }}';
-
-let appliedCoupon = null;
 
 function toggleTableField() {
     const isDineIn = document.getElementById('orderType').value === 'dine_in';
@@ -144,54 +129,14 @@ function renderCheckout() {
 function updateTotals() {
     const cart = getCart();
     const subtotal = cartSubtotal(cart);
-    const discount = appliedCoupon ? appliedCoupon.discount : 0;
-    const total = Math.max(0, subtotal - discount);
-
     document.getElementById('sumSubtotal').textContent = money(subtotal);
-    document.getElementById('sumTotal').textContent    = money(total);
-
-    const row = document.getElementById('sumDiscountRow');
-    if (appliedCoupon) {
-        row.style.display = '';
-        document.getElementById('sumDiscount').textContent  = '- ' + money(discount);
-        document.getElementById('sumCouponCode').textContent = '(' + appliedCoupon.code + ')';
-    } else {
-        row.style.display = 'none';
-    }
+    document.getElementById('sumTotal').textContent    = money(subtotal);
 }
 
 document.getElementById('orderType').addEventListener('change', toggleTableField);
 toggleTableField();
 renderCheckout();
 document.addEventListener('cart:updated', renderCheckout);
-
-document.getElementById('applyCouponBtn').addEventListener('click', async () => {
-    const code = document.getElementById('couponCode').value.trim();
-    const msg  = document.getElementById('couponMsg');
-    msg.textContent = ''; msg.className = 'small mt-1';
-    if (!code) return;
-
-    const subtotal = cartSubtotal(getCart());
-    const res  = await fetch('{{ route("frontend.checkout.coupon") }}', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json','X-CSRF-TOKEN':CSRF},
-        body: JSON.stringify({ code, subtotal })
-    });
-    const data = await res.json();
-
-    if (!res.ok) {
-        appliedCoupon = null;
-        msg.textContent = data.message || 'Invalid coupon code.';
-        msg.classList.add('text-danger');
-        updateTotals();
-        return;
-    }
-
-    appliedCoupon = data;
-    msg.textContent = `Coupon "${data.code}" applied — you saved ${money(data.discount)}.`;
-    msg.classList.add('text-success');
-    updateTotals();
-});
 
 document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -207,7 +152,6 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
         customer_name: document.getElementById('customerName').value.trim(),
         phone:         document.getElementById('customerPhone').value.trim() || null,
         notes:         document.getElementById('orderNotes').value.trim() || null,
-        coupon_code:   appliedCoupon ? appliedCoupon.code : null,
         items: cart.map(i => ({ id: i.id, name: i.name, price: i.price, qty: i.qty })),
     };
 

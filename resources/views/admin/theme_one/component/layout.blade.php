@@ -58,9 +58,6 @@
 
             <div class="section-title">Management</div>
             <a class="nav-link{{ Request::is('admin/report') ? ' active' : '' }}" href="{{ route("admin.report.index") }}"><i class="bi bi-bar-chart"></i> Reports</a>
-            @if(auth()->user()?->hasPermission('coupons.manage'))
-            <a class="nav-link{{ Request::is('admin/coupons') ? ' active' : '' }}" href="{{ route('admin.coupon.index') }}"><i class="bi bi-ticket-perforated"></i> Coupons</a>
-            @endif
             @if(auth()->user()?->hasPermission('customers.manage'))
             <a class="nav-link{{ Request::is('admin/customers') ? ' active' : '' }}" href="{{ route('admin.customer.index') }}"><i class="bi bi-person-hearts"></i> Customers</a>
             @endif
@@ -199,7 +196,7 @@
     // A page can opt out of a request by sending the header 'X-Silent-Toast: 1'.
     (function () {
         var NOUNS = {
-            'bookings': 'Booking', 'chairs': 'Chair', 'coupons': 'Coupon', 'customers': 'Customer',
+            'bookings': 'Booking', 'chairs': 'Chair', 'customers': 'Customer',
             'inventory-categories': 'Category', 'inventory-items': 'Inventory item', 'kitchen/columns': 'Column',
             'kitchen/orders': 'Order', 'menu': 'Menu item', 'menu-category': 'Category', 'orders': 'Order',
             'payments': 'Payment', 'purchase-orders': 'Purchase order', 'rooms': 'Room', 'settings/navigation': 'Menu link',

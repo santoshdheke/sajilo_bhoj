@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Branch;
 use App\Models\Chair;
 use App\Models\Company;
-use App\Models\Coupon;
 use App\Models\Customer;
 use App\Models\Domain;
 use App\Models\FloorTable;
@@ -71,10 +70,6 @@ class DatabaseSeeder extends Seeder
                 ['Priya Gurung', 'priya@example.com', '9801000002'],
                 ['John Mathew', 'john@example.com', '9801000003'],
             ],
-            coupons: [
-                ['code' => 'WELCOME10', 'discount_type' => 'percent', 'discount_value' => 10],
-                ['code' => 'FLAT5', 'discount_type' => 'fixed', 'discount_value' => 5],
-            ],
             settings: [
                 'restaurant_name' => 'Spice Route Kitchen',
                 'tagline'         => 'Fresh taste, warm hospitality',
@@ -134,9 +129,6 @@ class DatabaseSeeder extends Seeder
                 ['Suman Thapa', 'suman@example.com', '9802000001'],
                 ['Emma Stone', 'emma@example.com', '9802000002'],
             ],
-            coupons: [
-                ['code' => 'MOMO20', 'discount_type' => 'percent', 'discount_value' => 20],
-            ],
             settings: [
                 'restaurant_name' => 'Momo House Express',
                 'tagline'         => 'Steamed, fried, or souped — your momo, your way',
@@ -176,7 +168,6 @@ class DatabaseSeeder extends Seeder
         string $domain,
         array $menu,
         array $customers,
-        array $coupons,
         array $settings,
         array $suppliers,
         array $inventory,
@@ -215,7 +206,7 @@ class DatabaseSeeder extends Seeder
             'description' => 'Day-to-day operations: orders, tables, menu, kitchen, customers, reports.',
             'permissions' => [
                 'dashboard.view', 'orders.manage', 'tables.manage', 'menu.manage',
-                'kitchen.manage', 'customers.manage', 'coupons.manage', 'reports.view',
+                'kitchen.manage', 'customers.manage', 'reports.view',
                 'billing.view', 'payments.manage', 'suppliers.manage', 'inventory.manage',
                 'purchase_orders.manage',
             ],
@@ -338,15 +329,6 @@ class DatabaseSeeder extends Seeder
                 'loyalty_points' => 0,
                 'password'       => Hash::make('password'),
             ]));
-        }
-
-        // ── Coupons ─────────────────────────────────────────────
-        foreach ($coupons as $coupon) {
-            Coupon::create($coupon + [
-                'company_id' => $company->id,
-                'valid_from' => now()->subMonth(),
-                'valid_to'   => now()->addMonths(2),
-            ]);
         }
 
         // ── Suppliers & inventory ───────────────────────────────

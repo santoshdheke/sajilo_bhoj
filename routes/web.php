@@ -23,7 +23,6 @@ Route::get('/tables/{table}', [TableController::class, 'showTable'])->name('fron
 Route::get('/contact', [ContactController::class, 'index'])->name('frontend.contact.index');
 
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('frontend.checkout.index');
-Route::post('/checkout/coupon', [CheckoutController::class, 'applyCoupon'])->name('frontend.checkout.coupon');
 Route::post('/checkout', [CheckoutController::class, 'store'])->name('frontend.checkout.store');
 Route::get('/checkout/{order}/confirmation', [CheckoutController::class, 'confirmation'])->name('frontend.checkout.confirmation');
 

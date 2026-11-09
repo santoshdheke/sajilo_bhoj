@@ -41,11 +41,6 @@ class Company extends Model
         return $this->hasMany(Supplier::class);
     }
 
-    public function coupons(): HasMany
-    {
-        return $this->hasMany(Coupon::class);
-    }
-
     public function settings(): HasMany
     {
         return $this->hasMany(Setting::class);

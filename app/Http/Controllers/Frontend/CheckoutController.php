@@ -3,10 +3,8 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
-use App\Models\Coupon;
 use App\Models\FloorTable;
 use App\Models\Order;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -20,25 +18,6 @@ class CheckoutController extends Controller
         return view('frontend.theme_one.checkout.index', compact('tables'));
     }
 
-    public function applyCoupon(Request $request): JsonResponse
-    {
-        $data = $request->validate([
-            'code'     => 'required|string|max:50',
-            'subtotal' => 'required|numeric|min:0',
-        ]);
-
-        $coupon = Coupon::where('code', $data['code'])->first();
-
-        if (! $coupon || ! $coupon->isValidNow()) {
-            return response()->json(['message' => 'This coupon code is invalid or has expired.'], 422);
-        }
-
-        return response()->json([
-            'code'     => $coupon->code,
-            'discount' => $coupon->discountFor((float) $data['subtotal']),
-        ]);
-    }
-
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
@@ -47,7 +26,6 @@ class CheckoutController extends Controller
             'customer_name'     => 'required|string|max:100',
             'phone'             => 'nullable|string|max:20',
             'notes'             => 'nullable|string|max:500',
-            'coupon_code'       => 'nullable|string|max:50',
             'items'             => 'required|array|min:1',
             'items.*.id'        => 'required|integer',
             'items.*.name'      => 'nullable|string|max:150',
@@ -74,15 +52,7 @@ class CheckoutController extends Controller
             ]);
         }
 
-        $coupon = null;
-        if (! empty($data['coupon_code'])) {
-            $candidate = Coupon::where('code', $data['coupon_code'])->first();
-            if ($candidate && $candidate->isValidNow()) {
-                $coupon = $candidate;
-            }
-        }
-
-        $order = DB::transaction(function () use ($data, $coupon, $lines) {
+        $order = DB::transaction(function () use ($data, $lines) {
             $order = Order::create([
                 'table_id'      => $data['order_type'] === 'dine_in' ? ($data['table_id'] ?? null) : null,
                 'customer_id'   => auth('customer')->id(),
@@ -96,8 +66,6 @@ class CheckoutController extends Controller
                 $order->items()->create($line);
             }
 
-            $subtotal = (float) $order->items()->sum(DB::raw('quantity * price'));
-            $order->update(['discount' => $coupon ? $coupon->discountFor((float) $subtotal) : 0]);
             $order->recalcTotals();
 
             // Reward 1 loyalty point per 100 currency units spent.

@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\BillingController;
-use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\InventoryController;
@@ -156,12 +155,6 @@ Route::middleware('permission:purchase_orders.manage')->group(function () {
     Route::delete('purchase-orders/{purchaseOrder}', [PurchaseOrderController::class, 'destroy'])->name('purchase_order.destroy');
 });
 
-Route::middleware('permission:coupons.manage')->group(function () {
-    Route::get('coupons', [CouponController::class, 'index'])->name('coupon.index');
-    Route::post('coupons', [CouponController::class, 'store'])->name('coupon.store');
-    Route::put('coupons/{coupon}', [CouponController::class, 'update'])->name('coupon.update');
-    Route::delete('coupons/{coupon}', [CouponController::class, 'destroy'])->name('coupon.destroy');
-});
 
 Route::middleware('permission:customers.manage')->group(function () {
     Route::get('customers', [CustomerController::class, 'index'])->name('customer.index');
