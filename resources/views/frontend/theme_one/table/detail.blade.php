@@ -147,16 +147,6 @@
 .tbl-status-reserved  { background:#fef3c7;color:#92400e; }
 .tbl-status-cleaning  { background:#f1f5f9;color:#475569; }
 
-/* Menu ordering section */
-.menu-order-card { border-radius:18px;background:#fff;box-shadow:var(--sb-shadow);
-    border:1px solid var(--sb-border);overflow:hidden;transition:.2s; }
-.menu-order-card:hover { transform:translateY(-2px);box-shadow:0 20px 45px color-mix(in srgb, var(--primary) 14%, transparent); }
-.menu-order-img { height:160px;overflow:hidden;background:var(--sb-green-pale);
-    display:flex;align-items:center;justify-content:center; }
-.menu-order-img img { width:100%;height:100%;object-fit:cover; }
-.menu-order-body { padding:14px 16px; }
-.menu-order-filter .btn { border-radius:999px;padding:6px 16px;font-size:.82rem;font-weight:600; }
-
 /* Today's bookings */
 .booking-slot { display:flex;align-items:center;gap:12px;padding:10px 14px;
     border-radius:12px;background:var(--sb-green-pale);margin-bottom:8px; }
@@ -391,45 +381,7 @@
             </a>
         </div>
 
-        {{-- Category filter --}}
-        <div class="d-flex flex-wrap gap-2 menu-order-filter mb-4">
-            <button class="btn active" data-ofilter="all">All</button>
-            @foreach($categories as $cat)
-            <button class="btn" data-ofilter="ocat-{{ $cat->id }}">{{ $cat->name }}</button>
-            @endforeach
-        </div>
-
-        {{-- Menu grid --}}
-        <div class="row g-3">
-            @foreach($menuItems as $item)
-            <div class="col-sm-6 col-lg-3 order-item-col" data-ocategory="ocat-{{ $item->menu_category_id }}">
-                <div class="menu-order-card">
-                    <div class="menu-order-img">
-                        @if($item->image)
-                        <img src="{{ Storage::url($item->image) }}" alt="{{ $item->name }}">
-                        @else
-                        <i class="bi bi-egg-fried" style="font-size:2.5rem;color:var(--sb-muted);"></i>
-                        @endif
-                    </div>
-                    <div class="menu-order-body">
-                        <div class="d-flex justify-content-between align-items-start mb-1">
-                            <h6 class="fw-bold mb-0" style="font-size:.92rem;line-height:1.3;">{{ $item->name }}</h6>
-                            <span class="price-tag" style="white-space:nowrap;margin-left:8px;">${{ number_format($item->price,2) }}</span>
-                        </div>
-                        @if($item->description)
-                        <p class="text-muted mb-2" style="font-size:.76rem;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
-                            {{ $item->description }}
-                        </p>
-                        @endif
-                        <button class="btn btn-primary-o w-100 btn-sm"
-                                onclick="addToCart({{ $item->id }}, '{{ addslashes($item->name) }}', {{ $item->price }}, '{{ $item->image ? Storage::url($item->image) : '' }}')">
-                            <i class="bi bi-plus-circle me-1"></i>Add to Order
-                        </button>
-                    </div>
-                </div>
-            </div>
-            @endforeach
-        </div>
+        @include('frontend.theme_one.component.menu-boards', ['categories' => $categories, 'items' => $menuItems])
     </div>
 </section>
 
@@ -547,18 +499,6 @@ function openBookingModal(tableId, tableName, roomName, seats) {
     document.getElementById('bookingSubtitle').textContent = tableName + ' · ' + roomName + ' · ' + seats + ' seat(s)';
     _booking.show();
 }
-
-/* ── Menu category filter ── */
-document.querySelectorAll('.menu-order-filter .btn').forEach(btn => {
-    btn.addEventListener('click', function () {
-        document.querySelectorAll('.menu-order-filter .btn').forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
-        const f = this.dataset.ofilter;
-        document.querySelectorAll('.order-item-col').forEach(col => {
-            col.style.display = (f === 'all' || col.dataset.ocategory === f) ? '' : 'none';
-        });
-    });
-});
 </script>
 
 {{-- Toast --}}

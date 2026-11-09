@@ -50,10 +50,29 @@ class CheckoutController extends Controller
             'coupon_code'       => 'nullable|string|max:50',
             'items'             => 'required|array|min:1',
             'items.*.id'        => 'required|integer',
-            'items.*.name'      => 'required|string|max:150',
-            'items.*.price'     => 'required|numeric|min:0',
-            'items.*.qty'       => 'required|integer|min:1',
+            'items.*.name'      => 'nullable|string|max:150',
+            'items.*.price'     => 'nullable|numeric|min:0',
+            'items.*.qty'       => 'required|integer|min:1|max:99',
         ]);
+
+        // Use current names and prices from the menu — never the ones sent by the browser.
+        $menu  = CartController::lookup(array_column($data['items'], 'id'));
+        $lines = collect($data['items'])
+            ->filter(fn ($i) => $menu->has((int) $i['id']))
+            ->groupBy(fn ($i) => (int) $i['id'])
+            ->map(fn ($rows, $id) => [
+                'menu_item_id' => $id,
+                'name'         => $menu[$id]->name,
+                'price'        => (float) $menu[$id]->price,
+                'quantity'     => $qty = min(99, (int) $rows->sum('qty')),
+                'subtotal'     => round($qty * (float) $menu[$id]->price, 2),
+            ])->values();
+
+        if ($lines->isEmpty()) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'items' => 'The items in your cart are no longer available. Please add them again from the menu.',
+            ]);
+        }
 
         $coupon = null;
         if (! empty($data['coupon_code'])) {
@@ -63,7 +82,7 @@ class CheckoutController extends Controller
             }
         }
 
-        $order = DB::transaction(function () use ($data, $coupon) {
+        $order = DB::transaction(function () use ($data, $coupon, $lines) {
             $order = Order::create([
                 'table_id'      => $data['order_type'] === 'dine_in' ? ($data['table_id'] ?? null) : null,
                 'customer_id'   => auth('customer')->id(),
@@ -73,13 +92,8 @@ class CheckoutController extends Controller
                 'status'        => 'pending',
             ]);
 
-            foreach ($data['items'] as $item) {
-                $order->items()->create([
-                    'menu_item_id' => $item['id'],
-                    'name'         => $item['name'],
-                    'quantity'     => $item['qty'],
-                    'price'        => $item['price'],
-                ]);
+            foreach ($lines as $line) {
+                $order->items()->create($line);
             }
 
             $subtotal = (float) $order->items()->sum(DB::raw('quantity * price'));

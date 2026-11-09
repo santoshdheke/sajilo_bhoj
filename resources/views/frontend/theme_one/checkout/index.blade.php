@@ -100,12 +100,9 @@
     </section>
 @endsection
 
-@push('js')
+@push('scripts')
 <script>
 const CSRF = '{{ csrf_token() }}';
-const RATE = 133; // approx USD → NRS, matches the cart modal display elsewhere on the site
-
-function money(v) { return 'NRS ' + Math.round(v * RATE).toLocaleString(); }
 
 let appliedCoupon = null;
 
@@ -135,7 +132,7 @@ function renderCheckout() {
     document.getElementById('checkoutItems').innerHTML = cart.map(i => `
         <div class="d-flex justify-content-between align-items-center mb-2">
             <div>
-                <div class="fw-semibold" style="font-size:.88rem;">${i.name}</div>
+                <div class="fw-semibold" style="font-size:.88rem;">${escHtml(i.name)}</div>
                 <div class="text-muted" style="font-size:.78rem;">${i.qty} × ${money(i.price)}</div>
             </div>
             <div class="fw-semibold">${money(i.price * i.qty)}</div>
@@ -166,6 +163,7 @@ function updateTotals() {
 document.getElementById('orderType').addEventListener('change', toggleTableField);
 toggleTableField();
 renderCheckout();
+document.addEventListener('cart:updated', renderCheckout);
 
 document.getElementById('applyCouponBtn').addEventListener('click', async () => {
     const code = document.getElementById('couponCode').value.trim();

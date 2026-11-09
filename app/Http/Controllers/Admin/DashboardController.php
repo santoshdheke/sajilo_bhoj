@@ -95,7 +95,7 @@ class DashboardController extends Controller
             ->get();
 
         // Top sellers today (with a menu photo when available)
-        $topToday = OrderItem::with('menuItem')
+        $topToday = OrderItem::with('menuItem.category')
             ->select('menu_item_id', 'name', DB::raw('SUM(quantity) as qty'), DB::raw('SUM(subtotal) as revenue'))
             ->whereHas('order', fn ($q) => $q->whereDate('created_at', $today)->where('status', '!=', 'cancelled'))
             ->groupBy('menu_item_id', 'name')

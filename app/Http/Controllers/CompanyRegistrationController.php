@@ -10,6 +10,7 @@ use App\Models\NavMenuItem;
 use App\Models\Role;
 use App\Models\Setting;
 use App\Models\User;
+use App\Support\DefaultMenu;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -71,6 +72,7 @@ class CompanyRegistrationController extends Controller
             ]);
 
             $this->seedDefaults($company, $data);
+            DefaultMenu::seed($branch);
 
             $role = Role::create([
                 'company_id'  => $company->id,
@@ -102,6 +104,7 @@ class CompanyRegistrationController extends Controller
      * Give a new company a complete set of website settings (every settings section),
      * personalised with its name, email and chosen brand colour, plus the default
      * navigation menu — so the storefront looks finished from the first visit.
+     * The starter food menu is seeded separately by DefaultMenu.
      */
     private function seedDefaults(Company $company, array $data): void
     {

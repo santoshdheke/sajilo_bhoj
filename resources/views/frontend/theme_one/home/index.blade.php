@@ -4,8 +4,8 @@
 @php
     $brand        = $settings['restaurant_name'] ?: 'SajiloBhoj';
     $fallbackImg  = asset('assets/frontend/img/menu/momo.png');
-    $withImage    = $featuredItems->first(fn ($i) => $i->image);
-    $heroImg      = $withImage ? Storage::url($withImage->image) : $fallbackImg;
+    $withImage    = $featuredItems->first(fn ($i) => $i->photoUrl());
+    $heroImg      = $withImage?->photoUrl() ?? $fallbackImg;
     $featured     = ($topSelling ? $featuredItems->firstWhere('name', $topSelling->name) : null) ?? $featuredItems->first();
     $catIcon = function ($name) {
         $n = strtolower($name);
@@ -91,6 +91,8 @@
     .hm-cat { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 24px 12px 20px; color: var(--sb-text); transition: transform .2s, box-shadow .2s; }
     .hm-cat:hover { transform: translateY(-4px); color: var(--sb-text); box-shadow: 0 14px 32px rgba(15, 40, 25, .12); }
     .hm-cat .bi { font-size: 2.2rem; color: var(--sb-green); }
+    .hm-cat-img { width: 84px; height: 84px; border-radius: 50%; object-fit: cover; border: 3px solid #fff;
+                  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 35%, white), 0 8px 18px rgba(15, 40, 25, .12); }
     .hm-cat strong { font-weight: 500; }
     .hm-cat small { color: var(--sb-muted); font-size: .75rem; margin-top: -6px; }
 
@@ -201,13 +203,13 @@
                     <div class="info">
                         <i class="bi bi-tag tag"></i>
                         <h3>{{ $featured->name }}</h3>
-                        <div class="price">${{ number_format($featured->price, 2) }}</div>
+                        <div class="price">{{ \App\Support\Money::format($featured->price, $currencyCode) }}</div>
                         <a href="javascript:void(0)" class="add"
-                           onclick="addToCart({{ $featured->id }}, '{{ addslashes($featured->name) }}', {{ $featured->price }}, '{{ $featured->image ? Storage::url($featured->image) : '' }}')">
+                           onclick="addToCart({{ $featured->id }}, '{{ addslashes($featured->name) }}', {{ $featured->price }}, '{{ $featured->photoUrl() }}')">
                             <i class="bi bi-plus-circle me-1"></i>Add to order
                         </a>
                     </div>
-                    <div class="img"><img src="{{ $featured->image ? Storage::url($featured->image) : $fallbackImg }}" alt="{{ $featured->name }}" loading="lazy"></div>
+                    <div class="img"><img src="{{ $featured->photoUrl() ?? $fallbackImg }}" alt="{{ $featured->name }}" loading="lazy"></div>
                 </div>
                 @endif
             </div>
@@ -222,8 +224,12 @@
         <div class="hm-head hm-head-lines"><h2>Browse by Category</h2></div>
         <div class="hm-cats">
             @foreach ($categories as $cat)
-            <a href="{{ route('frontend.menu.index') }}" class="hm-card hm-cat">
+            <a href="{{ route('frontend.menu.index', ['category' => $cat->id]) }}" class="hm-card hm-cat">
+                @if ($cat->image)
+                <img class="hm-cat-img" src="{{ $cat->imageUrl() }}" alt="{{ $cat->name }}" loading="lazy">
+                @else
                 <i class="bi {{ $catIcon($cat->name) }}"></i>
+                @endif
                 <strong>{{ $cat->name }}</strong>
                 <small>{{ $cat->menu_items_count }} {{ Str::plural('item', $cat->menu_items_count) }}</small>
             </a>

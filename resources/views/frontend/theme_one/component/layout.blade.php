@@ -285,25 +285,47 @@ function closeSidebar() {
 
 /* ════════════ Cart modal ════════════ */
 function openCartModal() {
+    syncCart();
     document.getElementById('cartPanel').classList.add('open');
     document.getElementById('cartOverlay').classList.add('open');
     document.body.style.overflow = 'hidden';
 }
 function closeCartModal() {
+    cartNotice = '';
     document.getElementById('cartPanel').classList.remove('open');
     document.getElementById('cartOverlay').classList.remove('open');
     document.body.style.overflow = '';
 }
 
-/* ════════════ Cart (localStorage) ════════════ */
-function getCart()  { try { return JSON.parse(localStorage.getItem('sb_cart') || '[]'); } catch { return []; } }
-function saveCart(c){ localStorage.setItem('sb_cart', JSON.stringify(c)); renderCart(); }
-function clearCart(){ saveCart([]); }
+/* ════════════ Cart (stored in the browser, kept in sync with the live menu) ════════════ */
+const CART_KEY  = 'sb_cart';
+const CART_SYNC = @json(route('frontend.cart.items'));
+const CURRENCY  = @json($currencySymbol ?? 'Rs.');
+
+function money(v) {
+    v = Number(v) || 0;
+    return CURRENCY + ' ' + v.toLocaleString(undefined, { minimumFractionDigits: Number.isInteger(v) ? 0 : 2, maximumFractionDigits: 2 });
+}
+function escHtml(t) { const d = document.createElement('div'); d.textContent = t == null ? '' : String(t); return d.innerHTML; }
+
+function getCart() {
+    try {
+        const c = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
+        return Array.isArray(c) ? c.filter(i => i && Number.isInteger(i.id) && i.qty > 0) : [];
+    } catch { return []; }
+}
+function saveCart(c) {
+    try { localStorage.setItem(CART_KEY, JSON.stringify(c)); } catch (e) {}
+    renderCart();
+    document.dispatchEvent(new CustomEvent('cart:updated', { detail: c }));
+}
+function clearCart() { saveCart([]); }
 
 function addToCart(id, name, price, img) {
+    id = Number(id);
     const cart = getCart(), idx = cart.findIndex(i => i.id === id);
-    if (idx >= 0) cart[idx].qty++;
-    else cart.push({ id, name, price, img, qty: 1 });
+    if (idx >= 0) cart[idx].qty = Math.min(99, cart[idx].qty + 1);
+    else cart.push({ id, name, price: Number(price), img: img || '', qty: 1 });
     saveCart(cart);
     const t = document.getElementById('cartToast');
     if (t) {
@@ -311,48 +333,65 @@ function addToCart(id, name, price, img) {
         bootstrap.Toast.getOrCreateInstance(t, { delay: 2500 }).show();
     }
 }
-
-function removeFromCart(id) {
-    saveCart(getCart().filter(i => i.id !== id));
-}
-
+function removeFromCart(id) { saveCart(getCart().filter(i => i.id !== id)); }
 function changeQty(id, delta) {
     const cart = getCart(), idx = cart.findIndex(i => i.id === id);
     if (idx < 0) return;
-    cart[idx].qty = Math.max(1, cart[idx].qty + delta);
+    cart[idx].qty = Math.min(99, Math.max(1, cart[idx].qty + delta));
     saveCart(cart);
+}
+
+// Refresh names, prices and photos from the live menu; drop items that were removed or switched off.
+let cartNotice = '';
+async function syncCart() {
+    const cart = getCart();
+    if (!cart.length) return;
+    try {
+        const res = await fetch(CART_SYNC + '?ids=' + cart.map(i => i.id).join(','), { headers: { 'Accept': 'application/json' } });
+        if (!res.ok) return;
+        const live = new Map((await res.json()).items.map(i => [i.id, i]));
+        let removed = 0, changed = 0;
+        const next = [];
+        cart.forEach(i => {
+            const l = live.get(i.id);
+            if (!l) { removed++; return; }
+            if (l.price !== Number(i.price) || l.name !== i.name || l.img !== (i.img || '')) changed++;
+            next.push({ id: l.id, name: l.name, price: l.price, img: l.img, qty: i.qty });
+        });
+        if (removed || changed) {
+            cartNotice = [removed ? `${removed} item${removed > 1 ? 's are' : ' is'} no longer available and ${removed > 1 ? 'were' : 'was'} removed.` : '',
+                          changed ? 'Prices and details were updated to the current menu.' : ''].filter(Boolean).join(' ');
+            saveCart(next);
+        }
+    } catch (e) { /* offline: keep the stored cart */ }
 }
 
 function renderCart() {
     const cart  = getCart();
     const count = cart.reduce((s, i) => s + i.qty, 0);
-    const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
-    const totalNrs = 'NRS ' + Math.round(total * 133).toLocaleString(); // approx NRS
+    const total = cart.reduce((s, i) => s + Number(i.price) * i.qty, 0);
 
-    // Badges
     ['cartBadgeNav','cartBadgeMobile','cartBadgeSidebar'].forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
         el.textContent = count;
         el.classList.toggle('visible', count > 0);
     });
-
-    // Button labels
     document.querySelectorAll('.cart-btn-label').forEach(el => {
         el.textContent = count > 0 ? `Order (${count})` : 'Order';
     });
 
-    // Modal head meta
     const headMeta = document.getElementById('cartHeadMeta');
-    if (headMeta) headMeta.textContent = `${count} item${count !== 1 ? 's' : ''} · ${totalNrs}`;
+    if (headMeta) headMeta.textContent = `${count} item${count !== 1 ? 's' : ''} · ${money(total)}`;
 
-    // Modal body
     const body = document.getElementById('cartModalBody');
     const foot = document.getElementById('cartModalFoot');
     if (!body) return;
 
+    const notice = cartNotice ? `<div class="cart-notice"><i class="bi bi-info-circle"></i><span>${escHtml(cartNotice)}</span></div>` : '';
+
     if (!cart.length) {
-        body.innerHTML = `<div class="cart-modal-empty">
+        body.innerHTML = notice + `<div class="cart-modal-empty">
             <i class="bi bi-bag"></i>
             <span class="fw-semibold">Your cart is empty</span>
             <span style="font-size:.83rem;">Browse our menu and add items.</span>
@@ -364,20 +403,20 @@ function renderCart() {
         return;
     }
 
-    body.innerHTML = cart.map(i => `
+    body.innerHTML = notice + cart.map(i => `
         <div class="cart-item">
             <div class="cart-item-img">
-                ${i.img ? `<img src="${i.img}" alt="${i.name}">` : `<i class="bi bi-egg-fried" style="font-size:1.4rem;color:var(--sb-green);"></i>`}
+                ${i.img ? `<img src="${escHtml(i.img)}" alt="${escHtml(i.name)}" onerror="this.replaceWith(Object.assign(document.createElement('i'),{className:'bi bi-egg-fried'}))">` : `<i class="bi bi-egg-fried" style="font-size:1.4rem;color:var(--sb-green);"></i>`}
             </div>
             <div class="cart-item-info">
-                <div class="cart-item-name">${i.name}</div>
-                <div class="cart-item-price">NRS ${Math.round(i.price * 133).toLocaleString()}</div>
+                <div class="cart-item-name">${escHtml(i.name)}</div>
+                <div class="cart-item-price">${money(i.price)}${i.qty > 1 ? ` <small class="text-muted">× ${i.qty} = ${money(i.price * i.qty)}</small>` : ''}</div>
             </div>
             <div class="d-flex flex-column align-items-end gap-1">
                 <div class="qty-ctrl">
-                    <button class="qty-btn" onclick="changeQty(${i.id},-1)">−</button>
+                    <button class="qty-btn" onclick="changeQty(${i.id},-1)" aria-label="Decrease">−</button>
                     <span class="qty-val">${i.qty}</span>
-                    <button class="qty-btn" onclick="changeQty(${i.id},1)">+</button>
+                    <button class="qty-btn" onclick="changeQty(${i.id},1)" aria-label="Increase">+</button>
                 </div>
                 <button onclick="removeFromCart(${i.id})"
                         style="border:none;background:none;color:#dc3545;font-size:.73rem;cursor:pointer;padding:0;">
@@ -386,15 +425,15 @@ function renderCart() {
             </div>
         </div>`).join('');
 
-    const subtotal = 'NRS ' + Math.round(total * 133).toLocaleString();
     if (foot) {
         foot.style.display = '';
-        document.getElementById('cartSubtotalModal').textContent = subtotal;
-        document.getElementById('cartGrandModal').textContent    = subtotal;
+        document.getElementById('cartSubtotalModal').textContent = money(total);
+        document.getElementById('cartGrandModal').textContent    = money(total);
     }
 }
 
-document.addEventListener('DOMContentLoaded', renderCart);
+document.addEventListener('DOMContentLoaded', () => { renderCart(); syncCart(); });
+window.addEventListener('storage', e => { if (e.key === CART_KEY) renderCart(); });  // keep other tabs in step
 </script>
 @stack('scripts')
 </body>

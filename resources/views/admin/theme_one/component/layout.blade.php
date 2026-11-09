@@ -285,10 +285,11 @@
                     }).catch(function () { show('success', describe(url, method, body)); });
                 } else if (res.status !== 422) {
                     copy.json().then(function (d) { return d && d.message; }).catch(function () { return null; }).then(function (m) {
-                        var fallback = res.status === 419 ? 'Your session expired. Please refresh the page.'
+                        var fallback = res.status === 413 ? 'This file is too large to upload. Please choose a smaller file.'
+                                     : res.status === 419 ? 'Your session expired. Please refresh the page.'
                                      : res.status === 403 ? 'You do not have permission to do that.'
                                      : 'Something went wrong. Please try again.';
-                        show('error', (res.status === 419 || res.status >= 500) ? fallback : (m || fallback));
+                        show('error', (res.status === 413 || res.status === 419 || res.status >= 500) ? fallback : (m || fallback));
                     });
                 }
                 return res;

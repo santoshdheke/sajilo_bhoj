@@ -23,6 +23,12 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [ResolveTenant::class]);
+        // The tenant must be known before route models are loaded ({menuCategory}, {order}, ...),
+        // otherwise the branch/company scopes are not applied and any id from any restaurant resolves.
+        $middleware->prependToPriorityList(
+            before: \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            prepend: ResolveTenant::class,
+        );
         $middleware->alias([
             'permission' => EnsureUserHasPermission::class,
         ]);

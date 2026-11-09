@@ -1,78 +1,82 @@
 @extends('admin.theme_one.component.layout')
 
 @section('content')
+@php
+    $symbol = \App\Support\Money::symbol($currency);
+    $total  = $categories->sum(fn ($c) => $c->menuItems->count());
+@endphp
 <style>
-/* ── Menu item card ───────────────────────────────────────────── */
-.menu-card          { border-radius:18px;overflow:hidden;transition:.2s;cursor:default; }
-.menu-card:hover    { box-shadow:0 8px 28px rgba(0,0,0,.1);transform:translateY(-2px); }
-.menu-card-img      { width:100%;height:150px;object-fit:cover;background:#f0fdf6;
-                      display:flex;align-items:center;justify-content:center; }
-.menu-card-img img  { width:100%;height:150px;object-fit:cover;display:block; }
-.menu-card-img.placeholder { font-size:3rem;color:#adb5bd; }
-.menu-card-body     { padding:14px 16px; }
-.menu-cat-tag       { font-size:.72rem;font-weight:600;padding:2px 8px;border-radius:6px;
-                      background:#edfaf3;color:var(--primary);display:inline-block;margin-bottom:6px; }
-.menu-card-name     { font-weight:700;font-size:.97rem;margin-bottom:3px;
-                      white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
-.menu-card-desc     { font-size:.78rem;color:var(--muted);margin-bottom:10px;
-                      display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden; }
-.menu-card-foot     { display:flex;align-items:center;justify-content:space-between;gap:8px; }
-.menu-price         { font-size:1.05rem;font-weight:800;color:var(--primary); }
-.menu-actions       { display:flex;gap:5px; }
+/* ── Printed menu-card boards (one per category) ── */
+.am-board        { background:#fff;border-radius:18px;overflow:hidden;margin-bottom:22px;
+                   border:1px solid color-mix(in srgb, var(--primary) 14%, white);box-shadow:0 8px 24px rgba(20,32,26,.05); }
+.am-head         { display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 18px;color:#fff;
+                   background:linear-gradient(90deg, var(--primary), color-mix(in srgb, var(--primary) 75%, black)); }
+.am-head h3      { margin:0;font-size:1.05rem;font-weight:800;letter-spacing:.02em;color:#fff; }
+.am-head .am-meta{ display:flex;align-items:center;gap:8px;flex-wrap:wrap; }
+.am-count        { font-size:.72rem;font-weight:600;padding:2px 9px;border-radius:999px;background:rgba(255,255,255,.18); }
+.am-hidden       { font-size:.72rem;font-weight:700;padding:2px 9px;border-radius:999px;background:#fff;color:#b02a37; }
+.am-price-lbl    { font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;opacity:.85; }
+.am-body         { display:flex;gap:18px;padding:8px 18px 12px; }
+.am-list         { flex:1;min-width:0;list-style:none;margin:0;padding:0; }
+.am-item         { display:flex;align-items:center;gap:10px;padding:9px 0;
+                   border-bottom:1px dashed color-mix(in srgb, var(--primary) 16%, white); }
+.am-item:has(+ .am-empty-row) { border-bottom:0; }
+.am-item.flash   { animation:amFlash 1.6s ease; }
+@keyframes amFlash { 0%,40% { background:color-mix(in srgb, var(--primary) 12%, white); } 100% { background:transparent; } }
+.am-name         { min-width:0;display:flex;flex-direction:column;font-weight:600;font-size:.93rem;color:#1c2620;line-height:1.3; }
+.am-name small   { color:var(--muted);font-weight:400;font-size:.76rem;
+                   display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden; }
+.am-off-tag      { display:none;font-size:.68rem;font-weight:700;color:#b02a37;margin-left:6px; }
+.am-item.is-off .am-name > span, .am-item.is-off .am-price { opacity:.45;text-decoration:line-through; }
+.am-item.is-off .am-off-tag { display:inline; }
+.am-dots         { flex:1;min-width:14px;align-self:flex-end;margin-bottom:7px;
+                   border-bottom:2px dotted color-mix(in srgb, var(--primary) 30%, white); }
+.am-price        { font-weight:800;color:color-mix(in srgb, var(--primary) 80%, black);white-space:nowrap;font-size:.93rem; }
+.am-actions      { display:flex;align-items:center;gap:5px;flex-shrink:0; }
+.am-empty-row    { padding:16px 0;color:var(--muted);font-size:.85rem; }
+.am-photo        { width:150px;flex-shrink:0;align-self:flex-start;margin-top:8px; }
+.am-photo img    { width:100%;aspect-ratio:1;object-fit:cover;border-radius:14px;display:block;
+                   box-shadow:0 0 0 3px #fff, 0 0 0 5px color-mix(in srgb, var(--primary) 22%, white); }
+.am-photo-empty  { width:100%;aspect-ratio:1;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+                   border:1.5px dashed color-mix(in srgb, var(--primary) 30%, white);color:var(--primary);font-size:.78rem;font-weight:600;
+                   background:color-mix(in srgb, var(--primary) 5%, white);text-decoration:none; }
+.am-photo-empty i { font-size:1.4rem; }
+.am-photo-empty:hover { border-color:var(--primary);color:var(--primary); }
+@media (max-width: 575px) {
+    .am-body { flex-direction:column-reverse; }
+    .am-photo { width:100%; }
+    .am-photo img, .am-photo-empty { aspect-ratio:16/7; }
+    .am-item { flex-wrap:wrap; }
+    .am-actions { margin-left:auto; }
+}
 
-/* Toggle pill */
-.avail-toggle       { width:38px;height:21px;border-radius:999px;border:none;cursor:pointer;
-                      position:relative;transition:.2s;flex-shrink:0; }
-.avail-toggle::after { content:'';position:absolute;top:3px;left:3px;width:15px;height:15px;
-                        border-radius:50%;background:#fff;transition:.2s; }
-.avail-toggle.on    { background:var(--primary); }
+/* Availability toggle + icon buttons */
+.avail-toggle    { width:38px;height:21px;border-radius:999px;border:none;cursor:pointer;position:relative;transition:.2s;flex-shrink:0; }
+.avail-toggle::after { content:'';position:absolute;top:3px;left:3px;width:15px;height:15px;border-radius:50%;background:#fff;transition:.2s; }
+.avail-toggle.on { background:var(--primary); }
 .avail-toggle.on::after { left:20px; }
-.avail-toggle.off   { background:#ced4da; }
-
-/* Icon buttons */
-.icon-btn           { width:30px;height:30px;border:none;border-radius:9px;font-size:.82rem;
-                      cursor:pointer;display:inline-flex;align-items:center;
-                      justify-content:center;transition:.12s; }
-.icon-btn.edit      { background:#eef0ff;color:#3730a3; }
+.avail-toggle.off { background:#ced4da; }
+.icon-btn        { width:30px;height:30px;border:none;border-radius:9px;font-size:.82rem;cursor:pointer;
+                   display:inline-flex;align-items:center;justify-content:center;transition:.12s; }
+.icon-btn.edit   { background:#eef0ff;color:#3730a3; }
 .icon-btn.edit:hover { background:#3730a3;color:#fff; }
-.icon-btn.del       { background:#fff0f0;color:#dc3545; }
-.icon-btn.del:hover  { background:#dc3545;color:#fff; }
+.icon-btn.del    { background:#fff0f0;color:#dc3545; }
+.icon-btn.del:hover { background:#dc3545;color:#fff; }
 
-/* Category filter tabs */
-.cat-tab            { padding:6px 16px;border-radius:10px;border:1px solid var(--line);
-                      font-size:.82rem;font-weight:600;cursor:pointer;
-                      background:#f8f9fa;color:var(--muted);transition:.15s;
-                      text-decoration:none;white-space:nowrap; }
-.cat-tab:hover      { background:#e9ecef;color:var(--text); }
-.cat-tab.active     { background:var(--primary);color:#fff;border-color:var(--primary); }
-
-/* Image upload preview */
-.img-upload-zone    { border:2px dashed #ced4da;border-radius:12px;min-height:110px;
-                      display:flex;align-items:center;justify-content:center;
-                      flex-direction:column;gap:6px;cursor:pointer;background:#f8f9fa;
-                      transition:.18s;overflow:hidden;position:relative; }
-.img-upload-zone:hover { border-color:var(--primary);background:#f0fdf6; }
-.img-upload-zone img   { position:absolute;inset:0;width:100%;height:100%;object-fit:cover; }
-.img-upload-zone .overlay { position:absolute;inset:0;background:rgba(0,0,0,.4);
-                             display:flex;align-items:center;justify-content:center;
-                             color:#fff;font-size:.85rem;font-weight:600;opacity:0;transition:.18s; }
-.img-upload-zone:hover .overlay { opacity:1; }
-.img-upload-hint    { color:var(--muted);font-size:.8rem;display:flex;flex-direction:column;
-                      align-items:center;gap:4px;pointer-events:none; }
-.img-upload-hint i  { font-size:1.6rem; }
-
-/* Empty state */
-.menu-empty         { display:flex;flex-direction:column;align-items:center;justify-content:center;
-                      padding:60px 24px;color:var(--muted);gap:10px; }
-.menu-empty i       { font-size:3rem;opacity:.3; }
-
-/* Sticky form panel */
-.form-panel         { position:sticky;top:24px; }
+/* Toolbar */
+.cat-tab         { display:inline-flex;align-items:center;gap:7px;padding:5px 14px;border-radius:999px;border:1px solid var(--line);
+                   font-size:.82rem;font-weight:600;cursor:pointer;background:#fff;color:var(--muted);transition:.15s;white-space:nowrap; }
+.cat-tab:hover   { border-color:var(--primary);color:var(--primary); }
+.cat-tab.active  { background:var(--primary);color:#fff;border-color:var(--primary); }
+.cat-tab img     { width:22px;height:22px;border-radius:50%;object-fit:cover;margin-left:-8px; }
+.menu-empty      { display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px;color:var(--muted);gap:10px;text-align:center; }
+.menu-empty i    { font-size:3rem;opacity:.3; }
+.form-panel      { position:sticky;top:24px; }
 </style>
 
 {{-- ── Edit Item Modal ── --}}
 <div class="modal fade" id="editItemModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Edit Menu Item</h5>
@@ -80,59 +84,39 @@
             </div>
             <div class="modal-body">
                 <input type="hidden" id="editId">
-                <div class="row g-3">
-                    <div class="col-md-8">
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Item Name <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="editName" maxlength="150" placeholder="Chicken Burger">
-                        </div>
-                        <div class="row g-3 mb-3">
-                            <div class="col-sm-6">
-                                <label class="form-label fw-semibold">Category <span class="text-danger">*</span></label>
-                                <select class="form-select" id="editCategory">
-                                    @foreach($categories as $cat)
-                                    <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-sm-6">
-                                <label class="form-label fw-semibold">Price <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <span class="input-group-text" style="border-radius:14px 0 0 14px;">$</span>
-                                    <input type="number" class="form-control" id="editPrice" min="0" step="0.01" placeholder="0.00" style="border-radius:0 14px 14px 0;">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Description</label>
-                            <textarea class="form-control" id="editDesc" rows="3" maxlength="500"
-                                      placeholder="Describe the item…"></textarea>
-                        </div>
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="editAvailable" checked>
-                            <label class="form-check-label fw-semibold" for="editAvailable">Available</label>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Item Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="editName" maxlength="150">
+                </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <label class="form-label fw-semibold">Category <span class="text-danger">*</span></label>
+                        <select class="form-select" id="editCategory">
+                            @foreach($categories as $cat)
+                            <option value="{{ $cat->id }}">{{ $cat->name }}{{ $cat->is_active ? '' : ' (hidden)' }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label fw-semibold">Price <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text" style="border-radius:14px 0 0 14px;">{{ $symbol }}</span>
+                            <input type="number" class="form-control" id="editPrice" min="0" step="0.01" placeholder="0" style="border-radius:0 14px 14px 0;">
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-semibold">Item Photo</label>
-                        <div class="img-upload-zone" id="editImgZone"
-                             onclick="document.getElementById('editImage').click()">
-                            <img id="editImgPreview" src="" alt="" style="display:none;">
-                            <div class="img-upload-hint" id="editImgHint">
-                                <i class="bi bi-cloud-arrow-up"></i>
-                                <span>Click to change</span>
-                            </div>
-                            <div class="overlay"><i class="bi bi-pencil me-1"></i>Change</div>
-                            <input type="file" id="editImage" accept="image/*" class="d-none">
-                        </div>
-                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Description</label>
+                    <textarea class="form-control" id="editDesc" rows="3" maxlength="500" placeholder="Optional — shown under the name"></textarea>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="editAvailable" checked>
+                    <label class="form-check-label fw-semibold" for="editAvailable">Available</label>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="editSaveBtn">
-                    <i class="bi bi-check-lg me-1"></i>Update Item
-                </button>
+                <button type="button" class="btn btn-primary" id="editSaveBtn"><i class="bi bi-check-lg me-1"></i>Update Item</button>
             </div>
         </div>
     </div>
@@ -140,7 +124,7 @@
 
 <div class="page-title mb-4">
     <h2>Menu Items</h2>
-    <p>Add, edit, and manage your restaurant's full menu.</p>
+    <p>Your menu, grouped by category. Photos belong to categories — change them under <a href="{{ route('admin.menu_category.index') }}" style="color:var(--primary);font-weight:600;">Categories</a>.</p>
 </div>
 
 <div class="row g-4">
@@ -154,160 +138,202 @@
             </div>
             <div class="card-body">
                 <div id="addError" class="alert alert-danger d-none py-2" style="font-size:.85rem;"></div>
-
+                @if($categories->isEmpty())
+                <div class="alert alert-warning py-2" style="font-size:.85rem;">
+                    Create a <a href="{{ route('admin.menu_category.index') }}">category</a> first.
+                </div>
+                @endif
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Item Name <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="addName" maxlength="150" placeholder="e.g. Chicken Burger">
+                    <input type="text" class="form-control" id="addName" maxlength="150" placeholder="e.g. Veg. Momo">
                 </div>
                 <div class="row g-3 mb-3">
-                    <div class="col-sm-6">
+                    <div class="col-sm-6 col-xl-12 col-xxl-6">
                         <label class="form-label fw-semibold">Category <span class="text-danger">*</span></label>
                         <select class="form-select" id="addCategory">
                             <option value="">— Select —</option>
                             @foreach($categories as $cat)
-                            <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                            <option value="{{ $cat->id }}">{{ $cat->name }}{{ $cat->is_active ? '' : ' (hidden)' }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-sm-6">
+                    <div class="col-sm-6 col-xl-12 col-xxl-6">
                         <label class="form-label fw-semibold">Price <span class="text-danger">*</span></label>
                         <div class="input-group">
-                            <span class="input-group-text" style="border-radius:14px 0 0 14px;">$</span>
-                            <input type="number" class="form-control" id="addPrice" min="0" step="0.01" placeholder="0.00" style="border-radius:0 14px 14px 0;">
+                            <span class="input-group-text" style="border-radius:14px 0 0 14px;">{{ $symbol }}</span>
+                            <input type="number" class="form-control" id="addPrice" min="0" step="0.01" placeholder="0" style="border-radius:0 14px 14px 0;">
                         </div>
                     </div>
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Description</label>
-                    <textarea class="form-control" id="addDesc" rows="3" maxlength="500"
-                              placeholder="Describe the item…"></textarea>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold d-block mb-2">Item Photo</label>
-                    <div class="img-upload-zone" id="addImgZone"
-                         onclick="document.getElementById('addImage').click()">
-                        <img id="addImgPreview" src="" alt="" style="display:none;">
-                        <div class="img-upload-hint" id="addImgHint">
-                            <i class="bi bi-cloud-arrow-up"></i>
-                            <span>Click to upload</span>
-                            <span style="font-size:.72rem;">JPG, PNG — max 3MB</span>
-                        </div>
-                        <div class="overlay"><i class="bi bi-pencil me-1"></i>Change</div>
-                        <input type="file" id="addImage" accept="image/*" class="d-none">
-                    </div>
+                    <textarea class="form-control" id="addDesc" rows="3" maxlength="500" placeholder="Optional — shown under the name"></textarea>
                 </div>
                 <div class="mb-4 form-check form-switch">
                     <input class="form-check-input" type="checkbox" id="addAvailable" checked>
                     <label class="form-check-label fw-semibold" for="addAvailable">Available</label>
                 </div>
-                <button class="btn btn-primary w-100" id="addSaveBtn">
-                    <i class="bi bi-plus-lg me-1"></i>Create Item
-                </button>
+                <button class="btn btn-primary w-100" id="addSaveBtn"><i class="bi bi-plus-lg me-1"></i>Create Item</button>
             </div>
         </div>
     </div>
 
-    {{-- ── Menu Items Grid (right) ── --}}
+    {{-- ── Menu boards (right) ── --}}
     <div class="col-xl-8">
-
-        {{-- Filters & search --}}
-        <div class="card-soft mb-3" style="padding:14px 16px;">
+        <div class="card-soft mb-3" style="padding:12px 14px;">
             <div class="d-flex gap-2 align-items-center justify-content-between flex-wrap">
                 <div class="d-flex gap-2 flex-wrap" id="catTabs">
-                    <a href="{{ route('admin.menu.index') }}"
-                       class="cat-tab {{ !request('category') || request('category')==='all' ? 'active' : '' }}">
-                        All <span class="text-muted fw-normal">({{ $items->count() }})</span>
-                    </a>
+                    <button type="button" class="cat-tab active" data-cat="all">All <span class="fw-normal opacity-75">({{ $total }})</span></button>
                     @foreach($categories as $cat)
-                    <a href="{{ route('admin.menu.index', ['category'=>$cat->id, 'search'=>request('search')]) }}"
-                       class="cat-tab {{ request('category') == $cat->id ? 'active' : '' }}">
-                        {{ $cat->name }}
-                        <span class="text-muted fw-normal">({{ $items->where('menu_category_id',$cat->id)->count() }})</span>
-                    </a>
+                    <button type="button" class="cat-tab" data-cat="{{ $cat->id }}">
+                        @if($cat->image)<img src="{{ $cat->imageUrl() }}" alt="">@endif{{ $cat->name }}
+                    </button>
                     @endforeach
                 </div>
-                <form method="GET" action="{{ route('admin.menu.index') }}" class="d-flex gap-2">
-                    <input type="hidden" name="category" value="{{ request('category') }}">
-                    <div style="position:relative;">
-                        <i class="bi bi-search" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#6c757d;font-size:.8rem;"></i>
-                        <input class="form-control form-control-sm" name="search" value="{{ request('search') }}"
-                               placeholder="Search items…"
-                               style="padding-left:30px;border-radius:10px;width:180px;">
-                    </div>
-                </form>
+                <div style="position:relative;">
+                    <i class="bi bi-search" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#6c757d;font-size:.8rem;"></i>
+                    <input class="form-control form-control-sm" id="itemSearch" placeholder="Search items…" style="padding-left:30px;border-radius:10px;width:180px;">
+                </div>
             </div>
         </div>
 
-        {{-- Grid --}}
-        @if($items->isEmpty())
+        @if($categories->isEmpty())
         <div class="card-soft menu-empty">
-            <i class="bi bi-basket3"></i>
-            <span class="fw-semibold">No items found</span>
-            <span style="font-size:.85rem;">{{ request('search') ? 'Try a different search.' : 'Add your first menu item using the form.' }}</span>
-        </div>
-        @else
-        <div class="row g-3" id="menuGrid">
-            @foreach($items as $item)
-            <div class="col-sm-6 col-lg-4 menu-item-col" data-id="{{ $item->id }}">
-                <div class="card-soft menu-card">
-                    {{-- Image --}}
-                    <div class="menu-card-img {{ $item->image ? '' : 'placeholder' }}">
-                        @if($item->image)
-                        <img src="{{ Storage::url($item->image) }}" alt="{{ $item->name }}">
-                        @else
-                        <i class="bi bi-egg-fried"></i>
-                        @endif
-                    </div>
-                    <div class="menu-card-body">
-                        <div class="menu-cat-tag">{{ $item->category->name }}</div>
-                        <div class="menu-card-name" title="{{ $item->name }}">{{ $item->name }}</div>
-                        @if($item->description)
-                        <div class="menu-card-desc">{{ $item->description }}</div>
-                        @endif
-                        <div class="menu-card-foot">
-                            <span class="menu-price">${{ number_format($item->price, 2) }}</span>
-                            <div class="menu-actions">
-                                <button class="avail-toggle {{ $item->is_available ? 'on' : 'off' }}"
-                                        title="{{ $item->is_available ? 'Available — click to mark unavailable' : 'Unavailable — click to make available' }}"
-                                        onclick="toggleAvail({{ $item->id }}, this)"></button>
-                                <button class="icon-btn edit" title="Edit"
-                                        onclick="openEditItem({{ $item->id }})">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <button class="icon-btn del" title="Delete"
-                                        onclick="deleteItem({{ $item->id }}, '{{ addslashes($item->name) }}')">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            @endforeach
+            <i class="bi bi-journal-text"></i>
+            <span class="fw-semibold">Your menu is empty</span>
+            <span style="font-size:.85rem;">Start by creating a <a href="{{ route('admin.menu_category.index') }}">category</a>, then add dishes to it.</span>
         </div>
         @endif
+
+        <div id="boards">
+            @foreach($categories as $cat)
+            <section class="am-board" data-cat="{{ $cat->id }}">
+                <header class="am-head">
+                    <div class="am-meta">
+                        <h3>{{ $cat->name }}</h3>
+                        <span class="am-count"></span>
+                        @unless($cat->is_active)<span class="am-hidden" title="Hidden from the website">Hidden</span>@endunless
+                    </div>
+                    <span class="am-price-lbl">Price</span>
+                </header>
+                <div class="am-body">
+                    <ul class="am-list">
+                        @foreach($cat->menuItems as $item)
+                        <li class="am-item {{ $item->is_available ? '' : 'is-off' }}" data-id="{{ $item->id }}" data-name="{{ Str::lower($item->name) }}">
+                            <div class="am-name">
+                                <span>{{ $item->name }}<em class="am-off-tag">Unavailable</em></span>
+                                @if($item->description)<small>{{ $item->description }}</small>@endif
+                            </div>
+                            <span class="am-dots" aria-hidden="true"></span>
+                            <span class="am-price">{{ \App\Support\Money::format($item->price, $currency) }}</span>
+                            <div class="am-actions">
+                                <button class="avail-toggle {{ $item->is_available ? 'on' : 'off' }}" title="{{ $item->is_available ? 'Available — click to mark unavailable' : 'Unavailable — click to make available' }}" onclick="toggleAvail({{ $item->id }}, this)"></button>
+                                <button class="icon-btn edit" title="Edit" onclick="openEditItem({{ $item->id }})"><i class="bi bi-pencil"></i></button>
+                                <button class="icon-btn del" title="Delete" onclick="deleteItem({{ $item->id }})"><i class="bi bi-trash"></i></button>
+                            </div>
+                        </li>
+                        @endforeach
+                        <li class="am-empty-row"><i class="bi bi-plus-circle me-1"></i>No dishes yet — add one with the form.</li>
+                    </ul>
+                    <div class="am-photo">
+                        @if($cat->image)
+                        <img src="{{ $cat->imageUrl() }}" alt="{{ $cat->name }}" loading="lazy">
+                        @else
+                        <a class="am-photo-empty" href="{{ route('admin.menu_category.index') }}" title="Add a photo to this category"><i class="bi bi-image"></i>Add photo</a>
+                        @endif
+                    </div>
+                </div>
+            </section>
+            @endforeach
+        </div>
+        <div id="noMatch" class="card-soft menu-empty d-none">
+            <i class="bi bi-search"></i>
+            <span class="fw-semibold">No items match your search</span>
+        </div>
     </div>
 </div>
 
 @push('js')
 <script>
-const CSRF       = '{{ csrf_token() }}';
-const CATEGORIES = {!! json_encode($categories->map(fn($c)=>['id'=>$c->id,'name'=>$c->name])->values()) !!};
+const CSRF   = '{{ csrf_token() }}';
+const SYMBOL = @json($symbol);
 const _editModal = new bootstrap.Modal(document.getElementById('editItemModal'));
 
-/* ════════ Image preview helpers ════════ */
-function wireImgPreview(inputId, previewId, hintId) {
-    document.getElementById(inputId).addEventListener('change', function () {
-        if (!this.files[0]) return;
-        const prev = document.getElementById(previewId);
-        const hint = document.getElementById(hintId);
-        prev.src = URL.createObjectURL(this.files[0]);
-        prev.style.display = 'block';
-        hint.style.display = 'none';
-    });
+const esc   = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money = n => { n = Number(n) || 0; return SYMBOL + ' ' + n.toLocaleString('en-US', Number.isInteger(n) ? {} : {minimumFractionDigits: 2, maximumFractionDigits: 2}); };
+
+// Read a JSON response safely (a 413 or server error returns HTML, not JSON).
+async function readJson(res) { try { return await res.json(); } catch (e) { return {}; } }
+function saveError(res, data) {
+    if (res.status === 0)   return 'Network error. Please check your connection and try again.';
+    if (res.status === 419) return 'Your session expired. Please refresh the page.';
+    return Object.values(data.errors || {})[0]?.[0] || data.message || 'Something went wrong. Please try again.';
 }
-wireImgPreview('addImage','addImgPreview','addImgHint');
-wireImgPreview('editImage','editImgPreview','editImgHint');
+
+/* ════════ Rows & boards ════════ */
+function rowHtml(d) {
+    const on = !!d.is_available;
+    return `<li class="am-item ${on ? '' : 'is-off'}" data-id="${d.id}" data-name="${esc(d.name.toLowerCase())}">
+        <div class="am-name"><span>${esc(d.name)}<em class="am-off-tag">Unavailable</em></span>${d.description ? `<small>${esc(d.description)}</small>` : ''}</div>
+        <span class="am-dots" aria-hidden="true"></span>
+        <span class="am-price">${money(d.price)}</span>
+        <div class="am-actions">
+            <button class="avail-toggle ${on ? 'on' : 'off'}" title="${on ? 'Available — click to mark unavailable' : 'Unavailable — click to make available'}" onclick="toggleAvail(${d.id}, this)"></button>
+            <button class="icon-btn edit" title="Edit" onclick="openEditItem(${d.id})"><i class="bi bi-pencil"></i></button>
+            <button class="icon-btn del" title="Delete" onclick="deleteItem(${d.id})"><i class="bi bi-trash"></i></button>
+        </div>
+    </li>`;
+}
+const boardOf = catId => document.querySelector(`.am-board[data-cat="${catId}"]`);
+
+function refreshBoard(board) {
+    if (!board) return;
+    const n = board.querySelectorAll('.am-item').length;
+    board.querySelector('.am-count').textContent = n + (n === 1 ? ' item' : ' items');
+    board.querySelector('.am-empty-row').style.display = n ? 'none' : '';
+}
+function placeRow(d) {
+    const board = boardOf(d.menu_category_id);
+    if (!board) { location.reload(); return null; }
+    const tmp = document.createElement('ul'); tmp.innerHTML = rowHtml(d).trim();
+    const li = tmp.firstElementChild;
+    board.querySelector('.am-list').insertBefore(li, board.querySelector('.am-empty-row'));
+    refreshBoard(board);
+    return li;
+}
+function flash(li) {
+    if (!li) return;
+    li.classList.remove('flash'); void li.offsetWidth; li.classList.add('flash');
+    li.scrollIntoView({behavior: 'smooth', block: 'center'});
+}
+document.querySelectorAll('.am-board').forEach(refreshBoard);
+
+/* ════════ Filter: category tabs + search ════════ */
+let activeCat = 'all';
+function applyFilter() {
+    const q = document.getElementById('itemSearch').value.trim().toLowerCase();
+    let shown = 0;
+    document.querySelectorAll('.am-board').forEach(board => {
+        let visible = activeCat === 'all' || board.dataset.cat === activeCat;
+        let hits = 0;
+        board.querySelectorAll('.am-item').forEach(li => {
+            const match = !q || li.dataset.name.includes(q);
+            li.style.display = match ? '' : 'none';
+            if (match) hits++;
+        });
+        if (q && !hits) visible = false;
+        board.querySelector('.am-empty-row').style.display = (!q && !board.querySelector('.am-item')) ? '' : 'none';
+        board.style.display = visible ? '' : 'none';
+        if (visible) shown++;
+    });
+    document.getElementById('noMatch').classList.toggle('d-none', shown > 0 || !document.querySelector('.am-board'));
+}
+document.querySelectorAll('.cat-tab').forEach(tab => tab.addEventListener('click', () => {
+    document.querySelectorAll('.cat-tab').forEach(t => t.classList.toggle('active', t === tab));
+    activeCat = tab.dataset.cat;
+    applyFilter();
+}));
+document.getElementById('itemSearch').addEventListener('input', applyFilter);
 
 /* ════════ Add item ════════ */
 document.getElementById('addSaveBtn').addEventListener('click', async () => {
@@ -328,161 +354,127 @@ document.getElementById('addSaveBtn').addEventListener('click', async () => {
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving…';
 
     const fd = new FormData();
-    fd.append('name',             name);
+    fd.append('name', name);
     fd.append('menu_category_id', catId);
-    fd.append('price',            price);
-    fd.append('description',      document.getElementById('addDesc').value.trim());
-    fd.append('is_available',     document.getElementById('addAvailable').checked ? '1' : '0');
-    fd.append('_token',           CSRF);
-    const imgFile = document.getElementById('addImage').files[0];
-    if (imgFile) fd.append('image', imgFile);
+    fd.append('price', price);
+    fd.append('description', document.getElementById('addDesc').value.trim());
+    fd.append('is_available', document.getElementById('addAvailable').checked ? '1' : '0');
+    fd.append('_token', CSRF);
 
-    const res  = await fetch('/admin/menu', {method:'POST', body:fd});
-    const data = await res.json();
-
-    btn.disabled = false;
-    btn.innerHTML = '<i class="bi bi-plus-lg me-1"></i>Create Item';
+    let res, data = {};
+    try {
+        res  = await fetch('/admin/menu', {method: 'POST', body: fd, headers: {'Accept': 'application/json'}});
+        data = await readJson(res);
+    } catch (e) {
+        res = {ok: false, status: 0};
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-plus-lg me-1"></i>Create Item';
+    }
 
     if (!res.ok) {
-        const firstErr = Object.values(data.errors || {})[0]?.[0] || 'Something went wrong.';
-        err.textContent = firstErr;
+        err.textContent = saveError(res, data);
         err.classList.remove('d-none');
         return;
     }
 
-    // Add card to grid
-    const grid = document.getElementById('menuGrid');
-    if (!grid) { location.reload(); return; }
-    const imgHtml = data.image
-        ? `<img src="/storage/${data.image}" alt="${data.name}">`
-        : `<i class="bi bi-egg-fried"></i>`;
-    const col = document.createElement('div');
-    col.className = 'col-sm-6 col-lg-4 menu-item-col';
-    col.dataset.id = data.id;
-    col.innerHTML = `
-        <div class="card-soft menu-card">
-            <div class="menu-card-img ${data.image ? '' : 'placeholder'}">${imgHtml}</div>
-            <div class="menu-card-body">
-                <div class="menu-cat-tag">${data.category.name}</div>
-                <div class="menu-card-name">${data.name}</div>
-                ${data.description ? `<div class="menu-card-desc">${data.description}</div>` : ''}
-                <div class="menu-card-foot">
-                    <span class="menu-price">$${parseFloat(data.price).toFixed(2)}</span>
-                    <div class="menu-actions">
-                        <button class="avail-toggle ${data.is_available?'on':'off'}"
-                                onclick="toggleAvail(${data.id},this)"></button>
-                        <button class="icon-btn edit" onclick="openEditItem(${data.id})"><i class="bi bi-pencil"></i></button>
-                        <button class="icon-btn del"  onclick="deleteItem(${data.id},'${data.name.replace(/'/g,"\\'")}')"><i class="bi bi-trash"></i></button>
-                    </div>
-                </div>
-            </div>
-        </div>`;
-    grid.insertBefore(col, grid.firstChild);
+    const li = placeRow(data);
+    applyFilter();
+    flash(li);
 
-    // Reset form
-    document.getElementById('addName').value  = '';
-    document.getElementById('addPrice').value = '';
-    document.getElementById('addDesc').value  = '';
-    document.getElementById('addCategory').value = '';
+    // Keep the category selected so several dishes can be added in a row
+    ['addName', 'addPrice', 'addDesc'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('addAvailable').checked = true;
-    document.getElementById('addImage').value = '';
-    document.getElementById('addImgPreview').style.display = 'none';
-    document.getElementById('addImgHint').style.display = '';
+    document.getElementById('addName').focus();
 });
 
 /* ════════ Edit item ════════ */
-const _itemCache = {};
-
 async function openEditItem(id) {
-    if (!_itemCache[id]) {
-        const res = await fetch(`/admin/menu/${id}`, {headers:{'Accept':'application/json'}});
-        if (!res.ok) return;
-        _itemCache[id] = await res.json();
-    }
-    const d = _itemCache[id];
-    document.getElementById('editId').value              = d.id;
-    document.getElementById('editName').value            = d.name;
-    document.getElementById('editCategory').value        = d.menu_category_id;
-    document.getElementById('editPrice').value           = d.price;
-    document.getElementById('editDesc').value            = d.description || '';
-    document.getElementById('editAvailable').checked     = d.is_available;
-    document.getElementById('editImage').value           = '';
-
-    const prev = document.getElementById('editImgPreview');
-    const hint = document.getElementById('editImgHint');
-    if (d.image) {
-        prev.src = '/storage/' + d.image;
-        prev.style.display = 'block';
-        hint.style.display = 'none';
-    } else {
-        prev.style.display = 'none';
-        hint.style.display = '';
-    }
+    const res = await fetch(`/admin/menu/${id}`, {headers: {'Accept': 'application/json'}});
+    if (!res.ok) { notify.error('This item could not be loaded.'); return; }
+    const d = await res.json();
+    document.getElementById('editId').value          = d.id;
+    document.getElementById('editName').value        = d.name;
+    document.getElementById('editCategory').value    = d.menu_category_id;
+    document.getElementById('editPrice').value       = d.price;
+    document.getElementById('editDesc').value        = d.description || '';
+    document.getElementById('editAvailable').checked = d.is_available;
     _editModal.show();
 }
 
-// Expose show endpoint (reuse admin.menu.show if needed — just fetch the item)
-// We'll add a quick GET route for it
 document.getElementById('editSaveBtn').addEventListener('click', async () => {
     const id    = document.getElementById('editId').value;
     const name  = document.getElementById('editName').value.trim();
     const catId = document.getElementById('editCategory').value;
     const price = document.getElementById('editPrice').value;
-    if (!name || !catId || price === '') return;
+    if (!name || !catId || price === '') { notify.error('Name, category and price are required.'); return; }
 
     const btn = document.getElementById('editSaveBtn');
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>';
 
     const fd = new FormData();
-    fd.append('_method',          'POST');   // route accepts POST
-    fd.append('name',             name);
+    fd.append('name', name);
     fd.append('menu_category_id', catId);
-    fd.append('price',            price);
-    fd.append('description',      document.getElementById('editDesc').value.trim());
-    fd.append('is_available',     document.getElementById('editAvailable').checked ? '1' : '0');
-    fd.append('_token',           CSRF);
-    const imgFile = document.getElementById('editImage').files[0];
-    if (imgFile) fd.append('image', imgFile);
+    fd.append('price', price);
+    fd.append('description', document.getElementById('editDesc').value.trim());
+    fd.append('is_available', document.getElementById('editAvailable').checked ? '1' : '0');
+    fd.append('_token', CSRF);
 
-    const res  = await fetch(`/admin/menu/${id}`, {method:'POST', body:fd});
-    const data = await res.json();
-
-    btn.disabled = false;
-    btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Update Item';
-
-    if (res.ok) {
-        delete _itemCache[id]; // bust cache
-        _editModal.hide();
-        location.reload();     // simple reload to reflect all changes
+    let res, data = {};
+    try {
+        res  = await fetch(`/admin/menu/${id}`, {method: 'POST', body: fd, headers: {'Accept': 'application/json'}});
+        data = await readJson(res);
+    } catch (e) {
+        res = {ok: false, status: 0};
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Update Item';
     }
+
+    if (!res.ok) { notify.error(saveError(res, data)); return; }
+
+    _editModal.hide();
+    const old = document.querySelector(`.am-item[data-id="${id}"]`);
+    const oldBoard = old?.closest('.am-board');
+    if (old && oldBoard && oldBoard.dataset.cat == data.menu_category_id) {
+        // Same category: replace in place, keep its position
+        const tmp = document.createElement('ul'); tmp.innerHTML = rowHtml(data).trim();
+        old.replaceWith(tmp.firstElementChild);
+        flash(document.querySelector(`.am-item[data-id="${id}"]`));
+    } else {
+        old?.remove();
+        refreshBoard(oldBoard);
+        flash(placeRow(data));
+    }
+    applyFilter();
 });
 
 /* ════════ Toggle availability ════════ */
 async function toggleAvail(id, btn) {
-    const res  = await fetch(`/admin/menu/${id}/toggle`, {
-        method: 'PATCH', headers: {'X-CSRF-TOKEN': CSRF}
-    });
-    const data = await res.json();
-    if (res.ok) {
-        btn.classList.toggle('on',  data.is_available);
-        btn.classList.toggle('off', !data.is_available);
-        btn.title = data.is_available
-            ? 'Available — click to mark unavailable'
-            : 'Unavailable — click to make available';
-        if (_itemCache[id]) _itemCache[id].is_available = data.is_available;
-    }
+    const res = await fetch(`/admin/menu/${id}/toggle`, {method: 'PATCH', headers: {'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json'}});
+    const data = await readJson(res);
+    if (!res.ok) return;
+    btn.classList.toggle('on', data.is_available);
+    btn.classList.toggle('off', !data.is_available);
+    btn.title = data.is_available ? 'Available — click to mark unavailable' : 'Unavailable — click to make available';
+    btn.closest('.am-item').classList.toggle('is-off', !data.is_available);
 }
 
 /* ════════ Delete item ════════ */
-function deleteItem(id, name) {
+function deleteItem(id) {
+    const li = document.querySelector(`.am-item[data-id="${id}"]`);
+    const name = li?.querySelector('.am-name > span')?.firstChild?.textContent || 'this item';
     if (!confirm(`Delete "${name}" from the menu?`)) return;
-    fetch(`/admin/menu/${id}`, {method:'DELETE', headers:{'X-CSRF-TOKEN':CSRF}})
-    .then(r => r.json())
-    .then(() => {
-        document.querySelector(`.menu-item-col[data-id="${id}"]`)?.remove();
-        delete _itemCache[id];
-    });
+    fetch(`/admin/menu/${id}`, {method: 'DELETE', headers: {'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json'}})
+        .then(r => { if (!r.ok) throw r; return r.json(); })
+        .then(() => {
+            const board = li?.closest('.am-board');
+            li?.remove();
+            refreshBoard(board);
+            applyFilter();
+        })
+        .catch(() => notify.error('The item could not be deleted.'));
 }
 </script>
 @endpush

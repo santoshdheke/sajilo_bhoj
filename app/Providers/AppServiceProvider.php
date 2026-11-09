@@ -41,6 +41,8 @@ class AppServiceProvider extends ServiceProvider
 
             $view->with('settings', $settings)->with('navMenuItems', $navMenuItems)
                  ->with('socialLinks', \App\Support\SocialLinks::forCompany($company?->id))
+                 ->with('currencyCode', $settings['currency'] ?: 'NPR')
+                 ->with('currencySymbol', \App\Support\Money::symbol($settings['currency'] ?: 'NPR'))
                  ->with($this->brand($company, $settings['restaurant_name'] ?? ''));
         });
 

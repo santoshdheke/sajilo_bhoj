@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('frontend.home.index');
 Route::get('/about', [AboutController::class, 'index'])->name('frontend.about.index');
 Route::get('/menu/{table?}', [MenuController::class, 'index'])->name('frontend.menu.index');
+Route::get('/cart/items', [\App\Http\Controllers\Frontend\CartController::class, 'items'])->name('frontend.cart.items');
 Route::get('/table', [TableController::class, 'index'])->name('frontend.table.index');
 Route::post('/table/book', [TableController::class, 'book'])->name('frontend.table.book');
 Route::get('/rooms/{room}', [TableController::class, 'showRoom'])->name('frontend.room.show');

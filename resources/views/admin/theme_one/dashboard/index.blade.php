@@ -387,9 +387,9 @@
     </div>
 
     {{-- ── Top sellers today ────────────────────── --}}
-    @php $hero = $topToday->first(fn ($i) => $i->menuItem?->image); @endphp
+    @php $hero = $topToday->first(fn ($i) => $i->menuItem?->photoUrl()); @endphp
     <div class="db-card db-top">
-        <div class="top-img" style="{{ $hero ? "background-image:url('" . Storage::url($hero->menuItem->image) . "')" : '' }}">
+        <div class="top-img" style="{{ $hero ? "background-image:url('" . $hero->menuItem->photoUrl() . "')" : '' }}">
             @unless ($hero)<i class="bi bi-egg-fried"></i>@endunless
         </div>
         <div class="top-body">

@@ -53,8 +53,8 @@
                                     <tr>
                                         <td>{{ $item->name }}@if($item->note)<div class="text-muted small">{{ $item->note }}</div>@endif</td>
                                         <td class="text-center">{{ $item->quantity }}</td>
-                                        <td class="text-end">{{ number_format($item->price, 2) }}</td>
-                                        <td class="text-end">{{ number_format($item->subtotal, 2) }}</td>
+                                        <td class="text-end">{{ \App\Support\Money::format($item->price, $currencyCode) }}</td>
+                                        <td class="text-end">{{ \App\Support\Money::format($item->subtotal, $currencyCode) }}</td>
                                     </tr>
                                     @endforeach
                                 </tbody>
@@ -63,23 +63,23 @@
 
                         <div class="cart-total-row">
                             <span class="text-muted">Subtotal</span>
-                            <span class="fw-semibold">{{ number_format($order->subtotal, 2) }}</span>
+                            <span class="fw-semibold">{{ \App\Support\Money::format($order->subtotal, $currencyCode) }}</span>
                         </div>
                         @if($order->discount > 0)
                         <div class="cart-total-row">
                             <span class="text-muted">Discount</span>
-                            <span class="fw-semibold text-success">- {{ number_format($order->discount, 2) }}</span>
+                            <span class="fw-semibold text-success">- {{ \App\Support\Money::format($order->discount, $currencyCode) }}</span>
                         </div>
                         @endif
                         @if($order->tax > 0)
                         <div class="cart-total-row">
                             <span class="text-muted">Tax</span>
-                            <span class="fw-semibold">{{ number_format($order->tax, 2) }}</span>
+                            <span class="fw-semibold">{{ \App\Support\Money::format($order->tax, $currencyCode) }}</span>
                         </div>
                         @endif
                         <div class="cart-total-row" style="margin-bottom:16px;">
                             <span class="fw-bold" style="font-size:1.05rem;">Grand Total</span>
-                            <strong>{{ number_format($order->grand_total, 2) }}</strong>
+                            <strong>{{ \App\Support\Money::format($order->grand_total, $currencyCode) }}</strong>
                         </div>
 
                         <div class="d-flex gap-2">

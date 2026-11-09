@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Concerns\BelongsToBranch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class MenuCategory extends Model
 {
@@ -17,5 +18,10 @@ class MenuCategory extends Model
     public function menuItems(): HasMany
     {
         return $this->hasMany(MenuItem::class)->orderBy('sort_order')->orderBy('name');
+    }
+
+    public function imageUrl(): ?string
+    {
+        return $this->image ? Storage::url($this->image) : null;
     }
 }
