@@ -130,6 +130,7 @@ tr.is-off td { opacity:.6; }
 <div class="page-title mb-3">
     <h2>Users &amp; Roles</h2>
     <p>Add your staff, give each one a role, and choose what every role can open.</p>
+    @include('partials.plan-usage', ['key' => 'staff'])
 </div>
 
 <div class="us-tabs" role="tablist">

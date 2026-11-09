@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureOwnerEmailVerified;
+use App\Http\Middleware\EnsureWebsiteEnabled;
 use App\Http\Middleware\EnsureSubscriptionChosen;
 use App\Http\Middleware\EnsureUserHasPermission;
 use App\Http\Middleware\ResolveTenant;
@@ -23,7 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
         }
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->web(append: [ResolveTenant::class]);
+        $middleware->web(append: [ResolveTenant::class, EnsureWebsiteEnabled::class]);
         // The tenant must be known before route models are loaded ({menuCategory}, {order}, ...),
         // otherwise the branch/company scopes are not applied and any id from any restaurant resolves.
         $middleware->prependToPriorityList(

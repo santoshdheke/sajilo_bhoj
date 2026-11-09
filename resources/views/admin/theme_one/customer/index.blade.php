@@ -41,6 +41,7 @@
 <div class="page-title mb-4">
     <h2>Customers</h2>
     <p>Browse registered customers, their orders, and loyalty points.</p>
+    @include('partials.plan-usage', ['key' => 'customers'])
 </div>
 
 <div class="card-soft table-card">

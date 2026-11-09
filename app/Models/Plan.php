@@ -16,8 +16,11 @@ class Plan extends Model
     /** Sections every plan has: you always need a dashboard, your staff and your website settings. */
     public const CORE = ['dashboard.view', 'users.manage', 'settings.manage'];
 
-    /** Shown on every plan card; part of the storefront, not a gated admin section. */
-    public const ALWAYS_INCLUDED = ['Restaurant website', 'Online ordering & QR menu'];
+    /** Plan highlighted as "Recommended" on the plan choice page. */
+    public const RECOMMENDED = 'professional';
+
+    /** Plan features that aren't admin sections (key => label on the plan card). */
+    public const EXTRA_FEATURES = ['website' => 'Restaurant website, online ordering & QR menu'];
 
     protected $casts = [
         'monthly_price' => 'decimal:2',

@@ -160,6 +160,7 @@
         Menu Items
     </h2>
     <p>Manage your menu items and categories from here.</p>
+    @include('partials.plan-usage', ['key' => 'items'])
 </div>
 
 <div class="row g-4">

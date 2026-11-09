@@ -8,12 +8,14 @@ use Illuminate\Database\Seeder;
 /**
  * Subscription plans built from the app's own sections (Role::PERMISSIONS keys).
  * Each plan includes everything of the plan before it. Dashboard, Users & Roles and
- * Website Settings are in every plan (Plan::CORE), as are the website and online ordering.
+ * Website Settings are in every plan (Plan::CORE). 'website' turns on the public website,
+ * online ordering and the QR menu (remove it from a plan to sell the admin panel alone).
  */
 class PlanSeeder extends Seeder
 {
     /** Run the restaurant floor: take orders, cook them, seat guests. */
     private const STARTER = [
+        'website', // public website, online ordering and the QR menu
         'dashboard.view', 'orders.manage', 'kitchen.manage', 'tables.manage', 'menu.manage',
         'users.manage', 'settings.manage',
     ];

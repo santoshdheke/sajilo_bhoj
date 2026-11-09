@@ -7,6 +7,7 @@ use App\Models\FloorTable;
 use App\Models\MenuCategory;
 use App\Models\MenuItem;
 use App\Models\Setting;
+use App\Support\PlanLimits;
 use App\Support\Tenancy;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -83,6 +84,10 @@ class MenuController extends Controller
             'price'            => 'required|numeric|min:0',
             'is_available'     => 'boolean',
         ]);
+
+        if (! PlanLimits::canAdd(Tenancy::company(), 'items')) {
+            return response()->json(['message' => PlanLimits::message(Tenancy::company(), 'items')], 422);
+        }
 
         $item = MenuItem::create($data + ['sort_order' => MenuItem::where('menu_category_id', $data['menu_category_id'])->max('sort_order') + 1]);
         return response()->json($item->load('category'));

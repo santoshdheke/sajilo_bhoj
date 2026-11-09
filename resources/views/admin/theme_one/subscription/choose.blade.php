@@ -77,7 +77,6 @@
         .plan-features i { font-size: 1.15rem; flex-shrink: 0; }
         .plan-features li.off { color: #a3aca7; }
         .plan-features li.off i { color: #cfd5d1; }
-        .plan-features .plan-sep { font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 12px 0 2px; }
         .plan-cta { position: relative; z-index: 1; width: 100%; height: 52px; border-radius: 999px; font-weight: 700; font-size: 1.05rem; transition: .2s;
                     border: 2px solid color-mix(in srgb, var(--primary) 70%, black); color: color-mix(in srgb, var(--primary) 70%, black); background: #fff; }
         .plan-cta:hover { background: color-mix(in srgb, var(--primary) 8%, white); }
@@ -156,7 +155,7 @@
             <div class="grid">
                 @foreach ($plans as $plan)
                     @php
-                        $rec     = $loop->last && $plans->count() > 1;
+                        $rec     = $plan->slug === \App\Models\Plan::RECOMMENDED;
                         $trial   = $plan->trial_days > 0;
                         $tint    = "color-mix(in srgb, {$plan->color} 14%, white)";
                         $limit   = fn ($v) => $v === null ? 'Unlimited' : number_format($v);
@@ -179,19 +178,13 @@
                             @foreach ([[$plan->item_limit, 'Menu items'], [$plan->staff_limit, 'Staff accounts'], [$plan->customer_limit, 'Customers']] as [$val, $label])
                                 <li><i class="bi bi-check-circle-fill" style="color: {{ $tick }}"></i><span><strong>{{ $limit($val) }}</strong> {{ $label }}</span></li>
                             @endforeach
-                            @foreach (\App\Models\Plan::ALWAYS_INCLUDED as $label)
-                                <li><i class="bi bi-check-circle-fill" style="color: {{ $tick }}"></i>{{ $label }}</li>
-                            @endforeach
-                            <li class="plan-sep">Admin sections</li>
-                            @foreach (\App\Models\Role::PERMISSIONS as $key => $label)
-                                @continue(in_array($key, \App\Models\Plan::CORE, true) && $key !== 'dashboard.view')
+                            @foreach (\App\Models\Plan::EXTRA_FEATURES as $key => $label)
                                 @if ($plan->hasFeature($key))
                                     <li><i class="bi bi-check-circle-fill" style="color: {{ $tick }}"></i>{{ $label }}</li>
                                 @else
                                     <li class="off"><i class="bi bi-x-circle"></i>{{ $label }}</li>
                                 @endif
                             @endforeach
-                            <li><i class="bi bi-check-circle-fill" style="color: {{ $tick }}"></i>Staff roles &amp; website settings</li>
                         </ul>
                         <button type="submit" name="plan_id" value="{{ $plan->id }}" class="plan-cta {{ $rec ? 'fill' : '' }}">
                             {{ $trial ? 'Start Free Trial' : 'Get Started' }}

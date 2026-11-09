@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Role;
 use App\Models\User;
 use App\Support\DefaultRoles;
+use App\Support\PlanLimits;
 use App\Support\Tenancy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -42,6 +43,11 @@ class UserController extends Controller
             'phone'    => 'nullable|string|max:20',
             'password' => ['required', Password::min(8)],
         ]);
+
+        $role = Role::find($data['role_id']);
+        if (! $role?->isOwner() && ! PlanLimits::canAdd(Tenancy::company(), 'staff')) {
+            return response()->json(['message' => PlanLimits::message(Tenancy::company(), 'staff')], 422);
+        }
 
         $user = User::create([
             'company_id' => Tenancy::company()->id,

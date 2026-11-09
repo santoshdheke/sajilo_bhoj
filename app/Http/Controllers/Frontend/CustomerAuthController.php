@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
+use App\Support\PlanLimits;
 use App\Support\Tenancy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -65,6 +66,12 @@ class CustomerAuthController extends Controller
             'address'  => 'nullable|string|max:255',
             'password' => 'required|string|min:8|confirmed',
         ]);
+
+        if (! PlanLimits::canAdd($company, 'customers')) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'email' => 'Sorry, we can’t create new accounts right now. You can still order as a guest.',
+            ]);
+        }
 
         $customer = Customer::create([
             'company_id' => $company?->id,
