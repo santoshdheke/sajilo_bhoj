@@ -42,15 +42,7 @@
                     class="badge">24</span></a>
             <a class="nav-link{{ Request::is('admin/kitchen') ? ' active' : '' }}" href="{{ route('admin.kitchen.index') }}"><i class="bi bi-fire"></i> Kitchen Display</a>
             <a class="nav-link{{ Request::is('admin/billing') ? ' active' : '' }}" href="{{ route('admin.billing.index') }}"><i class="bi bi-wallet2"></i> Billing</a>
-            <div class="section-title">Menu</div>
-            <div class="has-sub open">
-                <a class="nav-link menu-toggle" href="#"><i class="bi bi-basket2"></i> Menu Management <i
-                        class="bi bi-chevron-down ms-auto"></i></a>
-                <div class="submenu">
-                    <a class="nav-link{{ Request::is('admin/menu-categor*') || request()->routeIs('admin.menu_category.*') ? ' active' : '' }}" href="{{ route('admin.menu_category.index') }}"><i class="bi bi-tags"></i> Categories</a>
-                    <a class="nav-link{{ request()->routeIs('admin.menu.*') ? ' active' : '' }}" href="{{ route('admin.menu.index') }}"><i class="bi bi-egg-fried"></i> Menu Items</a>
-                </div>
-            </div>
+            <a class="nav-link{{ request()->routeIs('admin.menu.*') || request()->routeIs('admin.menu_category.*') ? ' active' : '' }}" href="{{ route('admin.menu.index') }}"><i class="bi bi-journal-text"></i> Menu</a>
             @if(auth()->user()?->hasPermission('suppliers.manage') || auth()->user()?->hasPermission('inventory.manage') || auth()->user()?->hasPermission('purchase_orders.manage'))
             <div class="section-title">Procurement</div>
             @endif

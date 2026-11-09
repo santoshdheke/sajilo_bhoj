@@ -9,6 +9,7 @@ use App\Models\Setting;
 use App\Support\Tenancy;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class MenuController extends Controller
 {
@@ -23,6 +24,45 @@ class MenuController extends Controller
         $currency   = ($companyId ? Setting::getValue($companyId, 'currency') : null) ?: 'NPR';
 
         return view('admin.theme_one.menu.index', compact('categories', 'currency', 'tab'));
+    }
+
+    /**
+     * Save the drag-and-drop order: categories in display order, and for each category its dishes
+     * (a dish dropped into another category moves there). Ids from other restaurants are ignored.
+     */
+    public function reorder(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'categories'   => 'array',
+            'categories.*' => 'integer',
+            'items'        => 'array',
+            'items.*'      => 'array',
+            'items.*.*'    => 'integer',
+        ]);
+
+        $ownCategories = MenuCategory::pluck('id')->all(); // branch-scoped
+
+        DB::transaction(function () use ($data, $ownCategories) {
+            foreach (array_values($data['categories'] ?? []) as $position => $id) {
+                if (in_array($id, $ownCategories, true)) {
+                    MenuCategory::whereKey($id)->update(['sort_order' => $position]);
+                }
+            }
+
+            foreach ($data['items'] ?? [] as $categoryId => $ids) {
+                if (! in_array((int) $categoryId, $ownCategories, true)) {
+                    continue;
+                }
+                $ownItems = MenuItem::whereIn('id', $ids)->whereIn('menu_category_id', $ownCategories)->pluck('id')->all();
+                foreach (array_values($ids) as $position => $id) {
+                    if (in_array($id, $ownItems, true)) {
+                        MenuItem::whereKey($id)->update(['menu_category_id' => (int) $categoryId, 'sort_order' => $position]);
+                    }
+                }
+            }
+        });
+
+        return response()->json(['success' => true]);
     }
 
     public function show(MenuItem $menuItem): JsonResponse

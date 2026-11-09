@@ -93,6 +93,7 @@ Route::middleware('permission:billing.view')->group(function () {
 Route::middleware('permission:menu.manage')->group(function () {
     Route::get('menu', [MenuController::class, 'index'])->name('menu.index');
     Route::post('menu', [MenuController::class, 'store'])->name('menu.store');
+    Route::post('menu/reorder', [MenuController::class, 'reorder'])->name('menu.reorder'); // before menu/{menuItem}
     Route::get('menu/{menuItem}', [MenuController::class, 'show'])->name('menu.show');
     Route::post('menu/{menuItem}', [MenuController::class, 'update'])->name('menu.update');
     Route::patch('menu/{menuItem}/toggle', [MenuController::class, 'toggleAvailability'])->name('menu.toggle');

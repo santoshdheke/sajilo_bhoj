@@ -6,72 +6,122 @@
     $total  = $categories->sum(fn ($c) => $c->menuItems->count());
 @endphp
 <style>
-/* ── Printed menu-card boards (one per category) ── */
-.am-board        { background:#fff;border-radius:18px;overflow:hidden;margin-bottom:22px;
-                   border:1px solid color-mix(in srgb, var(--primary) 14%, white);box-shadow:0 8px 24px rgba(20,32,26,.05); }
-.am-head         { display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 18px;color:#fff;
-                   background:linear-gradient(90deg, var(--primary), color-mix(in srgb, var(--primary) 75%, black)); }
-.am-head h3      { margin:0;font-size:1.05rem;font-weight:800;letter-spacing:.02em;color:#fff; }
-.am-head .am-meta{ display:flex;align-items:center;gap:8px;flex-wrap:wrap; }
-.am-count        { font-size:.72rem;font-weight:600;padding:2px 9px;border-radius:999px;background:rgba(255,255,255,.18); }
-.am-hidden       { font-size:.72rem;font-weight:700;padding:2px 9px;border-radius:999px;background:#fff;color:#b02a37; }
-.am-price-lbl    { font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;opacity:.85; }
-.am-body         { display:flex;gap:18px;padding:8px 18px 12px; }
-.am-list         { flex:1;min-width:0;list-style:none;margin:0;padding:0; }
-.am-item         { display:flex;align-items:center;gap:10px;padding:9px 0;
-                   border-bottom:1px dashed color-mix(in srgb, var(--primary) 16%, white); }
-.am-item:has(+ .am-empty-row) { border-bottom:0; }
-.am-item.flash   { animation:amFlash 1.6s ease; }
-@keyframes amFlash { 0%,40% { background:color-mix(in srgb, var(--primary) 12%, white); } 100% { background:transparent; } }
-.am-name         { min-width:0;display:flex;flex-direction:column;font-weight:600;font-size:.93rem;color:#1c2620;line-height:1.3; }
-.am-name small   { color:var(--muted);font-weight:400;font-size:.76rem;
-                   display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden; }
-.am-off-tag      { display:none;font-size:.68rem;font-weight:700;color:#b02a37;margin-left:6px; }
-.am-item.is-off .am-name > span, .am-item.is-off .am-price { opacity:.45;text-decoration:line-through; }
-.am-item.is-off .am-off-tag { display:inline; }
-.am-dots         { flex:1;min-width:14px;align-self:flex-end;margin-bottom:7px;
-                   border-bottom:2px dotted color-mix(in srgb, var(--primary) 30%, white); }
-.am-price        { font-weight:800;color:color-mix(in srgb, var(--primary) 80%, black);white-space:nowrap;font-size:.93rem; }
-.am-actions      { display:flex;align-items:center;gap:5px;flex-shrink:0; }
-.am-empty-row    { padding:16px 0;color:var(--muted);font-size:.85rem; }
-.am-photo        { width:150px;flex-shrink:0;align-self:flex-start;margin-top:8px; }
-.am-photo img    { width:100%;aspect-ratio:1;object-fit:cover;border-radius:14px;display:block;
-                   box-shadow:0 0 0 3px #fff, 0 0 0 5px color-mix(in srgb, var(--primary) 22%, white); }
-.am-photo-empty  { width:100%;aspect-ratio:1;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
-                   border:1.5px dashed color-mix(in srgb, var(--primary) 30%, white);color:var(--primary);font-size:.78rem;font-weight:600;
-                   background:color-mix(in srgb, var(--primary) 5%, white);text-decoration:none; }
-.am-photo-empty i { font-size:1.4rem; }
-.am-photo-empty:hover { border-color:var(--primary);color:var(--primary); }
-@media (max-width: 575px) {
-    .am-body { flex-direction:column-reverse; }
-    .am-photo { width:100%; }
-    .am-photo img, .am-photo-empty { aspect-ratio:16/7; }
-    .am-item { flex-wrap:wrap; }
-    .am-actions { margin-left:auto; }
-}
+/* ── Page title ── */
+.mi-title        { display:flex;align-items:center;gap:12px; }
+.mi-title svg    { width:34px;height:34px;color:var(--primary);flex-shrink:0; }
 
-/* Availability toggle + icon buttons */
+/* ── Left panel: tabs + forms ── */
+.mi-panel        { position:sticky;top:24px;overflow:hidden; }
+.mi-panel .card-body { position:relative; }
+.mi-pane-head   { display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:14px; }
+.mi-pane-head h5 { margin:0 0 4px !important; }
+.mi-art          { width:84px;height:58px;color:var(--primary);flex-shrink:0;pointer-events:none; }
+.mi-tabs         { display:flex;gap:6px;padding:5px;margin-bottom:18px;border-radius:14px;
+                   background:color-mix(in srgb, var(--primary) 8%, white); }
+.mi-tab          { flex:1;justify-content:center;display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:10px;border:0;background:transparent;
+                   font-weight:700;font-size:.88rem;color:color-mix(in srgb, var(--primary) 70%, #333);text-decoration:none;white-space:nowrap;transition:.15s; }
+.mi-tab:hover    { color:var(--primary); }
+.mi-tab.active   { background:#fff;color:var(--primary);box-shadow:0 2px 10px color-mix(in srgb, var(--primary) 18%, transparent); }
+.mi-tab .plus    { width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.8rem;
+                   background:color-mix(in srgb, var(--primary) 14%, white); }
+.mi-tab.active .plus { background:var(--primary);color:#fff; }
+.mi-pane         { display:none; }
+.mi-pane.active  { display:block; }
+.mi-pane h5      { font-weight:800;margin-bottom:16px; }
+
+/* Category photo picker */
+.cat-photo       { position:relative;display:block;aspect-ratio:16/9;border-radius:14px;overflow:hidden;cursor:pointer;margin:0;
+                   border:1.5px dashed color-mix(in srgb, var(--primary) 35%, white);background:color-mix(in srgb, var(--primary) 6%, white); }
+.cat-photo:hover { border-color:var(--primary); }
+.cat-photo img   { width:100%;height:100%;object-fit:cover;display:none; }
+.cat-photo.has-img { border-style:solid; }
+.cat-photo.has-img img { display:block; }
+.cat-photo .cp-empty { position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+                       color:var(--primary);font-size:.85rem;font-weight:600; }
+.cat-photo .cp-empty i { font-size:1.5rem; }
+.cat-photo .cp-empty small { color:var(--muted);font-weight:400; }
+.cat-photo.has-img .cp-empty { display:none; }
+.cat-photo .cp-remove { position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;border:none;display:none;
+                        align-items:center;justify-content:center;background:rgba(255,255,255,.92);color:#dc3545;box-shadow:0 2px 8px rgba(0,0,0,.15); }
+.cat-photo.has-img .cp-remove { display:flex; }
+
+/* ── Toolbar ── */
+.mi-toolbar      { display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 14px; }
+.mi-chips        { display:flex;gap:8px;flex-wrap:wrap; }
+.mi-chip         { display:inline-flex;align-items:center;gap:7px;padding:6px 14px 6px 8px;border-radius:999px;border:0;cursor:pointer;
+                   font-size:.82rem;font-weight:600;color:#2a2a35;background:color-mix(in srgb, var(--primary) 8%, white);transition:.15s; }
+.mi-chip:hover   { background:color-mix(in srgb, var(--primary) 16%, white); }
+.mi-chip .ci     { width:24px;height:24px;border-radius:50%;object-fit:cover;display:inline-flex;align-items:center;justify-content:center;
+                   font-size:.8rem;color:var(--primary);background:#fff; }
+.mi-chip .n      { color:var(--muted);font-weight:500; }
+.mi-chip.active  { background:var(--primary);color:#fff; }
+.mi-chip.active .n { color:rgba(255,255,255,.8); }
+.mi-chip.active .ci { background:rgba(255,255,255,.2);color:#fff; }
+.mi-search       { position:relative;margin-left:auto; }
+.mi-search i     { position:absolute;left:13px;top:50%;transform:translateY(-50%);color:#6c757d;font-size:.85rem; }
+.mi-search input { padding-left:36px;border-radius:12px;width:220px; }
+
+/* ── Category sections ── */
+.mi-sec          { background:#fff;border-radius:16px;overflow:hidden;margin-top:16px;
+                   border:1px solid color-mix(in srgb, var(--primary) 10%, white);box-shadow:0 6px 20px rgba(20,32,26,.04); }
+.mi-head         { display:flex;align-items:center;gap:10px;padding:10px 14px;background:color-mix(in srgb, var(--primary) 12%, white); }
+.mi-head .mi-ico { width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+                   background:#fff;color:var(--primary);box-shadow:0 0 0 2px #fff; }
+.mi-head h3      { margin:0;font-size:1rem;font-weight:800;color:#1c1c28; }
+.mi-count        { font-size:.78rem;font-weight:700;color:var(--primary); }
+.mi-hidden       { font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:999px;background:#fff;color:#b02a37; }
+.mi-add-btn      { margin-left:auto;display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;border:0;
+                   background:color-mix(in srgb, var(--primary) 85%, black);color:#fff;font-size:.8rem;font-weight:600;transition:.15s; }
+.mi-add-btn:hover { background:var(--primary); }
+.mi-list         { list-style:none;margin:0;padding:0; }
+.mi-row          { display:grid;grid-template-columns:18px minmax(0,1fr) 100px 150px auto;align-items:center;gap:14px;padding:10px 16px 10px 10px;background:#fff;
+                   border-top:1px solid color-mix(in srgb, var(--primary) 8%, white); }
+.mi-row:first-child { border-top:0; }
+.mi-row.flash    { animation:miFlash 1.6s ease; }
+@keyframes miFlash { 0%,40% { background:color-mix(in srgb, var(--primary) 10%, white); } 100% { background:transparent; } }
+.mi-name         { font-weight:700;font-size:.92rem;color:#1c1c28;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.mi-desc         { font-size:.78rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.mi-price        { font-weight:800;font-size:.92rem;color:#1c1c28;white-space:nowrap; }
+.mi-row.is-off .mi-name, .mi-row.is-off .mi-price { opacity:.5; }
+.mi-avail        { display:flex;align-items:center;gap:9px;font-size:.85rem;font-weight:500;color:#333; }
+.mi-row.is-off .mi-avail span { color:#b02a37; }
+.mi-btns         { display:flex;gap:8px; }
+.mi-btn          { display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:999px;border:0;font-size:.85rem;font-weight:700;transition:.15s; }
+.mi-btn.edit     { background:color-mix(in srgb, var(--primary) 12%, white);color:var(--primary); }
+.mi-btn.edit:hover { background:var(--primary);color:#fff; }
+.mi-btn.del      { background:#fde7ea;color:#d6304a; }
+.mi-btn.del:hover { background:#d6304a;color:#fff; }
+.mi-empty-row    { padding:14px 16px;color:var(--muted);font-size:.85rem; }
+.menu-empty      { display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px;color:var(--muted);gap:10px;text-align:center; }
+.menu-empty i    { font-size:3rem;opacity:.3; }
+
+/* Drag and drop */
+.mi-grip, .mi-sec-grip { cursor:grab;color:color-mix(in srgb, var(--primary) 45%, #9aa); font-size:1.05rem;line-height:1;touch-action:none;
+                   display:flex;align-items:center;justify-content:center;border-radius:6px;transition:.15s; }
+.mi-grip:hover, .mi-sec-grip:hover { color:var(--primary);background:color-mix(in srgb, var(--primary) 10%, white); }
+.mi-sec-grip     { width:22px;height:34px;margin-right:-4px; }
+.mi-grip:active, .mi-sec-grip:active { cursor:grabbing; }
+.mi-ghost        { opacity:.45;background:color-mix(in srgb, var(--primary) 10%, white) !important;outline:2px dashed color-mix(in srgb, var(--primary) 45%, white);outline-offset:-2px; }
+.mi-chosen       { box-shadow:0 10px 28px rgba(20,32,26,.16); }
+.no-drag-items .mi-grip, .no-drag-cats .mi-sec-grip { visibility:hidden; }
+.mi-hint         { font-size:.8rem;color:var(--muted);margin:14px 2px 0;display:flex;align-items:center;gap:6px; }
+.mi-hint i       { color:var(--primary); }
+
 .avail-toggle    { width:38px;height:21px;border-radius:999px;border:none;cursor:pointer;position:relative;transition:.2s;flex-shrink:0; }
 .avail-toggle::after { content:'';position:absolute;top:3px;left:3px;width:15px;height:15px;border-radius:50%;background:#fff;transition:.2s; }
 .avail-toggle.on { background:var(--primary); }
 .avail-toggle.on::after { left:20px; }
 .avail-toggle.off { background:#ced4da; }
-.icon-btn        { width:30px;height:30px;border:none;border-radius:9px;font-size:.82rem;cursor:pointer;
-                   display:inline-flex;align-items:center;justify-content:center;transition:.12s; }
-.icon-btn.edit   { background:#eef0ff;color:#3730a3; }
-.icon-btn.edit:hover { background:#3730a3;color:#fff; }
-.icon-btn.del    { background:#fff0f0;color:#dc3545; }
-.icon-btn.del:hover { background:#dc3545;color:#fff; }
 
-/* Toolbar */
-.cat-tab         { display:inline-flex;align-items:center;gap:7px;padding:5px 14px;border-radius:999px;border:1px solid var(--line);
-                   font-size:.82rem;font-weight:600;cursor:pointer;background:#fff;color:var(--muted);transition:.15s;white-space:nowrap; }
-.cat-tab:hover   { border-color:var(--primary);color:var(--primary); }
-.cat-tab.active  { background:var(--primary);color:#fff;border-color:var(--primary); }
-.cat-tab img     { width:22px;height:22px;border-radius:50%;object-fit:cover;margin-left:-8px; }
-.menu-empty      { display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px;color:var(--muted);gap:10px;text-align:center; }
-.menu-empty i    { font-size:3rem;opacity:.3; }
-.form-panel      { position:sticky;top:24px; }
+@media (max-width: 767px) {
+    .mi-row { grid-template-columns:18px minmax(0,1fr) auto; }
+    .mi-grip { grid-row:span 2; }
+    .mi-avail { grid-column:2; }
+    .mi-btns { grid-column:3; }
+    .mi-btn span { display:none; }
+    .mi-btn { padding:8px 11px; }
+    .mi-search, .mi-search input { width:100%; }
+}
 </style>
 
 {{-- ── Edit Item Modal ── --}}
@@ -123,130 +173,192 @@
 </div>
 
 <div class="page-title mb-4">
-    <h2>Menu Items</h2>
-    <p>Your menu, grouped by category. Photos belong to categories — change them under <a href="{{ route('admin.menu_category.index') }}" style="color:var(--primary);font-weight:600;">Categories</a>.</p>
+    <h2 class="mi-title">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M6 2a1 1 0 0 1 1 1v5h1V3a1 1 0 1 1 2 0v5h1V3a1 1 0 1 1 2 0v6a4 4 0 0 1-3 3.87V21a1.5 1.5 0 0 1-3 0v-8.13A4 4 0 0 1 4 9V3a1 1 0 0 1 2-1z"/>
+            <path d="M18.5 2c.83 0 1.5.67 1.5 1.5V21a1.5 1.5 0 0 1-3 0v-6h-1.5a1 1 0 0 1-1-1V7.5C14.5 4.46 16.29 2 18.5 2z"/>
+        </svg>
+        Menu Items
+    </h2>
+    <p>Manage your menu items and categories from here.</p>
 </div>
 
 <div class="row g-4">
 
-    {{-- ── Add Form (left panel) ── --}}
+    {{-- ── Left panel: Add Menu Item / Add Category ── --}}
     <div class="col-xl-4">
-        <div class="card-soft form-panel">
-            <div class="card-header d-flex align-items-center gap-2">
-                <i class="bi bi-basket-fill text-success"></i>
-                <h5 class="mb-0">Add Menu Item</h5>
-            </div>
+        <div class="card-soft mi-panel">
             <div class="card-body">
-                <div id="addError" class="alert alert-danger d-none py-2" style="font-size:.85rem;"></div>
-                @if($categories->isEmpty())
-                <div class="alert alert-warning py-2" style="font-size:.85rem;">
-                    Create a <a href="{{ route('admin.menu_category.index') }}">category</a> first.
+
+                <div class="mi-tabs" role="tablist">
+                    <a href="{{ route('admin.menu.index', ['tab' => 'menu']) }}" class="mi-tab {{ $tab === 'menu' ? 'active' : '' }}" data-tab="menu" role="tab">
+                        <span class="plus"><i class="bi bi-plus-lg"></i></span>Menu Item
+                    </a>
+                    <a href="{{ route('admin.menu.index', ['tab' => 'category']) }}" class="mi-tab {{ $tab === 'category' ? 'active' : '' }}" data-tab="category" role="tab">
+                        <span class="plus"><i class="bi bi-plus-lg"></i></span>Category
+                    </a>
                 </div>
-                @endif
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Item Name <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="addName" maxlength="150" placeholder="e.g. Veg. Momo">
-                </div>
-                <div class="row g-3 mb-3">
-                    <div class="col-sm-6 col-xl-12 col-xxl-6">
-                        <label class="form-label fw-semibold">Category <span class="text-danger">*</span></label>
-                        <select class="form-select" id="addCategory">
-                            <option value="">— Select —</option>
-                            @foreach($categories as $cat)
-                            <option value="{{ $cat->id }}">{{ $cat->name }}{{ $cat->is_active ? '' : ' (hidden)' }}</option>
-                            @endforeach
-                        </select>
+
+                {{-- Add Menu Item --}}
+                <div class="mi-pane {{ $tab === 'menu' ? 'active' : '' }}" data-pane="menu">
+                    <div class="mi-pane-head"><h5>Add Menu Item</h5><svg class="mi-art" viewBox="0 0 104 72" aria-hidden="true">
+                    <g stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity=".55">
+                        <path d="M28 14 20 6"/><path d="M40 8 38 0"/><path d="M76 14l8-8"/><path d="M64 8l2-8"/><path d="M18 26H8"/><path d="M96 26H86"/>
+                    </g>
+                    <path d="M22 54a30 30 0 0 1 60 0z" fill="currentColor" opacity=".35"/>
+                    <circle cx="52" cy="22" r="4" fill="currentColor" opacity=".45"/>
+                    <rect x="14" y="54" width="76" height="7" rx="3.5" fill="currentColor" opacity=".55"/>
+                    <path d="M34 42a20 20 0 0 1 12-12" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".8"/>
+                </svg></div>
+                    <div id="addError" class="alert alert-danger d-none py-2" style="font-size:.85rem;"></div>
+                    @if($categories->isEmpty())
+                    <div class="alert alert-warning py-2" style="font-size:.85rem;">
+                        Add a category first — use the <a href="{{ route('admin.menu.index', ['tab' => 'category']) }}">Category</a> tab.
                     </div>
-                    <div class="col-sm-6 col-xl-12 col-xxl-6">
-                        <label class="form-label fw-semibold">Price <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                            <span class="input-group-text" style="border-radius:14px 0 0 14px;">{{ $symbol }}</span>
-                            <input type="number" class="form-control" id="addPrice" min="0" step="0.01" placeholder="0" style="border-radius:0 14px 14px 0;">
+                    @endif
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Item Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="addName" maxlength="150" placeholder="e.g. Veg. Momo">
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-sm-7 col-xl-12 col-xxl-7">
+                            <label class="form-label fw-semibold">Category <span class="text-danger">*</span></label>
+                            <select class="form-select" id="addCategory">
+                                <option value="">Select Category</option>
+                                @foreach($categories as $cat)
+                                <option value="{{ $cat->id }}">{{ $cat->name }}{{ $cat->is_active ? '' : ' (hidden)' }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-sm-5 col-xl-12 col-xxl-5">
+                            <label class="form-label fw-semibold">Price <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text" style="border-radius:14px 0 0 14px;">{{ $symbol }}</span>
+                                <input type="number" class="form-control" id="addPrice" min="0" step="0.01" placeholder="0" style="border-radius:0 14px 14px 0;">
+                            </div>
                         </div>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Description</label>
+                        <textarea class="form-control" id="addDesc" rows="3" maxlength="500" placeholder="Optional — shown under the name"></textarea>
+                    </div>
+                    <label class="form-label fw-semibold d-block">Availability</label>
+                    <div class="mb-4 form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="addAvailable" checked>
+                        <label class="form-check-label" for="addAvailable">Available</label>
+                    </div>
+                    <button class="btn btn-primary w-100" id="addSaveBtn"><i class="bi bi-plus-lg me-1"></i>Create Item</button>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Description</label>
-                    <textarea class="form-control" id="addDesc" rows="3" maxlength="500" placeholder="Optional — shown under the name"></textarea>
+
+                {{-- Add Category --}}
+                <div class="mi-pane {{ $tab === 'category' ? 'active' : '' }}" data-pane="category">
+                    <div class="mi-pane-head"><h5>Add Category</h5><svg class="mi-art" viewBox="0 0 104 72" aria-hidden="true">
+                    <g stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity=".55">
+                        <path d="M28 14 20 6"/><path d="M40 8 38 0"/><path d="M76 14l8-8"/><path d="M64 8l2-8"/><path d="M18 26H8"/><path d="M96 26H86"/>
+                    </g>
+                    <path d="M22 54a30 30 0 0 1 60 0z" fill="currentColor" opacity=".35"/>
+                    <circle cx="52" cy="22" r="4" fill="currentColor" opacity=".45"/>
+                    <rect x="14" y="54" width="76" height="7" rx="3.5" fill="currentColor" opacity=".55"/>
+                    <path d="M34 42a20 20 0 0 1 12-12" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".8"/>
+                </svg></div>
+                    <div id="catError" class="alert alert-danger d-none py-2" style="font-size:.85rem;"></div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Category Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="catName" maxlength="100" placeholder="e.g. Thukpa">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Photo</label>
+                        <label class="cat-photo" id="catPhoto">
+                            <img alt="">
+                            <span class="cp-empty"><i class="bi bi-image"></i>Choose a photo<small>JPG, PNG or WEBP · max 3 MB</small></span>
+                            <button type="button" class="cp-remove" title="Remove photo"><i class="bi bi-x-lg"></i></button>
+                            <input type="file" accept="image/*" class="d-none">
+                        </label>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Description</label>
+                        <textarea class="form-control" id="catDesc" rows="3" maxlength="500" placeholder="Optional — shown under the category on the website"></textarea>
+                    </div>
+                    <button class="btn btn-primary w-100" id="catSaveBtn"><i class="bi bi-plus-lg me-1"></i>Create Category</button>
+                    <p class="text-secondary small text-center mt-3 mb-0">
+                        Edit or delete categories on the <a href="{{ route('admin.menu_category.index') }}" style="color:var(--primary);font-weight:600;">Categories</a> page.
+                    </p>
                 </div>
-                <div class="mb-4 form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="addAvailable" checked>
-                    <label class="form-check-label fw-semibold" for="addAvailable">Available</label>
-                </div>
-                <button class="btn btn-primary w-100" id="addSaveBtn"><i class="bi bi-plus-lg me-1"></i>Create Item</button>
             </div>
         </div>
     </div>
 
-    {{-- ── Menu boards (right) ── --}}
+    {{-- ── Right: toolbar + category sections ── --}}
     <div class="col-xl-8">
-        <div class="card-soft mb-3" style="padding:12px 14px;">
-            <div class="d-flex gap-2 align-items-center justify-content-between flex-wrap">
-                <div class="d-flex gap-2 flex-wrap" id="catTabs">
-                    <button type="button" class="cat-tab active" data-cat="all">All <span class="fw-normal opacity-75">({{ $total }})</span></button>
-                    @foreach($categories as $cat)
-                    <button type="button" class="cat-tab" data-cat="{{ $cat->id }}">
-                        @if($cat->image)<img src="{{ $cat->imageUrl() }}" alt="">@endif{{ $cat->name }}
-                    </button>
-                    @endforeach
-                </div>
-                <div style="position:relative;">
-                    <i class="bi bi-search" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#6c757d;font-size:.8rem;"></i>
-                    <input class="form-control form-control-sm" id="itemSearch" placeholder="Search items…" style="padding-left:30px;border-radius:10px;width:180px;">
-                </div>
+        <div class="card-soft mi-toolbar">
+            <div class="mi-chips" id="catTabs">
+                <button type="button" class="mi-chip active" data-cat="all">
+                    <span class="ci"><i class="bi bi-grid-3x3-gap-fill"></i></span>All <span class="n">(<span data-count="all">{{ $total }}</span>)</span>
+                </button>
+                @foreach($categories as $cat)
+                <button type="button" class="mi-chip" data-cat="{{ $cat->id }}">
+                    @if($cat->image)<img class="ci" src="{{ $cat->imageUrl() }}" alt="">@else<span class="ci"><i class="bi bi-egg-fried"></i></span>@endif
+                    {{ $cat->name }} <span class="n">(<span data-count="{{ $cat->id }}">{{ $cat->menuItems->count() }}</span>)</span>
+                </button>
+                @endforeach
+            </div>
+            <div class="mi-search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="itemSearch" placeholder="Search items…">
             </div>
         </div>
 
         @if($categories->isEmpty())
-        <div class="card-soft menu-empty">
+        <div class="card-soft menu-empty mt-3">
             <i class="bi bi-journal-text"></i>
             <span class="fw-semibold">Your menu is empty</span>
-            <span style="font-size:.85rem;">Start by creating a <a href="{{ route('admin.menu_category.index') }}">category</a>, then add dishes to it.</span>
+            <span style="font-size:.85rem;">Create a category with the <strong>Category</strong> tab, then add dishes to it.</span>
         </div>
         @endif
 
-        <div id="boards">
+        @if($total)
+        <p class="mi-hint" id="dragHint"><i class="bi bi-grip-vertical"></i>Drag the handle to reorder dishes, move a dish to another category, or reorder whole categories.</p>
+        @endif
+        <div id="sections">
             @foreach($categories as $cat)
-            <section class="am-board" data-cat="{{ $cat->id }}">
-                <header class="am-head">
-                    <div class="am-meta">
-                        <h3>{{ $cat->name }}</h3>
-                        <span class="am-count"></span>
-                        @unless($cat->is_active)<span class="am-hidden" title="Hidden from the website">Hidden</span>@endunless
-                    </div>
-                    <span class="am-price-lbl">Price</span>
+            <section class="mi-sec" data-cat="{{ $cat->id }}">
+                <header class="mi-head">
+                    <span class="mi-sec-grip" title="Drag to reorder categories"><i class="bi bi-grip-vertical"></i></span>
+                    @if($cat->image)
+                    <img class="mi-ico" src="{{ $cat->imageUrl() }}" alt="" loading="lazy">
+                    @else
+                    <span class="mi-ico"><i class="bi bi-egg-fried"></i></span>
+                    @endif
+                    <h3>{{ $cat->name }}</h3>
+                    <span class="mi-count"></span>
+                    @unless($cat->is_active)<span class="mi-hidden" title="Hidden from the website">Hidden</span>@endunless
+                    <button type="button" class="mi-add-btn" onclick="addInto({{ $cat->id }})"><i class="bi bi-plus-lg"></i>Add Item</button>
                 </header>
-                <div class="am-body">
-                    <ul class="am-list">
-                        @foreach($cat->menuItems as $item)
-                        <li class="am-item {{ $item->is_available ? '' : 'is-off' }}" data-id="{{ $item->id }}" data-name="{{ Str::lower($item->name) }}">
-                            <div class="am-name">
-                                <span>{{ $item->name }}<em class="am-off-tag">Unavailable</em></span>
-                                @if($item->description)<small>{{ $item->description }}</small>@endif
-                            </div>
-                            <span class="am-dots" aria-hidden="true"></span>
-                            <span class="am-price">{{ \App\Support\Money::format($item->price, $currency) }}</span>
-                            <div class="am-actions">
-                                <button class="avail-toggle {{ $item->is_available ? 'on' : 'off' }}" title="{{ $item->is_available ? 'Available — click to mark unavailable' : 'Unavailable — click to make available' }}" onclick="toggleAvail({{ $item->id }}, this)"></button>
-                                <button class="icon-btn edit" title="Edit" onclick="openEditItem({{ $item->id }})"><i class="bi bi-pencil"></i></button>
-                                <button class="icon-btn del" title="Delete" onclick="deleteItem({{ $item->id }})"><i class="bi bi-trash"></i></button>
-                            </div>
-                        </li>
-                        @endforeach
-                        <li class="am-empty-row"><i class="bi bi-plus-circle me-1"></i>No dishes yet — add one with the form.</li>
-                    </ul>
-                    <div class="am-photo">
-                        @if($cat->image)
-                        <img src="{{ $cat->imageUrl() }}" alt="{{ $cat->name }}" loading="lazy">
-                        @else
-                        <a class="am-photo-empty" href="{{ route('admin.menu_category.index') }}" title="Add a photo to this category"><i class="bi bi-image"></i>Add photo</a>
-                        @endif
-                    </div>
-                </div>
+                <ul class="mi-list">
+                    @foreach($cat->menuItems as $item)
+                    <li class="mi-row {{ $item->is_available ? '' : 'is-off' }}" data-id="{{ $item->id }}" data-name="{{ Str::lower($item->name) }}">
+                        <span class="mi-grip" title="Drag to reorder"><i class="bi bi-grip-vertical"></i></span>
+                        <div class="min-w-0" style="min-width:0;">
+                            <div class="mi-name">{{ $item->name }}</div>
+                            @if($item->description)<div class="mi-desc">{{ $item->description }}</div>@endif
+                        </div>
+                        <div class="mi-price">{{ \App\Support\Money::format($item->price, $currency) }}</div>
+                        <div class="mi-avail">
+                            <button class="avail-toggle {{ $item->is_available ? 'on' : 'off' }}" title="Click to change availability" onclick="toggleAvail({{ $item->id }}, this)"></button>
+                            <span>{{ $item->is_available ? 'Available' : 'Unavailable' }}</span>
+                        </div>
+                        <div class="mi-btns">
+                            <button class="mi-btn edit" onclick="openEditItem({{ $item->id }})"><i class="bi bi-pencil-square"></i><span>Edit</span></button>
+                            <button class="mi-btn del" onclick="deleteItem({{ $item->id }})"><i class="bi bi-trash3"></i><span>Delete</span></button>
+                        </div>
+                    </li>
+                    @endforeach
+                    <li class="mi-empty-row"><i class="bi bi-info-circle me-1"></i>No dishes yet — click <strong>Add Item</strong>.</li>
+                </ul>
             </section>
             @endforeach
         </div>
-        <div id="noMatch" class="card-soft menu-empty d-none">
+        <div id="noMatch" class="card-soft menu-empty mt-3 d-none">
             <i class="bi bi-search"></i>
             <span class="fw-semibold">No items match your search</span>
         </div>
@@ -254,51 +366,72 @@
 </div>
 
 @push('js')
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script>
 const CSRF   = '{{ csrf_token() }}';
 const SYMBOL = @json($symbol);
+const MAX_PHOTO = 3 * 1024 * 1024;
 const _editModal = new bootstrap.Modal(document.getElementById('editItemModal'));
 
 const esc   = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money = n => { n = Number(n) || 0; return SYMBOL + ' ' + n.toLocaleString('en-US', Number.isInteger(n) ? {} : {minimumFractionDigits: 2, maximumFractionDigits: 2}); };
 
-// Read a JSON response safely (a 413 or server error returns HTML, not JSON).
 async function readJson(res) { try { return await res.json(); } catch (e) { return {}; } }
 function saveError(res, data) {
     if (res.status === 0)   return 'Network error. Please check your connection and try again.';
+    if (res.status === 413) return 'This photo is too large to upload. Please choose a smaller file.';
     if (res.status === 419) return 'Your session expired. Please refresh the page.';
     return Object.values(data.errors || {})[0]?.[0] || data.message || 'Something went wrong. Please try again.';
 }
+function showError(id, msg) {
+    const el = document.getElementById(id);
+    el.textContent = msg; el.classList.toggle('d-none', !msg);
+}
 
-/* ════════ Rows & boards ════════ */
+/* ════════ Tabs (?tab=menu | ?tab=category) ════════ */
+function setTab(tab) {
+    document.querySelectorAll('.mi-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+    document.querySelectorAll('.mi-pane').forEach(p => p.classList.toggle('active', p.dataset.pane === tab));
+    const url = new URL(location.href);
+    url.searchParams.set('tab', tab);
+    history.replaceState(null, '', url);
+}
+document.querySelectorAll('.mi-tab').forEach(t => t.addEventListener('click', e => { e.preventDefault(); setTab(t.dataset.tab); }));
+
+/* ════════ Rows & sections ════════ */
 function rowHtml(d) {
     const on = !!d.is_available;
-    return `<li class="am-item ${on ? '' : 'is-off'}" data-id="${d.id}" data-name="${esc(d.name.toLowerCase())}">
-        <div class="am-name"><span>${esc(d.name)}<em class="am-off-tag">Unavailable</em></span>${d.description ? `<small>${esc(d.description)}</small>` : ''}</div>
-        <span class="am-dots" aria-hidden="true"></span>
-        <span class="am-price">${money(d.price)}</span>
-        <div class="am-actions">
-            <button class="avail-toggle ${on ? 'on' : 'off'}" title="${on ? 'Available — click to mark unavailable' : 'Unavailable — click to make available'}" onclick="toggleAvail(${d.id}, this)"></button>
-            <button class="icon-btn edit" title="Edit" onclick="openEditItem(${d.id})"><i class="bi bi-pencil"></i></button>
-            <button class="icon-btn del" title="Delete" onclick="deleteItem(${d.id})"><i class="bi bi-trash"></i></button>
+    return `<li class="mi-row ${on ? '' : 'is-off'}" data-id="${d.id}" data-name="${esc(d.name.toLowerCase())}">
+        <span class="mi-grip" title="Drag to reorder"><i class="bi bi-grip-vertical"></i></span>
+        <div style="min-width:0;"><div class="mi-name">${esc(d.name)}</div>${d.description ? `<div class="mi-desc">${esc(d.description)}</div>` : ''}</div>
+        <div class="mi-price">${money(d.price)}</div>
+        <div class="mi-avail"><button class="avail-toggle ${on ? 'on' : 'off'}" title="Click to change availability" onclick="toggleAvail(${d.id}, this)"></button><span>${on ? 'Available' : 'Unavailable'}</span></div>
+        <div class="mi-btns">
+            <button class="mi-btn edit" onclick="openEditItem(${d.id})"><i class="bi bi-pencil-square"></i><span>Edit</span></button>
+            <button class="mi-btn del" onclick="deleteItem(${d.id})"><i class="bi bi-trash3"></i><span>Delete</span></button>
         </div>
     </li>`;
 }
-const boardOf = catId => document.querySelector(`.am-board[data-cat="${catId}"]`);
+const sectionOf = catId => document.querySelector(`.mi-sec[data-cat="${catId}"]`);
 
-function refreshBoard(board) {
-    if (!board) return;
-    const n = board.querySelectorAll('.am-item').length;
-    board.querySelector('.am-count').textContent = n + (n === 1 ? ' item' : ' items');
-    board.querySelector('.am-empty-row').style.display = n ? 'none' : '';
+function refreshCounts() {
+    let total = 0;
+    document.querySelectorAll('.mi-sec').forEach(sec => {
+        const n = sec.querySelectorAll('.mi-row').length;
+        total += n;
+        sec.querySelector('.mi-count').textContent = `(${n} ${n === 1 ? 'item' : 'items'})`;
+        const chip = document.querySelector(`[data-count="${sec.dataset.cat}"]`);
+        if (chip) chip.textContent = n;
+    });
+    const all = document.querySelector('[data-count="all"]');
+    if (all) all.textContent = total;
 }
 function placeRow(d) {
-    const board = boardOf(d.menu_category_id);
-    if (!board) { location.reload(); return null; }
+    const sec = sectionOf(d.menu_category_id);
+    if (!sec) { location.reload(); return null; }
     const tmp = document.createElement('ul'); tmp.innerHTML = rowHtml(d).trim();
     const li = tmp.firstElementChild;
-    board.querySelector('.am-list').insertBefore(li, board.querySelector('.am-empty-row'));
-    refreshBoard(board);
+    sec.querySelector('.mi-list').insertBefore(li, sec.querySelector('.mi-empty-row'));
     return li;
 }
 function flash(li) {
@@ -306,48 +439,94 @@ function flash(li) {
     li.classList.remove('flash'); void li.offsetWidth; li.classList.add('flash');
     li.scrollIntoView({behavior: 'smooth', block: 'center'});
 }
-document.querySelectorAll('.am-board').forEach(refreshBoard);
 
-/* ════════ Filter: category tabs + search ════════ */
+/* ════════ Filter: category chips + search ════════ */
 let activeCat = 'all';
 function applyFilter() {
     const q = document.getElementById('itemSearch').value.trim().toLowerCase();
     let shown = 0;
-    document.querySelectorAll('.am-board').forEach(board => {
-        let visible = activeCat === 'all' || board.dataset.cat === activeCat;
-        let hits = 0;
-        board.querySelectorAll('.am-item').forEach(li => {
+    document.querySelectorAll('.mi-sec').forEach(sec => {
+        let visible = activeCat === 'all' || sec.dataset.cat === activeCat, hits = 0;
+        sec.querySelectorAll('.mi-row').forEach(li => {
             const match = !q || li.dataset.name.includes(q);
             li.style.display = match ? '' : 'none';
             if (match) hits++;
         });
         if (q && !hits) visible = false;
-        board.querySelector('.am-empty-row').style.display = (!q && !board.querySelector('.am-item')) ? '' : 'none';
-        board.style.display = visible ? '' : 'none';
+        sec.querySelector('.mi-empty-row').style.display = (!q && !sec.querySelector('.mi-row')) ? '' : 'none';
+        sec.style.display = visible ? '' : 'none';
         if (visible) shown++;
     });
-    document.getElementById('noMatch').classList.toggle('d-none', shown > 0 || !document.querySelector('.am-board'));
+    document.getElementById('noMatch').classList.toggle('d-none', shown > 0 || !document.querySelector('.mi-sec'));
+    refreshCounts();
+    setDragEnabled(!q, !q && activeCat === 'all');
 }
-document.querySelectorAll('.cat-tab').forEach(tab => tab.addEventListener('click', () => {
-    document.querySelectorAll('.cat-tab').forEach(t => t.classList.toggle('active', t === tab));
-    activeCat = tab.dataset.cat;
+document.querySelectorAll('.mi-chip').forEach(chip => chip.addEventListener('click', () => {
+    document.querySelectorAll('.mi-chip').forEach(c => c.classList.toggle('active', c === chip));
+    activeCat = chip.dataset.cat;
     applyFilter();
 }));
 document.getElementById('itemSearch').addEventListener('input', applyFilter);
+
+/* ════════ Drag and drop ════════ */
+// Dishes: reorder inside a category or drop into another one. Categories: reorder by their header handle.
+// Dragging is paused while searching (hidden rows would make the order ambiguous).
+const sortables = { items: [], cats: null };
+function setDragEnabled(items, cats) {
+    if (typeof Sortable === 'undefined') return;
+    sortables.items.forEach(s => s.option('disabled', !items));
+    sortables.cats?.option('disabled', !cats);
+    document.body.classList.toggle('no-drag-items', !items);
+    document.body.classList.toggle('no-drag-cats', !cats);
+    const hint = document.getElementById('dragHint');
+    if (hint) hint.style.visibility = items ? '' : 'hidden';
+}
+async function saveOrder(evt) {
+    if (evt.from === evt.to && evt.oldIndex === evt.newIndex) return;
+    const payload = { categories: [], items: {} };
+    document.querySelectorAll('.mi-sec').forEach(sec => {
+        payload.categories.push(+sec.dataset.cat);
+        payload.items[sec.dataset.cat] = [...sec.querySelectorAll('.mi-row')].map(li => +li.dataset.id);
+    });
+    applyFilter(); // counts + empty rows
+    try {
+        const res = await fetch('/admin/menu/reorder', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF},
+            body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw res;
+    } catch (e) {
+        notify.error('The new order could not be saved. Reloading…');
+        setTimeout(() => location.reload(), 1200);
+    }
+}
+if (typeof Sortable !== 'undefined') {
+    const opts = { animation: 160, ghostClass: 'mi-ghost', chosenClass: 'mi-chosen', onEnd: saveOrder };
+    document.querySelectorAll('.mi-list').forEach(ul => sortables.items.push(
+        Sortable.create(ul, { ...opts, group: 'menu-items', handle: '.mi-grip', draggable: '.mi-row' })
+    ));
+    const secs = document.getElementById('sections');
+    if (secs) sortables.cats = Sortable.create(secs, { ...opts, handle: '.mi-sec-grip', draggable: '.mi-sec' });
+}
+applyFilter();
+
+/* "Add Item" on a category: open the menu form with that category picked */
+function addInto(catId) {
+    setTab('menu');
+    document.getElementById('addCategory').value = catId;
+    const name = document.getElementById('addName');
+    name.scrollIntoView({behavior: 'smooth', block: 'center'});
+    name.focus({preventScroll: true});
+}
 
 /* ════════ Add item ════════ */
 document.getElementById('addSaveBtn').addEventListener('click', async () => {
     const name  = document.getElementById('addName').value.trim();
     const catId = document.getElementById('addCategory').value;
     const price = document.getElementById('addPrice').value;
-    const err   = document.getElementById('addError');
-    err.classList.add('d-none');
-
-    if (!name || !catId || price === '') {
-        err.textContent = 'Name, category and price are required.';
-        err.classList.remove('d-none');
-        return;
-    }
+    showError('addError', '');
+    if (!name || !catId || price === '') { showError('addError', 'Name, category and price are required.'); return; }
 
     const btn = document.getElementById('addSaveBtn');
     btn.disabled = true;
@@ -371,21 +550,63 @@ document.getElementById('addSaveBtn').addEventListener('click', async () => {
         btn.disabled = false;
         btn.innerHTML = '<i class="bi bi-plus-lg me-1"></i>Create Item';
     }
-
-    if (!res.ok) {
-        err.textContent = saveError(res, data);
-        err.classList.remove('d-none');
-        return;
-    }
+    if (!res.ok) { showError('addError', saveError(res, data)); return; }
 
     const li = placeRow(data);
     applyFilter();
     flash(li);
-
-    // Keep the category selected so several dishes can be added in a row
+    // Keep the category picked so several dishes can be added in a row
     ['addName', 'addPrice', 'addDesc'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('addAvailable').checked = true;
-    document.getElementById('addName').focus();
+    document.getElementById('addName').focus({preventScroll: true});
+});
+
+/* ════════ Add category ════════ */
+const catPhoto = (function () {
+    const box = document.getElementById('catPhoto'), img = box.querySelector('img'), input = box.querySelector('input');
+    let file = null;
+    const show = url => { img.src = url || ''; box.classList.toggle('has-img', !!url); };
+    input.addEventListener('change', () => {
+        const f = input.files[0]; input.value = '';
+        if (!f) return;
+        if (!f.type.startsWith('image/')) { showError('catError', 'Please choose an image file.'); return; }
+        if (f.size > MAX_PHOTO) { showError('catError', 'This photo is too large. Please choose one under 3 MB.'); return; }
+        showError('catError', '');
+        file = f; show(URL.createObjectURL(f));
+    });
+    box.querySelector('.cp-remove').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); file = null; show(''); });
+    return { get file() { return file; } };
+})();
+
+document.getElementById('catSaveBtn').addEventListener('click', async () => {
+    const name = document.getElementById('catName').value.trim();
+    showError('catError', '');
+    if (!name) { document.getElementById('catName').focus(); return; }
+
+    const fd = new FormData();
+    fd.append('name', name);
+    const desc = document.getElementById('catDesc').value.trim();
+    if (desc) fd.append('description', desc);
+    if (catPhoto.file) fd.append('image', catPhoto.file);
+
+    const btn = document.getElementById('catSaveBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving…';
+    let res, data = {};
+    try {
+        res  = await fetch('/admin/menu-category', {method: 'POST', body: fd, headers: {'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json'}});
+        data = await readJson(res);
+    } catch (e) {
+        res = {ok: false, status: 0};
+    }
+    if (!res.ok) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-plus-lg me-1"></i>Create Category';
+        showError('catError', saveError(res, data));
+        return;
+    }
+    // Reload so the new category appears in the list, chips and dropdowns (tab stays on Category).
+    location.reload();
 });
 
 /* ════════ Edit item ════════ */
@@ -431,20 +652,16 @@ document.getElementById('editSaveBtn').addEventListener('click', async () => {
         btn.disabled = false;
         btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Update Item';
     }
-
     if (!res.ok) { notify.error(saveError(res, data)); return; }
 
     _editModal.hide();
-    const old = document.querySelector(`.am-item[data-id="${id}"]`);
-    const oldBoard = old?.closest('.am-board');
-    if (old && oldBoard && oldBoard.dataset.cat == data.menu_category_id) {
-        // Same category: replace in place, keep its position
+    const old = document.querySelector(`.mi-row[data-id="${id}"]`);
+    if (old && old.closest('.mi-sec').dataset.cat == data.menu_category_id) {
         const tmp = document.createElement('ul'); tmp.innerHTML = rowHtml(data).trim();
         old.replaceWith(tmp.firstElementChild);
-        flash(document.querySelector(`.am-item[data-id="${id}"]`));
+        flash(document.querySelector(`.mi-row[data-id="${id}"]`));
     } else {
         old?.remove();
-        refreshBoard(oldBoard);
         flash(placeRow(data));
     }
     applyFilter();
@@ -455,25 +672,21 @@ async function toggleAvail(id, btn) {
     const res = await fetch(`/admin/menu/${id}/toggle`, {method: 'PATCH', headers: {'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json'}});
     const data = await readJson(res);
     if (!res.ok) return;
-    btn.classList.toggle('on', data.is_available);
-    btn.classList.toggle('off', !data.is_available);
-    btn.title = data.is_available ? 'Available — click to mark unavailable' : 'Unavailable — click to make available';
-    btn.closest('.am-item').classList.toggle('is-off', !data.is_available);
+    const on = !!data.is_available, row = btn.closest('.mi-row');
+    btn.classList.toggle('on', on);
+    btn.classList.toggle('off', !on);
+    row.classList.toggle('is-off', !on);
+    row.querySelector('.mi-avail span').textContent = on ? 'Available' : 'Unavailable';
 }
 
 /* ════════ Delete item ════════ */
 function deleteItem(id) {
-    const li = document.querySelector(`.am-item[data-id="${id}"]`);
-    const name = li?.querySelector('.am-name > span')?.firstChild?.textContent || 'this item';
+    const li = document.querySelector(`.mi-row[data-id="${id}"]`);
+    const name = li?.querySelector('.mi-name')?.textContent || 'this item';
     if (!confirm(`Delete "${name}" from the menu?`)) return;
     fetch(`/admin/menu/${id}`, {method: 'DELETE', headers: {'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json'}})
         .then(r => { if (!r.ok) throw r; return r.json(); })
-        .then(() => {
-            const board = li?.closest('.am-board');
-            li?.remove();
-            refreshBoard(board);
-            applyFilter();
-        })
+        .then(() => { li?.remove(); applyFilter(); })
         .catch(() => notify.error('The item could not be deleted.'));
 }
 </script>
