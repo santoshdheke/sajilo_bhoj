@@ -22,21 +22,31 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\VerifyEmailController;
 use App\Http\Middleware\EnsureOwnerEmailVerified;
+use App\Http\Middleware\EnsureSubscriptionActive;
 use App\Http\Middleware\EnsureSubscriptionChosen;
 use Illuminate\Support\Facades\Route;
 
 // Owner email verification and logout work before the email is verified or a plan is chosen.
-Route::withoutMiddleware([EnsureOwnerEmailVerified::class, EnsureSubscriptionChosen::class])->group(function () {
+Route::withoutMiddleware([EnsureOwnerEmailVerified::class, EnsureSubscriptionChosen::class, EnsureSubscriptionActive::class])->group(function () {
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('verify-email', [VerifyEmailController::class, 'show'])->name('verify_email.show');
     Route::post('verify-email', [VerifyEmailController::class, 'verify'])->middleware('throttle:10,1')->name('verify_email.verify');
     Route::post('verify-email/resend', [VerifyEmailController::class, 'resend'])->middleware('throttle:5,1')->name('verify_email.resend');
 });
 
-Route::withoutMiddleware(EnsureSubscriptionChosen::class)->group(function () {
+Route::withoutMiddleware([EnsureSubscriptionChosen::class, EnsureSubscriptionActive::class])->group(function () {
 
     Route::get('subscription/choose', [SubscriptionController::class, 'choose'])->name('subscription.choose');
     Route::post('subscription/choose', [SubscriptionController::class, 'store'])->name('subscription.store');
+    // Balance & top-up stay open when the subscription has run out (that's how it starts again).
+    Route::middleware('permission:users.manage')->group(function () {
+        Route::get('subscription/top-up', [SubscriptionController::class, 'topup'])->name('subscription.topup');
+        Route::post('subscription/top-up', [SubscriptionController::class, 'storeTopup'])->middleware('throttle:10,1')->name('subscription.topup.store');
+        // Where Khalti / eSewa send the person back; balance is added only after the gateway confirms.
+        Route::get('subscription/top-up/khalti/return', [SubscriptionController::class, 'khaltiReturn'])->name('subscription.topup.khalti.return');
+        Route::get('subscription/top-up/esewa/success', [SubscriptionController::class, 'esewaSuccess'])->name('subscription.topup.esewa.success');
+        Route::get('subscription/top-up/esewa/failure', [SubscriptionController::class, 'esewaFailure'])->name('subscription.topup.esewa.failure');
+    });
 });
 
 Route::get('profile', [ProfileController::class, 'index'])->name('profile.index');

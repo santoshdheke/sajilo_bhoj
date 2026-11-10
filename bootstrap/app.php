@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureOwnerEmailVerified;
 use App\Http\Middleware\EnsureWebsiteEnabled;
+use App\Http\Middleware\EnsureSubscriptionActive;
 use App\Http\Middleware\EnsureSubscriptionChosen;
 use App\Http\Middleware\EnsureUserHasPermission;
 use App\Http\Middleware\ResolveTenant;
@@ -17,7 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__ . '/../routes/console.php',
         health: '/up',
         then: function () {
-            Route::middleware(['web', 'auth:web', EnsureOwnerEmailVerified::class, EnsureSubscriptionChosen::class])
+            Route::middleware(['web', 'auth:web', EnsureOwnerEmailVerified::class, EnsureSubscriptionChosen::class, EnsureSubscriptionActive::class])
                 ->prefix('admin')
                 ->name('admin.')
                 ->group(base_path('routes/admin.php'));

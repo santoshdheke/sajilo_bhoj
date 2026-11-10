@@ -84,6 +84,9 @@
             @if(auth()->user()?->hasPermission('users.manage'))
             <a class="nav-link{{ Request::is('admin/user') ? ' active' : '' }}" href="{{ route("admin.user.index") }}"><i class="bi bi-people"></i> Users &amp; Roles</a>
             @endif
+            @if(auth()->user()?->hasPermission('users.manage'))
+            <a class="nav-link{{ request()->routeIs('admin.subscription.*') ? ' active' : '' }}" href="{{ route('admin.subscription.topup') }}"><i class="bi bi-wallet2"></i> Balance &amp; Top-up</a>
+            @endif
             <a class="nav-link{{ Request::is('admin/profile') ? ' active' : '' }}" href="{{ route("admin.profile.index") }}"><i class="bi bi-person-circle"></i> Profile</a>
             @if(auth()->user()?->hasPermission('settings.manage'))
             <a class="nav-link{{ request()->routeIs('admin.settings.*') ? ' active' : '' }}" href="{{ route('admin.settings.index') }}"><i class="bi bi-gear"></i> Settings</a>
@@ -133,6 +136,9 @@
                             placeholder="Search orders, tables, menu items..."></div>
                 </div>
                 <div class="top-actions position-relative">
+                    @if (auth()->user()?->hasPermission('users.manage'))
+                        @include('admin.theme_one.component._subscription-chip')
+                    @endif
                     <button class="bell-btn" type="button" aria-label="Notifications"><i class="bi bi-bell"></i><span class="dot"></span></button>
                     <div class="dropdown">
                         <button class="user-chip" data-bs-toggle="dropdown" aria-expanded="false">

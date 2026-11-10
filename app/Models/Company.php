@@ -9,7 +9,7 @@ class Company extends Model
 {
     protected $fillable = ['name', 'slug', 'email', 'phone', 'address', 'logo', 'status'];
 
-    protected $casts = ['status' => 'boolean'];
+    protected $casts = ['status' => 'boolean', 'balance' => 'decimal:2'];
 
     public function domains(): HasMany
     {
@@ -59,13 +59,18 @@ class Company extends Model
     /** Plan of the latest subscription, looked up once per request. */
     public function currentPlan(): ?Plan
     {
-        if (! array_key_exists('current_plan', $this->relations)) {
-            $sub = Subscription::withoutGlobalScope('company')->with('plan')
-                ->where('company_id', $this->id)->latest('id')->first();
-            $this->setRelation('current_plan', $sub?->plan);
+        return $this->currentSubscription()?->plan;
+    }
+
+    /** Latest subscription (with its plan), looked up once per request. */
+    public function currentSubscription(): ?Subscription
+    {
+        if (! array_key_exists('current_subscription', $this->relations)) {
+            $this->setRelation('current_subscription', Subscription::withoutGlobalScope('company')->with('plan')
+                ->where('company_id', $this->id)->latest('id')->first());
         }
 
-        return $this->relations['current_plan'];
+        return $this->relations['current_subscription'];
     }
 
     /** A workspace is live once its owner has verified their email. Looked up once per request. */
