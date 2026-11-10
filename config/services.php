@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'backup' => [
+        'email' => env('BACKUP_EMAIL', 'santoshdheke46@gmail.com'),
+    ],
+
 ];

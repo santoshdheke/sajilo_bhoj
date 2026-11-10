@@ -16,3 +16,6 @@ Artisan::command('billing:settle', function () {
 })->purpose('Charge running subscriptions from company balances');
 
 \Illuminate\Support\Facades\Schedule::command('billing:settle')->hourly()->withoutOverlapping();
+
+// Daily database backup (see App\Console\Commands\BackupDatabase).
+\Illuminate\Support\Facades\Schedule::command('db:backup')->dailyAt('02:00')->withoutOverlapping();
