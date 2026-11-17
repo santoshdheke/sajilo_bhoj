@@ -6,6 +6,9 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    // Common database (companies, domains, billing, sessions...): the default "mysql" connection.
+    protected $connection = 'mysql';
+
     public function up(): void
     {
         Schema::create('domains', function (Blueprint $table) {

@@ -1,0 +1,27 @@
+{
+    "name": "sajilobhoj/shop",
+    "description": "SajiloBhoj shop management module.",
+    "authors": [
+        {
+            "name": "Santosh Dheke"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": []
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Shop\\": "app/",
+            "Modules\\Shop\\Database\\Factories\\": "database/factories/",
+            "Modules\\Shop\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\Shop\\Tests\\": "tests/"
+        }
+    }
+}

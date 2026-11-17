@@ -1,0 +1,172 @@
+<?php
+
+namespace Modules\Restaurant\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use Modules\Restaurant\Models\FloorTable;
+use Modules\Restaurant\Models\KitchenColumn;
+use Modules\Restaurant\Models\MenuCategory;
+use Modules\Restaurant\Models\MenuItem;
+use Modules\Restaurant\Models\Order;
+use Modules\Restaurant\Models\Setting;
+use Modules\Restaurant\Support\DefaultKitchen;
+use Modules\Restaurant\Support\Tenancy;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+
+class KitchenController extends Controller
+{
+    public function index()
+    {
+        // A branch with an empty board (e.g. signed up before defaults existed) gets the default columns.
+        if (! KitchenColumn::exists() && ($branch = Tenancy::branch())) {
+            DefaultKitchen::seed($branch);
+        }
+
+        $columns = KitchenColumn::orderBy('sort_order')->get()->each(function ($col) {
+            $col->setRelation('orders', Order::with(['items', 'table'])
+                ->where('status', $col->slug)
+                ->latest()
+                ->get());
+        });
+
+        // Share $columns with the _order_card partial via View::share
+        view()->share('columns', $columns);
+
+        $tables = FloorTable::orderBy('table_no')->get(['id', 'table_no']);
+
+        // Dishes for the "New Kitchen Order" picker, grouped by category.
+        $menuCategories = MenuCategory::with(['menuItems' => fn ($q) => $q->where('is_available', true)->orderBy('sort_order')->orderBy('name')])
+            ->orderBy('sort_order')->orderBy('name')->get()
+            ->filter(fn ($c) => $c->menuItems->isNotEmpty())->values();
+        $companyId = Tenancy::company()?->id;
+        $currency  = ($companyId ? Setting::getValue($companyId, 'currency') : null) ?: 'NPR';
+
+        return view('restaurant::admin.theme_one.kitchen.index', compact('columns', 'tables', 'menuCategories', 'currency'));
+    }
+
+    // ── Orders ──────────────────────────────────────────────────
+
+    public function updateStatus(Request $request, Order $order): JsonResponse
+    {
+        $slugs = KitchenColumn::pluck('slug')->toArray();
+        $request->validate(['status' => 'required|string|in:' . implode(',', array_merge($slugs, ['served']))]);
+        $order->update(['status' => $request->status]);
+        return response()->json(['success' => true]);
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'table_id'            => 'required|exists:restaurant.tables,id',
+            'customer_name'       => 'nullable|string|max:100',
+            'notes'               => 'nullable|string|max:500',
+            'items'               => 'required|array|min:1',
+            'items.*.menu_item_id' => 'required|integer',
+            'items.*.qty'         => 'required|integer|min:1|max:99',
+            'items.*.note'        => 'nullable|string|max:200',
+        ]);
+
+        // Name and price always come from the menu, never from the browser.
+        $dishes = MenuItem::whereHas('category')->where('is_available', true)
+            ->whereIn('id', collect($data['items'])->pluck('menu_item_id'))->get()->keyBy('id');
+        foreach ($data['items'] as $i => $item) {
+            if (! $dishes->has($item['menu_item_id'])) {
+                return response()->json(['message' => 'One of the dishes is no longer available. Please refresh and try again.',
+                    'errors' => ["items.$i.menu_item_id" => ['Dish not available.']]], 422);
+            }
+        }
+
+        $firstCol = KitchenColumn::orderBy('sort_order')->value('slug') ?? 'pending';
+
+        $order = DB::connection('restaurant')->transaction(function () use ($data, $dishes, $firstCol) {
+            $order = Order::create([
+                'table_id'      => $data['table_id'],
+                'customer_name' => $data['customer_name'] ?? null,
+                'order_type'    => 'dine_in',
+                'notes'         => $data['notes'] ?? null,
+                'status'        => $firstCol,
+            ]);
+
+            foreach ($data['items'] as $item) {
+                $dish = $dishes[$item['menu_item_id']];
+                $order->items()->create([
+                    'menu_item_id' => $dish->id,
+                    'name'         => $dish->name,
+                    'quantity'     => $item['qty'],
+                    'price'        => $dish->price,
+                    'note'         => $item['note'] ?? null,
+                ]);
+            }
+
+            $order->recalcTotals();
+
+            return $order;
+        });
+
+        return response()->json($order->load(['items', 'table']));
+    }
+
+    public function destroy(Order $order): JsonResponse
+    {
+        $order->delete();
+        return response()->json(['success' => true]);
+    }
+
+    // ── Columns ─────────────────────────────────────────────────
+
+    public function storeColumn(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'name'  => 'required|string|max:60',
+            'color' => 'required|in:green,warning,indigo,blue,pink,orange,red',
+        ]);
+
+        $slug = Str::slug($data['name'], '-');
+        $slug = KitchenColumn::where('slug', $slug)->exists()
+            ? $slug . '-' . time()
+            : $slug;
+
+        $col = KitchenColumn::create([
+            'name'       => $data['name'],
+            'slug'       => $slug,
+            'color'      => $data['color'],
+            'sort_order' => KitchenColumn::max('sort_order') + 1,
+        ]);
+
+        return response()->json($col);
+    }
+
+    public function updateColumn(Request $request, KitchenColumn $column): JsonResponse
+    {
+        $data = $request->validate([
+            'name'  => 'required|string|max:60',
+            'color' => 'required|in:green,warning,indigo,blue,pink,orange,red',
+        ]);
+
+        $column->update($data);
+        return response()->json($column);
+    }
+
+    public function destroyColumn(KitchenColumn $column): JsonResponse
+    {
+        // Move orders in this column to the first remaining column
+        $first = KitchenColumn::where('id', '!=', $column->id)->orderBy('sort_order')->first();
+        if ($first) {
+            Order::where('status', $column->slug)->update(['status' => $first->slug]);
+        }
+        $column->delete();
+        return response()->json(['success' => true]);
+    }
+
+    public function reorderColumns(Request $request): JsonResponse
+    {
+        $request->validate(['order' => 'required|array', 'order.*' => 'integer']);
+        foreach ($request->order as $sortOrder => $id) {
+            KitchenColumn::where('id', $id)->update(['sort_order' => $sortOrder + 1]);
+        }
+        return response()->json(['success' => true]);
+    }
+}

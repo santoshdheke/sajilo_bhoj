@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\Customer;
-use App\Models\User;
+use Modules\Restaurant\Models\Customer;
+use Modules\Restaurant\Models\User;
 
 return [
 

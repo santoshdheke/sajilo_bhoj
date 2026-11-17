@@ -6,6 +6,9 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    // Common database (companies, domains, billing, sessions...): the default "mysql" connection.
+    protected $connection = 'mysql';
+
     public function up(): void
     {
         // Prepaid balance: after the free trial, the plan's hourly rate is taken from it.

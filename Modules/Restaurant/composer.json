@@ -1,0 +1,27 @@
+{
+    "name": "sajilobhoj/restaurant",
+    "description": "SajiloBhoj restaurant module: website, admin, billing, tenancy.",
+    "authors": [
+        {
+            "name": "Santosh Dheke"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": []
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Restaurant\\": "app/",
+            "Modules\\Restaurant\\Database\\Factories\\": "database/factories/",
+            "Modules\\Restaurant\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\Restaurant\\Tests\\": "tests/"
+        }
+    }
+}

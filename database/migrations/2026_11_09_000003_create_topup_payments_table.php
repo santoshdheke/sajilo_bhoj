@@ -6,13 +6,16 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    // Common database (companies, domains, billing, sessions...): the default "mysql" connection.
+    protected $connection = 'mysql';
+
     public function up(): void
     {
         // One row per top-up attempt through Khalti / eSewa. Balance is added only when the gateway confirms it.
         Schema::create('topup_payments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('company_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('user_id')->nullable()->index(); // users live in the module database (no cross-database FK)
             $table->enum('gateway', ['khalti', 'esewa']);
             $table->decimal('amount', 12, 2);
             $table->enum('status', ['pending', 'completed', 'failed', 'cancelled'])->default('pending');

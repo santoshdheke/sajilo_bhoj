@@ -1,0 +1,79 @@
+<?php
+
+namespace Modules\Restaurant\Models;
+
+// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Modules\Restaurant\Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+
+#[Fillable(['company_id', 'branch_id', 'role_id', 'name', 'email', 'password', 'is_active', 'phone'])]
+#[UseFactory(UserFactory::class)]
+#[Hidden(['password', 'remember_token'])]
+class User extends Authenticatable
+{
+    protected $connection = 'restaurant';
+
+    /** @use HasFactory<UserFactory> */
+    use HasFactory, Notifiable;
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password'          => 'hashed',
+            'is_active'         => 'boolean',
+        ];
+    }
+
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
+    }
+
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class, 'created_by');
+    }
+
+    /** Allowed by the user's role AND included in the restaurant's plan. */
+    public function hasPermission(string $permission): bool
+    {
+        return (bool) $this->role?->hasPermission($permission) && $this->planAllows($permission);
+    }
+
+    public function planAllows(string $permission): bool
+    {
+        $plan = $this->company?->currentPlan();
+
+        return ! $plan || $plan->hasFeature($permission);
+    }
+
+    public function getInitialsAttribute(): string
+    {
+        return collect(explode(' ', $this->name))
+            ->map(fn($w) => strtoupper(substr($w, 0, 1)))
+            ->take(2)->implode('');
+    }
+}

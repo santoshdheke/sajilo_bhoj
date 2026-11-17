@@ -4,123 +4,84 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Create your restaurant - SajiloBhoj</title>
-    @include('partials.favicon')
+    <title>Create your workspace - SajiloBhoj</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     @php
-        $host     = $exception->getMessage() ?: request()->getHost();
-        // Laravel renders error pages with an empty $errors bag, so read the form's
-        // validation errors from the session ourselves.
-        $errors   = session('errors') ?: $errors;
-        $color    = old('theme_color', '#198754');
-        $presets  = ['#198754', '#22c55e', '#f59e0b', '#2563eb', '#ec4899', '#8b5cf6', '#1e3a8a', '#64748b'];
+        // Shown when no workspace exists on this domain (see Modules\Restaurant\Http\Middleware\ResolveTenant).
+        // Kept free of module partials so it renders whichever modules are enabled.
+        $host    = $exception->getMessage() ?: request()->getHost();
+        $options = array_filter([
+            Route::has('restaurant.register.create') ? [
+                'url'   => route('restaurant.register.create'),
+                'icon'  => 'bi-cup-hot',
+                'color' => '#198754',
+                'title' => 'Create restaurant',
+                'text'  => 'Menu, tables, orders, kitchen display and an online ordering website.',
+            ] : null,
+            Route::has('shop.register.create') ? [
+                'url'   => route('shop.register.create'),
+                'icon'  => 'bi-bag-check',
+                'color' => '#2563eb',
+                'title' => 'Create shop',
+                'text'  => 'Products, stock, billing and sales for your retail shop.',
+            ] : null,
+            Route::has('school.register.create') ? [
+                'url'   => route('school.register.create'),
+                'icon'  => 'bi-mortarboard',
+                'color' => '#0b6bcb',
+                'title' => 'Create school',
+                'text'  => 'Students, teachers, classes, sections and subjects for your school.',
+            ] : null,
+        ]);
     @endphp
-    <style>:root { --primary: {{ $color }}; }</style>
-    @include('partials.auth-split.styles')
+    <style>
+        body { font-family: Inter, system-ui, sans-serif; background: #f4f6fb; min-height: 100vh; display: grid; place-items: center; padding: 16px; color: #1f2937; }
+        .wrap { max-width: {{ count($options) > 2 ? 1000 : 760 }}px; width: 100%; text-align: center; }
+        .logo { display: inline-flex; align-items: center; gap: 8px; font-weight: 800; font-size: 1.35rem; color: #1f2937; text-decoration: none; margin-bottom: 28px; }
+        .logo svg { width: 36px; height: 36px; color: #198754; }
+        .logo span span { color: #198754; }
+        h1 { font-size: 2rem; font-weight: 800; margin-bottom: 8px; }
+        .note { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 1px solid #e5e7eb; border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: #4b5563; margin-bottom: 32px; }
+        .option { display: block; height: 100%; background: #fff; border: 2px solid transparent; border-radius: 20px; padding: 32px 24px; text-align: left; text-decoration: none; color: inherit;
+                  box-shadow: 0 12px 32px rgba(15, 23, 42, .06); transition: transform .15s, border-color .15s, box-shadow .15s; }
+        .option:hover, .option:focus-visible { transform: translateY(-3px); border-color: var(--c); box-shadow: 0 18px 40px rgba(15, 23, 42, .1); }
+        .option .icon { width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center; font-size: 26px; color: var(--c); background: color-mix(in srgb, var(--c) 12%, white); margin-bottom: 16px; }
+        .option h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: 6px; }
+        .option p { color: #6b7280; margin-bottom: 16px; }
+        .option .go { color: var(--c); font-weight: 600; }
+    </style>
 </head>
 
 <body>
-    @include('partials.auth-split.decor')
+    <main class="wrap">
+        <a class="logo" href="#" aria-label="SajiloBhoj">
+            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M13 26c-5 0-8-4-8-8 0-5 4-8 9-7 1-5 6-8 10-8s9 3 10 8c5-1 9 2 9 7 0 4-3 8-8 8"/>
+                <path d="M13 24v16h22V24"/><path d="M13 33h22"/><path d="M20 15v4M28 15v4"/>
+            </svg>
+            <span>Sajilo<span>Bhoj</span></span>
+        </a>
 
-    <main class="ws-card">
-        @include('partials.auth-split.side', ['note' => '<i class="bi bi-globe2"></i>No workspace at <strong>' . e($host) . '</strong> yet'])
+        <h1>Create your workspace</h1>
+        <div class="note"><i class="bi bi-globe2"></i>No workspace at <strong>{{ $host }}</strong> yet</div>
 
-        {{-- ── Right: sign-up form ── --}}
-        <section class="ws-form">
-            <form action="{{ route('register.store') }}" method="POST" novalidate>
-                @csrf
-                <div class="eyebrow">Get Started</div>
-                <h2>Create your workspace</h2>
-                <p class="signin">Your kitchen, your menu, your way. Let's cook up something delicious together <i class="bi bi-heart-fill" style="color: var(--primary)"></i></p>
-
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label" for="company_name">Company name</label>
-                        <div class="ws-field"><i class="bi bi-building"></i>
-                            <input class="form-control @error('company_name') is-invalid @enderror" type="text" id="company_name" name="company_name"
-                                   value="{{ old('company_name') }}" placeholder="The Green Fork" required autocomplete="organization">
-                        </div>
-                        @error('company_name')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label" for="owner_name">Your name</label>
-                        <div class="ws-field"><i class="bi bi-person"></i>
-                            <input class="form-control @error('owner_name') is-invalid @enderror" type="text" id="owner_name" name="owner_name"
-                                   value="{{ old('owner_name') }}" placeholder="Owner full name" required autocomplete="name">
-                        </div>
-                        @error('owner_name')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label" for="owner_email">Email</label>
-                        <div class="ws-field"><i class="bi bi-envelope"></i>
-                            <input class="form-control @error('owner_email') is-invalid @enderror" type="email" id="owner_email" name="owner_email"
-                                   value="{{ old('owner_email') }}" placeholder="owner@restaurant.com" required autocomplete="email">
-                        </div>
-                        @error('owner_email')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label" for="password">Password</label>
-                        <div class="ws-field"><i class="bi bi-lock"></i>
-                            <input class="form-control @error('password') is-invalid @enderror" type="password" id="password" name="password"
-                                   placeholder="8+ characters" required autocomplete="new-password">
-                        </div>
-                        @error('password')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label" for="password_confirmation">Confirm password</label>
-                        <div class="ws-field"><i class="bi bi-lock"></i>
-                            <input class="form-control" type="password" id="password_confirmation" name="password_confirmation"
-                                   placeholder="Repeat password" required autocomplete="new-password">
-                        </div>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label d-block">Brand color</label>
-                        <input type="hidden" name="theme_color" id="theme_color" value="{{ $color }}">
-                        <div class="ws-colors" role="radiogroup" aria-label="Brand color">
-                            @foreach ($presets as $p)
-                                <button type="button" class="ws-color" data-color="{{ $p }}" style="background: {{ $p }}" role="radio" aria-label="{{ $p }}"></button>
-                            @endforeach
-                            <label class="ws-color ws-color-custom" title="Custom colour" aria-label="Custom colour">
-                                <input type="color" id="theme_color_custom" value="{{ $color }}">
-                            </label>
-                        </div>
-                        @error('theme_color')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-                    </div>
+        <div class="row g-4 justify-content-center">
+            @foreach ($options as $option)
+                <div class="{{ count($options) > 2 ? 'col-md-4' : 'col-md-6' }}">
+                    <a class="option" href="{{ $option['url'] }}" style="--c: {{ $option['color'] }}">
+                        <div class="icon"><i class="bi {{ $option['icon'] }}"></i></div>
+                        <h2>{{ $option['title'] }}</h2>
+                        <p>{{ $option['text'] }}</p>
+                        <span class="go">Get started <i class="bi bi-arrow-right"></i></span>
+                    </a>
                 </div>
-
-                <button class="ws-submit" type="submit">Create workspace <i class="bi bi-arrow-right"></i></button>
-            </form>
-        </section>
+            @endforeach
+        </div>
     </main>
-
-    <script>
-    (function () {
-        var hidden = document.getElementById('theme_color'), custom = document.getElementById('theme_color_custom'),
-            swatches = document.querySelectorAll('.ws-color[data-color]'), customBox = document.querySelector('.ws-color-custom');
-
-        // Pick a brand colour: recolours the whole page (chef included) and fills the form field.
-        function setColor(hex) {
-            hex = hex.toLowerCase();
-            hidden.value = hex;
-            document.documentElement.style.setProperty('--primary', hex);
-            var matched = false;
-            swatches.forEach(function (b) {
-                var on = b.dataset.color.toLowerCase() === hex;
-                b.classList.toggle('active', on); b.setAttribute('aria-checked', on ? 'true' : 'false');
-                matched = matched || on;
-            });
-            customBox.classList.toggle('active', !matched);
-            customBox.style.background = matched ? '' : hex;
-        }
-        swatches.forEach(function (b) { b.addEventListener('click', function () { setColor(b.dataset.color); }); });
-        custom.addEventListener('input', function () { setColor(custom.value); });
-        setColor(hidden.value);
-    })();
-    </script>
 </body>
 
 </html>

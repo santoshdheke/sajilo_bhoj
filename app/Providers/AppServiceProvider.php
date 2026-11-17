@@ -2,13 +2,9 @@
 
 namespace App\Providers;
 
-use App\Http\Controllers\Admin\SettingController;
-use App\Models\NavMenuItem;
-use App\Models\Setting;
-use App\Support\Tenancy;
+use App\Console\Commands\FreshCommand;
+use Illuminate\Database\Console\Migrations\FreshCommand as BaseFreshCommand;
 use Illuminate\Pagination\Paginator;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -18,63 +14,19 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // migrate:fresh also wipes the module databases (restaurant, shop, school), not only the default one.
+        $this->app->extend(BaseFreshCommand::class, fn ($command, $app) => new FreshCommand($app['migrator']));
     }
 
     /**
      * Bootstrap any application services.
+     *
+     * Restaurant-specific wiring (routes, middleware, view composers, schedules)
+     * lives in Modules\Restaurant\Providers\RestaurantServiceProvider.
      */
     public function boot(): void
     {
         // The app is styled with Bootstrap, not Tailwind: use Bootstrap page links.
         Paginator::useBootstrapFive();
-
-        View::composer('frontend.theme_one.*', function ($view) {
-            $settings = SettingController::allDefaults();
-            $company  = Tenancy::company();
-
-            if ($company) {
-                foreach ($settings as $key => $default) {
-                    $settings[$key] = Setting::getValue($company->id, $key, $default);
-                }
-            }
-
-            $navMenuItems = $company
-                ? NavMenuItem::forCompany($company->id)
-                : collect(NavMenuItem::defaults())->map(fn ($item) => (object) $item);
-
-            $view->with('settings', $settings)->with('navMenuItems', $navMenuItems)
-                 ->with('socialLinks', \App\Support\SocialLinks::forCompany($company?->id))
-                 ->with('currencyCode', $settings['currency'] ?: 'NPR')
-                 ->with('currencySymbol', \App\Support\Money::symbol($settings['currency'] ?: 'NPR'))
-                 ->with($this->brand($company, $settings['restaurant_name'] ?? ''));
-        });
-
-        View::composer('admin.theme_one.*', function ($view) {
-            $themeColor = SettingController::SECTIONS['theme']['fields']['theme_color'];
-
-            if ($company = Tenancy::company()) {
-                $themeColor = Setting::getValue($company->id, 'theme_color', $themeColor);
-            }
-
-            $company = Tenancy::company();
-            $name    = $company ? Setting::getValue($company->id, 'restaurant_name', '') : '';
-
-            $view->with('themeColor', $themeColor)->with($this->brand($company, $name));
-        });
-    }
-
-    /**
-     * Brand data for the shared logo partial: the uploaded company logo (if any)
-     * and the business name to show next to the default logo mark.
-     */
-    private function brand($company, ?string $restaurantName): array
-    {
-        $logo = $company?->logo;
-
-        return [
-            'brandName'    => $restaurantName ?: ($company?->name ?: 'SajiloBhoj'),
-            'brandLogoUrl' => $logo && Storage::disk('public')->exists($logo) ? Storage::url($logo) : null,
-        ];
     }
 }
