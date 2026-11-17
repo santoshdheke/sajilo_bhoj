@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Modules\Shop\Models\Customer;
+use Modules\Shop\Support\Storefront;
 use Modules\Shop\Support\ShopTenancy;
 
 /**
@@ -16,13 +17,13 @@ use Modules\Shop\Support\ShopTenancy;
  */
 class AuthController extends Controller
 {
-    private const VIEW = 'shop::frontend.simple_theme.auth.';
+    private const VIEW = 'auth.';
 
     public function loginPage(): View|RedirectResponse
     {
         return Auth::guard('shop_customer')->check()
             ? redirect()->route('shop.front.account.dashboard')
-            : view(self::VIEW.'login');
+            : view(Storefront::view(self::VIEW.'login'));
     }
 
     public function login(Request $request): RedirectResponse
@@ -46,7 +47,7 @@ class AuthController extends Controller
     {
         return Auth::guard('shop_customer')->check()
             ? redirect()->route('shop.front.account.dashboard')
-            : view(self::VIEW.'register');
+            : view(Storefront::view(self::VIEW.'register'));
     }
 
     public function register(Request $request): RedirectResponse

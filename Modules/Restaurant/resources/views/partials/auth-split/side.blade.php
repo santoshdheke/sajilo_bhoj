@@ -1,11 +1,9 @@
 {{-- Left brand panel with the cooking chef scene. Optional: $title, $highlight (underlined end of the title), $lead, $note (HTML) shown under the intro. --}}
         {{-- ── Left: brand + cooking chef ── --}}
+        <style>.ws-logo .brand-mark__icon { width: auto; height: 44px; } .ws-logo .brand-logo-img { height: 44px; }</style>
         <section class="ws-side">
             <a class="ws-logo" href="#" aria-label="SajiloBhoj">
-                <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M13 26c-5 0-8-4-8-8 0-5 4-8 9-7 1-5 6-8 10-8s9 3 10 8c5-1 9 2 9 7 0 4-3 8-8 8"/>
-                    <path d="M13 24v16h22V24"/><path d="M13 33h22"/><path d="M20 15v4M28 15v4"/>
-                </svg>
+                @include('restaurant::partials.brand-logo', ['variant' => 'color', 'height' => 44, 'showName' => false])
                 <span>Sajilo<span>Bhoj</span></span>
             </a>
 

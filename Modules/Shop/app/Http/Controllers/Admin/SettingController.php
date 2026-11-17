@@ -10,6 +10,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Modules\Shop\Models\ShopSetting;
 use Modules\Shop\Support\ShopTenancy;
+use Modules\Shop\Support\Storefront;
 
 /**
  * Shop settings (multiple_pasal's admin Setting page): store details and logo, branding colours
@@ -40,6 +41,7 @@ class SettingController extends Controller
             'logo_color_two'   => $hex,
             'text_color'       => $hex,
             'font_family'      => ['nullable', Rule::in(ShopSetting::FONTS)],
+            'theme'            => ['nullable', Rule::in(array_keys(Storefront::THEMES))],
             'announcement'     => 'nullable|string|max:255',
             'about_us'         => 'nullable|string|max:2000',
             'vat_number'       => 'nullable|string|max:50',
@@ -81,6 +83,7 @@ class SettingController extends Controller
             'logo_color_two'   => $color($data['logo_color_two'] ?? null, $settings->logo_color_two),
             'text_color'       => $color($data['text_color'] ?? null, $settings->text_color),
             'font_family'      => $data['font_family'] ?? $settings->font_family,
+            'theme'            => $data['theme'] ?? $settings->theme,
             'announcement'     => $data['announcement'] ?? null,
             'about_us'         => $data['about_us'] ?? null,
             'vat_number'       => $data['vat_number'] ?? null,

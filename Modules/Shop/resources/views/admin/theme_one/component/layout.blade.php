@@ -85,6 +85,7 @@
             <div class="section-title">Storefront</div>
             <a class="nav-link{{ $is('shop.admin.setting.*') }}" href="{{ route('shop.admin.setting.index') }}"><i class="bi bi-gear"></i> Settings &amp; branding</a>
             <a class="nav-link{{ $is('shop.admin.banner.*') }}" href="{{ route('shop.admin.banner.index') }}"><i class="bi bi-images"></i> Banners</a>
+            <a class="nav-link{{ $is('shop.admin.offer.*') }}" href="{{ route('shop.admin.offer.index') }}"><i class="bi bi-gift"></i> Special offers</a>
             <a class="nav-link{{ $is('shop.admin.section.*') }}" href="{{ route('shop.admin.section.index') }}"><i class="bi bi-layout-text-window"></i> Home sections</a>
             <a class="nav-link" href="{{ route('shop.front.home') }}" target="_blank"><i class="bi bi-box-arrow-up-right"></i> View store</a>
 

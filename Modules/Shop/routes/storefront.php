@@ -32,6 +32,7 @@ Route::name('shop.front.')->group(function () {
     Route::middleware('auth:shop_customer')->prefix('user')->name('account.')->group(function () {
         Route::get('/dashboard', [AccountController::class, 'dashboard'])->name('dashboard');
         Route::get('/profile', [AccountController::class, 'profile'])->name('profile');
+        Route::put('/profile', [AccountController::class, 'update'])->name('update');
         Route::get('/order', [AccountController::class, 'orders'])->name('orders');
     });
 

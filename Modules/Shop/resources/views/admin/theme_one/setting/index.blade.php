@@ -100,6 +100,10 @@
                                     </div>
                                 </div>
                             @endforeach
+                            <div class="col-md-6"><label class="form-label fw-semibold">Store design</label>
+                                <select class="form-select" name="theme">
+                                    @foreach (\Modules\Shop\Support\Storefront::THEMES as $key => $label)<option value="{{ $key }}" @selected(old('theme', $settings->theme) === $key)>{{ $label }}</option>@endforeach
+                                </select></div>
                             <div class="col-md-6"><label class="form-label fw-semibold">Font</label>
                                 <select class="form-select" name="font_family" id="font_family">
                                     @foreach (\Modules\Shop\Models\ShopSetting::FONTS as $font)<option value="{{ $font }}" @selected(old('font_family', $settings->font_family) === $font)>{{ $font }}</option>@endforeach

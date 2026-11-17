@@ -14,6 +14,7 @@ use Modules\Shop\Models\Customer;
 use Modules\Shop\Models\ShopSetting;
 use Modules\Shop\Models\User;
 use Modules\Shop\Support\ShopTenancy;
+use Modules\Shop\Support\Storefront;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 
 /**
@@ -104,8 +105,8 @@ class ShopServiceProvider extends ModuleServiceProvider
             }
         });
 
-        // Storefront theme "simple_theme": what multiple_pasal read from company() / logoColor().
-        View::composer('shop::frontend.simple_theme.*', function ($view) {
+        // Storefront themes (vegitable, simple_theme): what multiple_pasal read from company() / logoColor().
+        View::composer('shop::frontend.*', function ($view) {
             static $shared = null; // once per request (the theme has many partials)
 
             $shared ??= (function () {
@@ -118,8 +119,8 @@ class ShopServiceProvider extends ModuleServiceProvider
                     'brand'       => $settings->brand(),
                     'socialLinks' => $settings->socialLinks(),
                     'shopLogoUrl' => self::logoUrl($company),
-                    'theme_path'  => 'shop::frontend.simple_theme.',
-                    'view_path'   => 'shop::frontend.simple_theme.home.',
+                    'theme_path'  => 'shop::frontend.'.Storefront::theme().'.',
+                    'view_path'   => 'shop::frontend.'.Storefront::theme().'.home.',
                 ];
             })();
 

@@ -17,12 +17,12 @@ class ShopSetting extends Model
     public const FONTS = ['Inter', 'Poppins', 'Roboto', 'Open Sans', 'Lato', 'Montserrat', 'Nunito', 'Raleway', 'Mukta', 'Playfair Display'];
 
     public const SOCIAL = [
-        'facebook'  => ['label' => 'Facebook',  'icon' => 'fab fa-facebook-f'],
-        'instagram' => ['label' => 'Instagram', 'icon' => 'fab fa-instagram'],
-        'tiktok'    => ['label' => 'TikTok',    'icon' => 'fab fa-tiktok'],
-        'youtube'   => ['label' => 'YouTube',   'icon' => 'fab fa-youtube'],
-        'twitter'   => ['label' => 'X / Twitter', 'icon' => 'fab fa-twitter'],
-        'whatsapp'  => ['label' => 'WhatsApp',  'icon' => 'fab fa-whatsapp'],
+        'facebook'  => ['label' => 'Facebook',  'icon' => 'fab fa-facebook-f', 'bi' => 'bi-facebook'],
+        'instagram' => ['label' => 'Instagram', 'icon' => 'fab fa-instagram', 'bi' => 'bi-instagram'],
+        'tiktok'    => ['label' => 'TikTok',    'icon' => 'fab fa-tiktok', 'bi' => 'bi-tiktok'],
+        'youtube'   => ['label' => 'YouTube',   'icon' => 'fab fa-youtube', 'bi' => 'bi-youtube'],
+        'twitter'   => ['label' => 'X / Twitter', 'icon' => 'fab fa-twitter', 'bi' => 'bi-twitter-x'],
+        'whatsapp'  => ['label' => 'WhatsApp',  'icon' => 'fab fa-whatsapp', 'bi' => 'bi-whatsapp'],
     ];
 
     protected $connection = 'shop';
@@ -30,7 +30,7 @@ class ShopSetting extends Model
     protected $table = 'settings';
 
     protected $fillable = [
-        'company_id', 'logo_color', 'logo_color_two', 'text_color', 'font_family', 'announcement', 'about_us',
+        'company_id', 'theme', 'logo_color', 'logo_color_two', 'text_color', 'font_family', 'announcement', 'about_us',
         'vat_number', 'default_tax_rate', 'receipt_footer', 'esewa_id', 'esewa_name', 'khalti_id', 'khalti_name',
         'khalti_secret_key', 'khalti_env', 'social_links',
     ];

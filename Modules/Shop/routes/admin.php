@@ -16,6 +16,7 @@ use Modules\Shop\Http\Controllers\Admin\ProfileController;
 use Modules\Shop\Http\Controllers\Admin\ReportController;
 use Modules\Shop\Http\Controllers\Admin\SectionController;
 use Modules\Shop\Http\Controllers\Admin\SettingController;
+use Modules\Shop\Http\Controllers\Admin\SpecialOfferController;
 use Modules\Shop\Http\Controllers\Admin\StaffController;
 use Modules\Shop\Http\Controllers\Admin\SupplierController;
 
@@ -106,6 +107,11 @@ Route::get('banner', [BannerController::class, 'index'])->name('banner.index');
 Route::post('banner', [BannerController::class, 'store'])->name('banner.store');
 Route::put('banner/{banner}', [BannerController::class, 'update'])->name('banner.update');
 Route::delete('banner/{banner}', [BannerController::class, 'destroy'])->name('banner.destroy');
+
+Route::get('special-offer', [SpecialOfferController::class, 'index'])->name('offer.index');
+Route::post('special-offer', [SpecialOfferController::class, 'store'])->name('offer.store');
+Route::put('special-offer/{specialOffer}', [SpecialOfferController::class, 'update'])->name('offer.update');
+Route::delete('special-offer/{specialOffer}', [SpecialOfferController::class, 'destroy'])->name('offer.destroy');
 
 Route::get('section', [SectionController::class, 'index'])->name('section.index');
 Route::post('section', [SectionController::class, 'store'])->name('section.store');

@@ -18,6 +18,7 @@
             Route::has('restaurant.register.create') ? [
                 'url'   => route('restaurant.register.create'),
                 'icon'  => 'bi-cup-hot',
+                'svg'   => '<svg class="bm" viewBox="0 0 240 150" aria-hidden="true"><g fill="none" stroke-width="7" stroke-linecap="round" style="stroke:var(--bm-soft)"><path d="M104 40c-9-11 9-15 0-27"/><path d="M122 36c-9-11 9-15 0-27"/></g><path d="M58 104a62 56 0 0 1 124 0z" style="fill:var(--bm-main)"/><path d="M78 86a42 38 0 0 1 28-26" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity=".5"/><circle cx="120" cy="47" r="9" style="fill:var(--bm-main)"/><rect x="50" y="100" width="140" height="11" rx="5.5" style="fill:var(--bm-dark)"/><path d="M176 88c10-20 30-26 50-24-8 20-28 30-50 24z" style="fill:var(--bm-main)" opacity=".85"/><path d="M182 102c14-10 32-10 46 0-14 10-32 10-46 0z" style="fill:var(--bm-soft)"/><path d="M12 136c40-22 92-28 150-16 26 6 46 2 70-8-20 22-62 30-102 24-44-6-84-6-118 0z" style="fill:var(--bm-main)"/></svg>', // restaurant logo
                 'color' => '#198754',
                 'title' => 'Create restaurant',
                 'text'  => 'Menu, tables, orders, kitchen display and an online ordering website.',
@@ -25,6 +26,7 @@
             Route::has('shop.register.create') ? [
                 'url'   => route('shop.register.create'),
                 'icon'  => 'bi-bag-check',
+                'svg'   => '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 18l3-9h26l3 9"/><path d="M8 18c0 3 2.5 5 5.3 5s5.4-2 5.4-5c0 3 2.5 5 5.3 5s5.3-2 5.3-5c0 3 2.6 5 5.4 5S40 21 40 18"/><path d="M11 23v16h26V23"/><path d="M20 39v-9h8v9"/></svg>', // shop logo
                 'color' => '#f97316',
                 'title' => 'Create shop',
                 'text'  => 'Products, stock, billing and sales for your retail shop.',
@@ -41,14 +43,14 @@
     <style>
         body { font-family: Inter, system-ui, sans-serif; background: #f4f6fb; min-height: 100vh; display: grid; place-items: center; padding: 16px; color: #1f2937; }
         .wrap { max-width: {{ count($options) > 2 ? 1000 : 760 }}px; width: 100%; text-align: center; }
-        .logo { display: inline-flex; align-items: center; gap: 8px; font-weight: 800; font-size: 1.35rem; color: #1f2937; text-decoration: none; margin-bottom: 28px; }
-        .logo svg { width: 36px; height: 36px; color: #198754; }
-        .logo span span { color: #198754; }
         h1 { font-size: 2rem; font-weight: 800; margin-bottom: 8px; }
         .note { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 1px solid #e5e7eb; border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: #4b5563; margin-bottom: 32px; }
         .option { display: block; height: 100%; background: #fff; border: 2px solid transparent; border-radius: 20px; padding: 32px 24px; text-align: left; text-decoration: none; color: inherit;
                   box-shadow: 0 12px 32px rgba(15, 23, 42, .06); transition: transform .15s, border-color .15s, box-shadow .15s; }
         .option:hover, .option:focus-visible { transform: translateY(-3px); border-color: var(--c); box-shadow: 0 18px 40px rgba(15, 23, 42, .1); }
+        .option .icon svg { width: 32px; height: 32px; }
+        /* restaurant brand logo (same mark as the restaurant website / admin panel) */
+        .option .icon svg.bm { width: 46px; height: auto; --bm-main: var(--c); --bm-dark: color-mix(in srgb, var(--c) 78%, black); --bm-soft: color-mix(in srgb, var(--c) 30%, white); }
         .option .icon { width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center; font-size: 26px; color: var(--c); background: color-mix(in srgb, var(--c) 12%, white); margin-bottom: 16px; }
         .option h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: 6px; }
         .option p { color: #6b7280; margin-bottom: 16px; }
@@ -58,14 +60,6 @@
 
 <body>
     <main class="wrap">
-        <a class="logo" href="#" aria-label="SajiloBhoj">
-            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M13 26c-5 0-8-4-8-8 0-5 4-8 9-7 1-5 6-8 10-8s9 3 10 8c5-1 9 2 9 7 0 4-3 8-8 8"/>
-                <path d="M13 24v16h22V24"/><path d="M13 33h22"/><path d="M20 15v4M28 15v4"/>
-            </svg>
-            <span>Sajilo<span>Bhoj</span></span>
-        </a>
-
         <h1>Create your workspace</h1>
         <div class="note"><i class="bi bi-globe2"></i>No workspace at <strong>{{ $host }}</strong> yet</div>
 
@@ -73,7 +67,7 @@
             @foreach ($options as $option)
                 <div class="{{ count($options) > 2 ? 'col-md-4' : 'col-md-6' }}">
                     <a class="option" href="{{ $option['url'] }}" style="--c: {{ $option['color'] }}">
-                        <div class="icon"><i class="bi {{ $option['icon'] }}"></i></div>
+                        <div class="icon">@isset($option['svg']){!! $option['svg'] !!}@else<i class="bi {{ $option['icon'] }}"></i>@endisset</div>
                         <h2>{{ $option['title'] }}</h2>
                         <p>{{ $option['text'] }}</p>
                         <span class="go">Get started <i class="bi bi-arrow-right"></i></span>

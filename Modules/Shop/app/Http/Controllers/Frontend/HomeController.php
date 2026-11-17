@@ -18,6 +18,7 @@ use Modules\Shop\Models\Product;
 use Modules\Shop\Models\ProductAttribute;
 use Modules\Shop\Models\Section;
 use Modules\Shop\Models\ShopSetting;
+use Modules\Shop\Support\Storefront;
 use Modules\Shop\Support\Cart;
 use Modules\Shop\Support\ShopTenancy;
 
@@ -27,18 +28,18 @@ use Modules\Shop\Support\ShopTenancy;
  */
 class HomeController extends Controller
 {
-    private const VIEW = 'shop::frontend.simple_theme.home.';
+    private const VIEW = 'home.';
 
     public function index(): View
     {
-        return view(self::VIEW.'index');
+        return view(Storefront::view(self::VIEW.'index'));
     }
 
     public function store(Request $request): View
     {
         $products = $this->filtered(Product::query(), $request)->paginate(12)->withQueryString();
 
-        return view(self::VIEW.'store', compact('products'));
+        return view(Storefront::view(self::VIEW.'store'), compact('products'));
     }
 
     public function category(Request $request, string $category): View
@@ -47,12 +48,12 @@ class HomeController extends Controller
         $products = $this->sorted(Product::with('productImage', 'category')->whereIn('category_id', $this->categoryIds($category)), $request)
             ->paginate(12)->withQueryString();
 
-        return view(self::VIEW.'category', compact('products', 'category'));
+        return view(Storefront::view(self::VIEW.'category'), compact('products', 'category'));
     }
 
     public function section(Section $section): View
     {
-        return view(self::VIEW.'section', compact('section'));
+        return view(Storefront::view(self::VIEW.'section'), compact('section'));
     }
 
     public function product(string $category, string $product): View
@@ -64,12 +65,12 @@ class HomeController extends Controller
         $values = ProductAttribute::with('productAttributeValues')->where('product_id', $product->id)->get()->keyBy('attribute_id');
         $product->category->attributes->each(fn ($attribute) => $attribute->setRelation('productAttribute', $values[$attribute->id] ?? null));
 
-        return view(self::VIEW.'product', compact('product'));
+        return view(Storefront::view(self::VIEW.'product'), compact('product'));
     }
 
     public function checkout(): View
     {
-        return view(self::VIEW.'checkout');
+        return view(Storefront::view(self::VIEW.'checkout'));
     }
 
     public function addToCart(Request $request): RedirectResponse
@@ -212,7 +213,7 @@ class HomeController extends Controller
         $order = self::visibleOrder($orderNumber);
         $order->load('orderProducts.product.productImage');
 
-        return view(self::VIEW.'order_detail', compact('order'));
+        return view(Storefront::view(self::VIEW.'order_detail'), compact('order'));
     }
 
     /** An order this visitor may see: placed in this session, or belonging to the signed-in customer. */
