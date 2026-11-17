@@ -16,6 +16,7 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Modules\Shop\Mail\ShopOtpMail;
 use Modules\Shop\Models\Company;
+use Modules\Shop\Models\ShopSetting;
 use Modules\Shop\Models\User;
 use Modules\Shop\Support\DefaultCatalog;
 
@@ -103,6 +104,7 @@ class ShopRegistrationController extends Controller
             'phone_number' => ['required', 'regex:/^[0-9]{10}$/'],
             'address'      => 'nullable|string|max:255',
             'password'     => 'required|string|min:8|confirmed',
+            'theme_color'  => ['nullable', 'regex:/^#[0-9A-Fa-f]{6}$/'],
         ], [
             'email.unique'       => 'This email is already used by another workspace.',
             'phone_number.regex' => 'Enter a 10-digit phone number.',
@@ -141,6 +143,12 @@ class ShopRegistrationController extends Controller
             ]);
 
             DefaultCatalog::seed($company->id);
+
+            // Theme colour chosen on the sign-up page (storefront + back office). Stored without "#".
+            ShopSetting::create([
+                'company_id' => $company->id,
+                'logo_color' => strtolower(ltrim($data['theme_color'] ?? '#f97316', '#')),
+            ]);
 
             return $owner;
         });

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Modules\Shop\Models\ShopSetting;
 use Modules\Shop\Support\ShopTenancy;
 
 class ProfileController extends Controller
@@ -40,6 +41,16 @@ class ProfileController extends Controller
         $user->update($data);
 
         return redirect()->route('shop.admin.profile.index')->with('success', 'Profile updated.');
+    }
+
+    /** Theme colour of the shop (storefront + back office), same value as Settings → Branding. */
+    public function updateTheme(Request $request): RedirectResponse
+    {
+        $data = $request->validate(['theme_color' => ['required', 'regex:/^#?[0-9A-Fa-f]{6}$/']]);
+
+        ShopSetting::current()->update(['logo_color' => strtolower(ltrim($data['theme_color'], '#'))]);
+
+        return redirect()->route('shop.admin.profile.index')->with('success', 'Theme colour updated.');
     }
 
     public function updatePassword(Request $request): RedirectResponse

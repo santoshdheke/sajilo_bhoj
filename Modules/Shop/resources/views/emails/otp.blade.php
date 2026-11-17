@@ -15,7 +15,7 @@
                     Enter this code on the SajiloBhoj shop sign-up page to confirm your email address.
                 </td></tr>
                 <tr><td align="center" style="padding-bottom:20px;">
-                    <span style="display:inline-block;font-size:32px;letter-spacing:8px;font-weight:bold;background:#eaf2ff;color:#2563eb;border-radius:12px;padding:14px 22px;">{{ $code }}</span>
+                    <span style="display:inline-block;font-size:32px;letter-spacing:8px;font-weight:bold;background:#fff1e6;color:#f97316;border-radius:12px;padding:14px 22px;">{{ $code }}</span>
                 </td></tr>
                 <tr><td style="font-size:13px;color:#6b7280;line-height:1.6;">
                     The code works for {{ $minutes }} minutes. If you didn't try to create a shop, you can ignore this email.

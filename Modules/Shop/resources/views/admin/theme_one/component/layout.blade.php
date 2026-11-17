@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard') - {{ $shopName }}</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='12' fill='%232563eb'/%3E%3Cpath d='M12 20l2-7h20l2 7M14 23v13h20V23' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='12' fill='%23f97316'/%3E%3Cpath d='M12 20l2-7h20l2 7M14 23v13h20V23' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -185,7 +185,7 @@
                 { type: 'success', icon: { className: 'bi bi-check-circle-fill', tagName: 'i', color: '#fff' } },
                 { type: 'error', background: '#dc2626', icon: { className: 'bi bi-exclamation-circle-fill', tagName: 'i', color: '#fff' } },
             ] });
-        function brand() { return getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#2563eb'; }
+        function brand() { return getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#f97316'; }
         window.notify = {
             success: function (m) { return notyf.open({ type: 'success', message: m, background: brand() }); },
             error:   function (m) { return notyf.error(m); },

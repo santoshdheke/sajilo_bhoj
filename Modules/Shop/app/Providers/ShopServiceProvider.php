@@ -94,7 +94,14 @@ class ShopServiceProvider extends ModuleServiceProvider
 
             $view->with('shopName', $company?->name ?: 'SajiloBhoj Shop')
                  ->with('shopLogoUrl', self::logoUrl($company))
-                 ->with('themeColor', $company ? '#'.ShopSetting::current()->brand()['primary'] : '#2563eb');
+                 ->with('themeColor', $company ? '#'.ShopSetting::current()->brand()['primary'] : '#f97316');
+        });
+
+        // Staff login / set-password pages of a shop: in the shop's theme colour.
+        View::composer(['shop::auth.login', 'shop::auth.set-password'], function ($view) {
+            if (ShopTenancy::company()) {
+                $view->with('authColor', '#'.ShopSetting::current()->brand()['primary']);
+            }
         });
 
         // Storefront theme "simple_theme": what multiple_pasal read from company() / logoColor().

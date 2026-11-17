@@ -58,7 +58,7 @@ class ShopSetting extends Model
     public function brand(): array
     {
         return [
-            'primary'   => $this->logo_color ?: '627aec',
+            'primary'   => $this->logo_color ?: 'f97316',
             'secondary' => $this->logo_color_two ?: '1c252e',
             'text'      => $this->text_color ?: 'ffffff',
             'font'      => str_replace(' ', '+', $this->font_family ?: 'Inter'),

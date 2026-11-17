@@ -25,7 +25,7 @@
             Route::has('shop.register.create') ? [
                 'url'   => route('shop.register.create'),
                 'icon'  => 'bi-bag-check',
-                'color' => '#2563eb',
+                'color' => '#f97316',
                 'title' => 'Create shop',
                 'text'  => 'Products, stock, billing and sales for your retail shop.',
             ] : null,

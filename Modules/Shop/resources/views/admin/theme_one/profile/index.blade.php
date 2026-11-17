@@ -58,6 +58,30 @@
                 </form>
             </div>
         </div>
+        <div class="card-soft mt-4">
+            <div class="card-header"><h5 class="mb-0"><i class="bi bi-palette me-2 text-primary"></i>Theme colour</h5></div>
+            <div class="card-body">
+                <p class="text-muted small">The colour of your store and this back office. Pick one to preview it, then save.</p>
+                <form action="{{ route('shop.admin.profile.theme') }}" method="POST">
+                    @csrf @method('PUT')
+                    @include('shop::partials.color-picker', ['name' => 'theme_color', 'value' => old('theme_color', $themeColor)])
+                    <button class="btn btn-primary w-100 mt-4"><i class="bi bi-check-lg me-1"></i>Save theme colour</button>
+                </form>
+                <a class="small d-inline-block mt-3" href="{{ route('shop.admin.setting.index', ['tab' => 'branding']) }}">More branding options (secondary colour, font…)</a>
+            </div>
+        </div>
     </div>
 </div>
 @endsection
+
+@push('css')
+<style>
+.ws-colors { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+.ws-color { width: 36px; height: 36px; border-radius: 50%; border: 0; padding: 0; position: relative; cursor: pointer; transition: transform .15s; box-shadow: 0 4px 10px rgba(0,0,0,.12); }
+.ws-color:hover { transform: scale(1.1); }
+.ws-color.active { box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--primary); }
+.ws-color.active::after { content: '\F26E'; font-family: bootstrap-icons; color: #fff; font-size: 1.1rem; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+.ws-color-custom { background: conic-gradient(#ef4444, #f59e0b, #22c55e, #06b6d4, #3b82f6, #8b5cf6, #ec4899, #ef4444); overflow: hidden; }
+.ws-color-custom input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+</style>
+@endpush

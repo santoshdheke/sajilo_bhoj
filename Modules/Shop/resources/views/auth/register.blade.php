@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Create your shop - SajiloBhoj</title>
+    @php($authColor = old('theme_color', '#f97316'))
     @include('shop::partials.auth-split.head')
     <style>
         .otp-row { display: flex; gap: 8px; }
@@ -100,6 +101,10 @@
                             <input class="form-control" type="password" id="password_confirmation" name="password_confirmation"
                                    placeholder="Repeat password" required autocomplete="new-password">
                         </div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label d-block">Theme colour <span class="text-muted fw-normal">(your store and back office)</span></label>
+                        @include('shop::partials.color-picker', ['name' => 'theme_color', 'value' => $authColor])
                     </div>
                 </div>
 

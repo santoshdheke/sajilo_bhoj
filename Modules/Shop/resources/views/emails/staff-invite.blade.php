@@ -15,7 +15,7 @@
                     Choose your password to activate your account.
                 </td></tr>
                 <tr><td align="center" style="padding-bottom:24px;">
-                    <a href="{{ $link }}" style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;font-weight:bold;border-radius:10px;padding:12px 26px;">Set my password</a>
+                    <a href="{{ $link }}" style="display:inline-block;background:#f97316;color:#ffffff;text-decoration:none;font-weight:bold;border-radius:10px;padding:12px 26px;">Set my password</a>
                 </td></tr>
                 <tr><td style="font-size:12px;color:#6b7280;line-height:1.6;word-break:break-all;">
                     Or open this link: {{ $link }}
