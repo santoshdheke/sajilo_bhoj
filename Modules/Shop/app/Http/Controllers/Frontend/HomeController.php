@@ -68,6 +68,17 @@ class HomeController extends Controller
         return view(Storefront::view(self::VIEW.'product'), compact('product'));
     }
 
+    /** Footer policy pages (Privacy / Terms / Refund Policy); text from Settings → Policies. */
+    public function page(string $page): View
+    {
+        abort_unless(isset(ShopSetting::POLICIES[$page]), 404);
+
+        return view(Storefront::view(self::VIEW.'page'), [
+            'pageTitle' => ShopSetting::POLICIES[$page][1],
+            'pageText'  => ShopSetting::current()->policy($page, ShopTenancy::company()->name),
+        ]);
+    }
+
     public function checkout(): View
     {
         return view(Storefront::view(self::VIEW.'checkout'));

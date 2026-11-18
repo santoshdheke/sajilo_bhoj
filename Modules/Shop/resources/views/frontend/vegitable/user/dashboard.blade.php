@@ -1,4 +1,5 @@
 @extends($theme_path . 'common.layout.master_layout')
+@section('hide_flash', 1)
 
 @section('contant')
 @php
@@ -51,9 +52,6 @@
         <!-- Main content -->
         <div class="col-lg-9">
 
-            @if(session('success'))
-                <div class="alert alert-success mb-3">{{ session('success') }}</div>
-            @endif
 
             <!-- Stats -->
             <div class="row g-3 mb-4">

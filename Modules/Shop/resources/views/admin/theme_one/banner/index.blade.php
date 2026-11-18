@@ -26,7 +26,6 @@
 
 <div class="page-head mb-4">
     <div class="page-title mb-0"><h2>Banners</h2><p>Slides at the top of your storefront home page. Without banners, sample slides are shown.</p></div>
-    <a class="btn btn-outline-primary" href="{{ route('shop.front.home') }}" target="_blank"><i class="bi bi-box-arrow-up-right me-1"></i>View store</a>
 </div>
 
 <div class="row g-4">

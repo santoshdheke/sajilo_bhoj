@@ -1,4 +1,5 @@
 @extends($theme_path . 'common.layout.master_layout')
+@section('hide_flash', 1)
 
 @section('contant')
 <div class="eh-login-page">

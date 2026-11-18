@@ -67,7 +67,7 @@
                     @include('shop::partials.color-picker', ['name' => 'theme_color', 'value' => old('theme_color', $themeColor)])
                     <button class="btn btn-primary w-100 mt-4"><i class="bi bi-check-lg me-1"></i>Save theme colour</button>
                 </form>
-                <a class="small d-inline-block mt-3" href="{{ route('shop.admin.setting.index', ['tab' => 'branding']) }}">More branding options (secondary colour, font…)</a>
+                <a class="small d-inline-block mt-3" href="{{ route('shop.admin.setting.index', 'theme') }}">More branding options (secondary colour, font…)</a>
             </div>
         </div>
     </div>

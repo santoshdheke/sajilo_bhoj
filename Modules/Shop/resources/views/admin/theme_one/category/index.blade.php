@@ -14,15 +14,15 @@
                 <div class="mb-3"><label class="form-label fw-semibold">Title</label><input class="form-control" name="title" id="editTitle" required maxlength="255"></div>
                 <div class="mb-3"><label class="form-label fw-semibold">Slug</label><input class="form-control" name="slug" id="editSlug" required maxlength="255" pattern="[a-z0-9-]+"></div>
                 <div class="mb-3"><label class="form-label fw-semibold">Parent</label>
-                    <select class="form-select" name="parent_id" id="editParent">
+                    <select class="form-select js-select2" name="parent_id" id="editParent" data-placeholder="Choose a parent">
                         <option value="0">No parent (root)</option>
                         @foreach ($parentOptions as $id => $label)<option value="{{ $id }}">{{ $label }}</option>@endforeach
                     </select></div>
                 <div><label class="form-label fw-semibold">Attributes</label>
-                    <select class="form-select" name="attribute_ids[]" id="editAttributes" multiple size="5">
+                    <select class="form-select js-select2" name="attribute_ids[]" id="editAttributes" multiple data-placeholder="Pick attributes">
                         @foreach ($attributes as $id => $title)<option value="{{ $id }}">{{ $title }}</option>@endforeach
                     </select>
-                    <div class="form-text">Products in this category can have these attributes. Ctrl/Cmd+click to pick several.</div></div>
+                    <div class="form-text">Products in this category can have these attributes. Type to search; pick as many as you need.</div></div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -49,13 +49,13 @@
                     <div class="mb-3"><label class="form-label fw-semibold">Slug <span class="text-danger">*</span></label>
                         <input class="form-control" name="slug" id="addSlug" value="{{ old('slug') }}" required maxlength="255" pattern="[a-z0-9-]+" placeholder="groceries"></div>
                     <div class="mb-3"><label class="form-label fw-semibold">Parent</label>
-                        <select class="form-select" name="parent_id">
+                        <select class="form-select js-select2" name="parent_id" data-placeholder="Choose a parent">
                             <option value="0">No parent (root)</option>
                             @foreach ($parentOptions as $id => $label)<option value="{{ $id }}" @selected(old('parent_id') == $id)>{{ $label }}</option>@endforeach
                         </select></div>
                     <div class="mb-4"><label class="form-label fw-semibold">Attributes</label>
-                        <select class="form-select" name="attribute_ids[]" multiple size="4">
-                            @foreach ($attributes as $id => $title)<option value="{{ $id }}">{{ $title }}</option>@endforeach
+                        <select class="form-select js-select2" name="attribute_ids[]" multiple data-placeholder="Pick attributes">
+                            @foreach ($attributes as $id => $title)<option value="{{ $id }}" @selected(in_array($id, (array) old('attribute_ids', [])))>{{ $title }}</option>@endforeach
                         </select></div>
                     <button class="btn btn-primary w-100"><i class="bi bi-plus-lg me-1"></i>Save Category</button>
                 </form>
@@ -99,16 +99,35 @@
 </div>
 @endsection
 
+@push('css')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
+@endpush
+
 @push('js')
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
-document.querySelectorAll('.tbl-action.edit').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-        var d = btn.dataset, attrs = JSON.parse(d.attributes || '[]').map(String);
-        document.getElementById('editForm').action = d.url;
-        document.getElementById('editTitle').value = d.title;
-        document.getElementById('editSlug').value = d.slug;
-        document.getElementById('editParent').value = d.parent;
-        Array.from(document.getElementById('editAttributes').options).forEach(function (o) { o.selected = attrs.indexOf(o.value) !== -1; });
+$(function () {
+    // Inside a Bootstrap modal the dropdown must attach to the modal, or it opens behind it and can't be typed into.
+    $('.js-select2').each(function () {
+        var $el = $(this), $modal = $el.closest('.modal');
+        $el.select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: $el.data('placeholder'),
+            closeOnSelect: !$el.prop('multiple'),
+            dropdownParent: $modal.length ? $modal : $(document.body)
+        });
+    });
+
+    $('.tbl-action.edit').on('click', function () {
+        var d = this.dataset, attrs = JSON.parse(d.attributes || '[]').map(String);
+        $('#editForm').attr('action', d.url);
+        $('#editTitle').val(d.title);
+        $('#editSlug').val(d.slug);
+        $('#editParent').val(d.parent || '0').trigger('change');
+        $('#editAttributes').val(attrs).trigger('change');
         bootstrap.Modal.getOrCreateInstance(document.getElementById('editModal')).show();
     });
 });

@@ -15,7 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family={{ $siteFontParam }}:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,700&display=swap" rel="stylesheet">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', $shop->name)</title>
-    @if ($shopLogoUrl)<link rel="icon" href="{{ $shopLogoUrl }}">@endif
+    @include('shop::partials.favicon', ['color' => $brand['primary'], 'logoUrl' => $shopLogoUrl])
     @stack('meta')
 </head>
 
@@ -772,7 +772,7 @@
     {{-- Flash messages (pages that show their own set @section('hide_flash', 1)) --}}
     @hasSection('hide_flash')
     @else
-        @php($flashMessages = array_filter(['success' => session('success'), 'error' => session('error') ?: ($errors->any() ? $errors->first() : null)]))
+        @php $flashMessages = array_filter(['success' => session('success'), 'error' => session('error') ?: ($errors->any() ? $errors->first() : null)]); @endphp
         @if ($flashMessages)
             <div class="container" style="position:relative;z-index:5;">
                 @foreach ($flashMessages as $type => $message)

@@ -1,7 +1,6 @@
 @php
     $mlItems = $section->sectionItems()
         ->where('sectionable_type', 'Modules\Shop\Models\Product')
-        ->limit(12)
         ->with(['sectionable' => function($q){ $q->with(['category', 'productImage']); }])
         ->get()
         ->pluck('sectionable')

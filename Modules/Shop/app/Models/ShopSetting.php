@@ -25,6 +25,13 @@ class ShopSetting extends Model
         'whatsapp'  => ['label' => 'WhatsApp',  'icon' => 'fab fa-whatsapp', 'bi' => 'bi-whatsapp'],
     ];
 
+    /** Footer policy pages: settings column => [url slug, title, default text (":shop" = shop name)]. */
+    public const POLICIES = [
+        'privacy_policy' => ['privacy', 'Privacy Policy', ":shop collects only the details needed to process your orders, such as your name, phone number, email and delivery address. We use them to deliver your orders and contact you about them, and never sell them to anyone. Payments made through eSewa or Khalti are handled by those services. Contact us any time to update or remove your details."],
+        'terms'          => ['terms', 'Terms & Conditions', "By ordering from :shop you agree to these terms. Prices and stock can change without notice; the price shown when you place an order is the price you pay. We may cancel an order if a product is unavailable, and refund anything already paid. Delivery times are estimates. Please check your order when it arrives."],
+        'refund_policy'  => ['refund-policy', 'Refund Policy', "If a product from :shop arrives damaged, defective or different from what you ordered, contact us within 7 days of delivery. Keep the product unused and in its original packaging. After we check it we will replace it or refund your payment. Delivery charges are refunded only when the mistake was ours."],
+    ];
+
     protected $connection = 'shop';
 
     protected $table = 'settings';
@@ -32,7 +39,7 @@ class ShopSetting extends Model
     protected $fillable = [
         'company_id', 'theme', 'logo_color', 'logo_color_two', 'text_color', 'font_family', 'announcement', 'about_us',
         'vat_number', 'default_tax_rate', 'receipt_footer', 'esewa_id', 'esewa_name', 'khalti_id', 'khalti_name',
-        'khalti_secret_key', 'khalti_env', 'social_links',
+        'khalti_secret_key', 'khalti_env', 'social_links', 'privacy_policy', 'terms', 'refund_policy',
     ];
 
     protected $hidden = ['khalti_secret_key'];
@@ -64,6 +71,12 @@ class ShopSetting extends Model
             'font'      => str_replace(' ', '+', $this->font_family ?: 'Inter'),
             'font_css'  => $this->font_family ?: 'Inter',
         ];
+    }
+
+    /** A policy page's text: the shop's own, or the default with the shop name filled in. */
+    public function policy(string $key, string $shopName): string
+    {
+        return filled($this->$key) ? $this->$key : str_replace(':shop', $shopName, self::POLICIES[$key][2]);
     }
 
     /** Filled social links: platform => [url, label, icon]. */

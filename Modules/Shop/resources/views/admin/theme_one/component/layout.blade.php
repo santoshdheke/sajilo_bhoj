@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard') - {{ $shopName }}</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='12' fill='%23f97316'/%3E%3Cpath d='M12 20l2-7h20l2 7M14 23v13h20V23' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    @include('shop::partials.favicon', ['color' => $themeColor, 'logoUrl' => $shopLogoUrl])
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -56,6 +56,7 @@
             </a>
 
             @php($is = fn (...$names) => request()->routeIs(...$names) ? ' active' : '')
+            @if (! request()->routeIs('shop.admin.setting.*'))
             <div class="section-title">Main</div>
             <a class="nav-link{{ $is('shop.admin.dashboard.*') }}" href="{{ route('shop.admin.dashboard.index') }}"><i class="bi bi-house-door-fill"></i> Dashboard</a>
             <a class="nav-link{{ $is('shop.admin.product.sell') }}" href="{{ route('shop.admin.product.sell') }}"><i class="bi bi-upc-scan"></i> POS / Sell</a>
@@ -66,6 +67,11 @@
             <a class="nav-link{{ $is('shop.admin.category.*') }}" href="{{ route('shop.admin.category.index') }}"><i class="bi bi-diagram-3"></i> Categories</a>
             <a class="nav-link{{ $is('shop.admin.brand.*') }}" href="{{ route('shop.admin.brand.index') }}"><i class="bi bi-award"></i> Brands</a>
             <a class="nav-link{{ $is('shop.admin.attribute.*') }}" href="{{ route('shop.admin.attribute.index') }}"><i class="bi bi-sliders"></i> Attributes</a>
+
+            <div class="section-title">Homepage</div>
+            <a class="nav-link{{ $is('shop.admin.banner.*') }}" href="{{ route('shop.admin.banner.index') }}"><i class="bi bi-images"></i> Banners</a>
+            <a class="nav-link{{ $is('shop.admin.offer.*') }}" href="{{ route('shop.admin.offer.index') }}"><i class="bi bi-gift"></i> Special offers</a>
+            <a class="nav-link{{ $is('shop.admin.section.*') }}" href="{{ route('shop.admin.section.index') }}"><i class="bi bi-layout-text-window"></i> Home sections</a>
 
             <div class="section-title">Stock</div>
             <a class="nav-link{{ $is('shop.admin.inventory.*') }}" href="{{ route('shop.admin.inventory.index') }}"><i class="bi bi-box-seam"></i> Inventory</a>
@@ -82,17 +88,23 @@
             <a class="nav-link{{ $is('shop.admin.report.profit') }}" href="{{ route('shop.admin.report.profit') }}"><i class="bi bi-pie-chart"></i> Profit</a>
             <a class="nav-link{{ $is('shop.admin.report.expenses*') }}" href="{{ route('shop.admin.report.expenses') }}"><i class="bi bi-wallet2"></i> Expenses</a>
 
-            <div class="section-title">Storefront</div>
-            <a class="nav-link{{ $is('shop.admin.setting.*') }}" href="{{ route('shop.admin.setting.index') }}"><i class="bi bi-gear"></i> Settings &amp; branding</a>
-            <a class="nav-link{{ $is('shop.admin.banner.*') }}" href="{{ route('shop.admin.banner.index') }}"><i class="bi bi-images"></i> Banners</a>
-            <a class="nav-link{{ $is('shop.admin.offer.*') }}" href="{{ route('shop.admin.offer.index') }}"><i class="bi bi-gift"></i> Special offers</a>
-            <a class="nav-link{{ $is('shop.admin.section.*') }}" href="{{ route('shop.admin.section.index') }}"><i class="bi bi-layout-text-window"></i> Home sections</a>
-            <a class="nav-link" href="{{ route('shop.front.home') }}" target="_blank"><i class="bi bi-box-arrow-up-right"></i> View store</a>
-
-            <div class="section-title">Account</div>
+            <div class="section-title">Management</div>
             <a class="nav-link{{ $is('shop.admin.staff.*') }}" href="{{ route('shop.admin.staff.index') }}"><i class="bi bi-people"></i> Staff</a>
             <a class="nav-link{{ $is('shop.admin.profile.*') }}" href="{{ route('shop.admin.profile.index') }}"><i class="bi bi-person-circle"></i> Profile</a>
+            <a class="nav-link" href="{{ route('shop.admin.setting.index') }}"><i class="bi bi-gear"></i> Settings</a>
+
+            <div class="section-title">Account</div>
             <a class="nav-link" href="javascript:void(0)" onclick="document.getElementById('logout').submit()"><i class="bi bi-box-arrow-right"></i> Logout</a>
+            @else
+            <a class="nav-link" href="{{ route('shop.admin.dashboard.index') }}"><i class="bi bi-arrow-left"></i> Back to Dashboard</a>
+            <div class="section-title">Website Settings</div>
+            @foreach (\Modules\Shop\Http\Controllers\Admin\SettingController::SECTIONS as $key => $sectionMeta)
+            <a class="nav-link{{ request()->routeIs('shop.admin.setting.index') && request()->route('section', 'general') === $key ? ' active' : '' }}"
+               href="{{ route('shop.admin.setting.index', $key) }}"><i class="bi {{ $sectionMeta['icon'] }}"></i> {{ $sectionMeta['label'] }}</a>
+            @endforeach
+            <div class="section-title">Account</div>
+            <a class="nav-link" href="javascript:void(0)" onclick="document.getElementById('logout').submit()"><i class="bi bi-box-arrow-right"></i> Logout</a>
+            @endif
             <form action="{{ route('shop.admin.logout') }}" method="post" id="logout">@csrf</form>
 
             <svg class="sidebar-deco" viewBox="0 0 280 120" preserveAspectRatio="none" aria-hidden="true">

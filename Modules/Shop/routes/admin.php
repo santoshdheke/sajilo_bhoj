@@ -100,8 +100,10 @@ Route::delete('staff/{user}', [StaffController::class, 'destroy'])->name('staff.
 Route::post('staff/{user}/send-invite', [StaffController::class, 'sendInvite'])->name('staff.send_invite');
 
 // ── Storefront ──
-Route::get('setting', [SettingController::class, 'index'])->name('setting.index');
-Route::put('setting', [SettingController::class, 'update'])->name('setting.update');
+Route::get('setting/{section?}', [SettingController::class, 'index'])->name('setting.index')
+    ->where('section', 'general|theme|payment|contact|policies');
+Route::put('setting/{section}', [SettingController::class, 'update'])->name('setting.update')
+    ->where('section', 'general|theme|payment|contact|policies');
 
 Route::get('banner', [BannerController::class, 'index'])->name('banner.index');
 Route::post('banner', [BannerController::class, 'store'])->name('banner.store');
@@ -117,4 +119,6 @@ Route::get('section', [SectionController::class, 'index'])->name('section.index'
 Route::post('section', [SectionController::class, 'store'])->name('section.store');
 Route::get('section/{section}/edit', [SectionController::class, 'edit'])->name('section.edit');
 Route::put('section/{section}', [SectionController::class, 'update'])->name('section.update');
+Route::post('section/{section}/item', [SectionController::class, 'addItem'])->name('section.item.store');
+Route::delete('section/{section}/item/{item}', [SectionController::class, 'removeItem'])->name('section.item.destroy');
 Route::delete('section/{section}', [SectionController::class, 'destroy'])->name('section.destroy');

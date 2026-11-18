@@ -1,4 +1,5 @@
 @extends($theme_path . 'common.layout.master_layout')
+@section('hide_flash', 1)
 
 @section('contant')
 @php $user = auth('shop_customer')->user(); @endphp
@@ -40,9 +41,6 @@
 
         <!-- Profile form -->
         <div class="col-lg-9">
-            @if(session('success'))
-                <div class="alert alert-success mb-3">{{ session('success') }}</div>
-            @endif
 
             <div class="eh-summary-card">
                 <h5 style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding-bottom:12px;border-bottom:2px solid var(--primary);margin-bottom:20px;">

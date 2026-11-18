@@ -4,7 +4,6 @@
 @section('content')
 <div class="page-head mb-4">
     <div class="page-title mb-0"><h2>Home sections</h2><p>Product rows on your storefront home page, e.g. "New Arrivals" or "Best Sellers". Without sections, the latest products are shown.</p></div>
-    <a class="btn btn-outline-primary" href="{{ route('shop.front.home') }}" target="_blank"><i class="bi bi-box-arrow-up-right me-1"></i>View store</a>
 </div>
 
 <div class="row g-4">

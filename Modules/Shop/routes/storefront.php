@@ -14,6 +14,9 @@ Route::name('shop.front.')->group(function () {
     Route::get('/store', [HomeController::class, 'store'])->name('store');
     Route::get('/checkout', [HomeController::class, 'checkout'])->name('checkout');
     Route::get('/section/{section}', [HomeController::class, 'section'])->name('section');
+    Route::get('/privacy', [HomeController::class, 'page'])->defaults('page', 'privacy_policy')->name('page.privacy');
+    Route::get('/terms', [HomeController::class, 'page'])->defaults('page', 'terms')->name('page.terms');
+    Route::get('/refund-policy', [HomeController::class, 'page'])->defaults('page', 'refund_policy')->name('page.refund');
 
     Route::post('/add-to-cart', [HomeController::class, 'addToCart'])->name('cart.add');
     Route::get('/remove-from-cart/{id}', [HomeController::class, 'removeFromCart'])->name('cart.remove');
@@ -37,7 +40,7 @@ Route::name('shop.front.')->group(function () {
     });
 
     // /{category} and /{category}/{product}: never the back office or staff pages.
-    $slug = '(?!admin$|staff$)[A-Za-z0-9-]+';
+    $slug = '(?!admin$|staff$|privacy$|terms$|refund-policy$)[A-Za-z0-9-]+';
     Route::get('/{category}', [HomeController::class, 'category'])->where('category', $slug)->name('category');
     Route::get('/{category}/{product}', [HomeController::class, 'product'])->where(['category' => $slug, 'product' => '[A-Za-z0-9-]+'])->name('product');
 });

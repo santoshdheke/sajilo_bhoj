@@ -3,6 +3,7 @@
 namespace Modules\Shop\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Modules\Shop\Models\Concerns\BelongsToShop;
@@ -12,7 +13,7 @@ class Section extends Model
 {
     use BelongsToShop;
 
-    public const TYPES = ['single_line' => 'Grid (one block)', 'multiple_line' => 'Carousel row'];
+    public const TYPES = ['single_line' => 'Single line (scrolling row)', 'multiple_line' => 'Multiple lines (grid)'];
 
     protected $connection = 'shop';
 
@@ -25,11 +26,23 @@ class Section extends Model
 
     public function sectionItems(): HasMany
     {
-        return $this->hasMany(SectionItem::class);
+        // In the order they were added; the same product may appear more than once.
+        return $this->hasMany(SectionItem::class)->orderBy('id');
     }
 
-    public function productIds(): array
+    /**
+     * One product per item, in item order (duplicates kept, deleted products skipped).
+     * $limit = null shows them all.
+     */
+    public function products(?int $limit = null): Collection
     {
-        return $this->sectionItems()->where('sectionable_type', Product::class)->pluck('sectionable_id')->all();
+        $items = $this->relationLoaded('sectionItems') ? $this->sectionItems : $this->sectionItems()->get();
+        $items = $items->where('sectionable_type', Product::class)->values();
+
+        $products = Product::with('productImage', 'category')->whereIn('id', $items->pluck('sectionable_id')->unique())->get()->keyBy('id');
+
+        $list = $items->map(fn ($item) => $products->get($item->sectionable_id))->filter()->values();
+
+        return $limit ? $list->take($limit) : $list;
     }
 }
