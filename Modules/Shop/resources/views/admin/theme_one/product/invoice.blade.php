@@ -58,7 +58,7 @@
             @foreach ($order->orderProducts as $line)
                 <tr>
                     <td class="text-muted">{{ $loop->iteration }}</td>
-                    <td>{{ $line->product?->name ?? 'Deleted product' }}</td>
+                    <td>{{ $line->product?->name ?? 'Deleted product' }}@include('shop::partials.line-options', ['attributes' => $line->attribute_description])</td>
                     <td class="text-center">{{ $line->quantity }} {{ $line->product?->unit }}</td>
                     <td class="text-end money">{{ $rs($line->unit_price) }}</td>
                     <td class="text-end money">{{ $rs($line->line_total) }}</td>

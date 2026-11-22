@@ -37,7 +37,7 @@
                             @foreach ($order->orderProducts as $line)
                                 <tr>
                                     <td class="fw-semibold">{{ $line->product?->name ?? 'Deleted product' }}
-                                        @if (! empty($line->attribute_description))<div class="text-muted small">{{ collect($line->attribute_description)->map(fn ($v, $k) => "$k: $v")->implode(', ') }}</div>@endif</td>
+                                        @include('shop::partials.line-options', ['attributes' => $line->attribute_description])</td>
                                     <td class="text-center">{{ $line->quantity }}</td>
                                     <td class="text-end money">{{ $rs($line->unit_price) }}</td>
                                     <td class="text-end money fw-semibold">{{ $rs($line->line_total) }}</td>

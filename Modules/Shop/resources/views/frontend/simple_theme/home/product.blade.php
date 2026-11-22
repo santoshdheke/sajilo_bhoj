@@ -378,6 +378,8 @@
                         </div>
                     @endif
 
+                    @include('shop::partials.product-options', ['product' => $product])
+
                     {{-- Quantity --}}
                     <div style="margin-bottom:20px">
                         <div class="pd-qty-label">Quantity</div>

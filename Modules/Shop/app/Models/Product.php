@@ -21,11 +21,12 @@ class Product extends Model
     protected $fillable = [
         'company_id', 'name', 'slug', 'sku', 'barcode', 'description', 'long_description',
         'price', 'cost_price', 'tax_rate', 'category_id', 'brand_id',
-        'expiry_date', 'minimum_stock', 'unit',
+        'expiry_date', 'minimum_stock', 'unit', 'custom_fields',
     ];
 
     protected $casts = [
-        'expiry_date' => 'date',
+        'expiry_date'   => 'date',
+        'custom_fields' => 'array',
         'price'       => 'decimal:2',
         'cost_price'  => 'decimal:2',
         'tax_rate'    => 'decimal:2',

@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.min.css" rel="stylesheet">
     <style>
         :root { --primary: {{ $themeColor ?? '#198754' }}; --ink: #14201a; --muted: #4b5a51; --orange: #f5a524; }
         * { box-sizing: border-box; }
@@ -38,6 +39,11 @@
         h1 { font-weight: 800; letter-spacing: -.03em; font-size: clamp(2.2rem, 4.6vw, 3.6rem); margin: 18px 0 10px; color: color-mix(in srgb, var(--primary) 30%, #0f1d16); }
         .sub { color: #2f3b34; font-size: 1.1rem; margin: 0 auto; max-width: 760px; }
         .bar { display: block; width: 90px; height: 5px; border-radius: 5px; background: var(--primary); margin: 18px auto 0; }
+        .back-btn { position: absolute; left: 0; top: 4px; z-index: 2; display: inline-flex; align-items: center; gap: 8px; height: 42px; padding: 0 18px;
+                    border-radius: 999px; font-weight: 600; font-size: .95rem; text-decoration: none; background: #fff; transition: .2s;
+                    color: color-mix(in srgb, var(--primary) 70%, black); border: 1.5px solid color-mix(in srgb, var(--primary) 25%, white);
+                    box-shadow: 0 6px 16px rgba(15, 40, 25, .06); }
+        .back-btn:hover { background: color-mix(in srgb, var(--primary) 8%, white); transform: translateX(-2px); }
 
         .hero-chef { position: absolute; left: -70px; top: 74px; width: 270px; animation: bob 3.2s ease-in-out infinite; }
         .hero-plant { position: absolute; left: -120px; top: 200px; width: 100px; color: color-mix(in srgb, var(--primary) 80%, #22c55e); animation: sway 4s ease-in-out infinite; transform-origin: 50% 100%; }
@@ -86,7 +92,7 @@
         @media (max-width: 1399px) { .hero-chef { left: -20px; width: 210px; top: 96px; } .hero-plant { display: none; } }
         @media (max-width: 1199px) { .hero-chef { width: 180px; top: 110px; } .hero-dish { width: 160px; } .hero-plant { display: none; } }
         @media (max-width: 1099px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 38px; } }
-        @media (max-width: 991px)  { .hero-chef, .hero-dish, .deco-lamps { display: none; } }
+        @media (max-width: 991px)  { .hero-chef, .hero-dish, .deco-lamps { display: none; } .back-btn { position: static; margin-bottom: 18px; } .head:has(.back-btn) { display: flex; flex-direction: column; align-items: center; } }
         @media (max-width: 640px)  { .grid { grid-template-columns: 1fr; } .logo { font-size: 1.6rem; } .logo svg { width: 46px; height: 46px; } .sub { font-size: 1rem; } }
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } .plan { opacity: 1; } }
     </style>
@@ -108,6 +114,14 @@
 
     <div class="wrap">
         <header class="head">
+            @if ($changing)
+                @php
+                    // Back to where they came from (usually Balance & Top-up); dashboard if that was this page or another site.
+                    $back = url()->previous();
+                    if ($back === url()->current() || ! str_starts_with($back, url('/'))) $back = route('admin.dashboard.index');
+                @endphp
+                <a href="{{ $back }}" class="back-btn"><i class="bi bi-arrow-left"></i>Back</a>
+            @endif
             {{-- chef + plant on the left, steaming dish on the right --}}
             <div class="hero-chef" aria-hidden="true">@include('restaurant::partials.chef-illustration', ['class' => 'w-100 h-auto'])</div>
             <svg class="hero-plant" viewBox="0 0 80 120" aria-hidden="true">
@@ -209,7 +223,7 @@
                             <button type="button" class="plan-cta" disabled>Current Plan</button>
                         @else
                             <button type="submit" name="plan_id" value="{{ $plan->id }}" class="plan-cta {{ $rec ? 'fill' : '' }}"
-                                @if ($changing) onclick="return confirm(@js('Switch to the ' . $plan->name . ' plan?' . ($current?->isTrialing() ? ' Your free trial will end now.' : '')))" @endif>
+                                @if ($changing) data-confirm-plan="{{ $plan->name }}" data-confirm-trial="{{ $current?->isTrialing() ? 1 : 0 }}" @endif>
                                 {{ $changing ? 'Switch to this plan' : ($trial ? 'Start Free Trial' : 'Get Started') }}
                             </button>
                         @endif
@@ -218,6 +232,37 @@
             </div>
         </form>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.all.min.js"></script>
+    <script>
+    // Plan switch confirmation (SweetAlert2 instead of the browser's confirm box).
+    document.querySelectorAll('[data-confirm-plan]').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            if (btn.dataset.confirmed) return; // second pass: let the form submit
+            e.preventDefault();
+            var primary = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#198754',
+                trial = btn.dataset.confirmTrial === '1';
+            Swal.fire({
+                icon: 'question',
+                title: 'Switch to the ' + btn.dataset.confirmPlan + ' plan?',
+                html: trial
+                    ? 'Your <strong>free trial will end now</strong> and billing for the new plan starts immediately.'
+                    : 'Your plan will change right away.',
+                showCancelButton: true,
+                confirmButtonText: '<i class="bi bi-arrow-repeat me-1"></i> Yes, switch plan',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true,
+                focusCancel: true,
+                confirmButtonColor: primary,
+                customClass: { popup: 'rounded-4' }
+            }).then(function (result) {
+                if (!result.isConfirmed) return;
+                btn.dataset.confirmed = 1;
+                Swal.fire({ title: 'Switching plan…', allowOutsideClick: false, showConfirmButton: false, didOpen: function () { Swal.showLoading(); } });
+                btn.form.requestSubmit ? btn.form.requestSubmit(btn) : btn.click(); // keeps plan_id from the clicked button
+            });
+        });
+    });
+    </script>
 </body>
 
 </html>

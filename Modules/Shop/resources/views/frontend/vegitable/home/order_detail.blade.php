@@ -73,6 +73,7 @@
                              style="width:60px;height:60px;object-fit:cover;border-radius:3px;border:1px solid var(--border);flex-shrink:0;">
                         <div style="flex:1;">
                             <div style="font-size:14px;font-weight:600;color:var(--dark);">{{ $op->product->name }}</div>
+                            @include('shop::partials.line-options', ['attributes' => $op->attribute_description])
                             <div style="font-size:12px;color:var(--muted);">Rs. {{ number_format($op->unit_price) }} × {{ $op->quantity }}</div>
                         </div>
                         <div style="font-size:15px;font-weight:700;white-space:nowrap;">Rs. {{ number_format($op->unit_price * $op->quantity) }}</div>

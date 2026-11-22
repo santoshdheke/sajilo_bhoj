@@ -16,5 +16,8 @@ class OrderProduct extends Model
     public function product(): BelongsTo { return $this->belongsTo(Product::class); }
     public function order(): BelongsTo { return $this->belongsTo(Order::class); }
 
+    /** @return array<int, array{title:string, value:string}> chosen attributes + order form answers */
+    public function getOptionsAttribute(): array { return \Modules\Shop\Support\ProductOptions::describe($this->attribute_description); }
+
     public function getLineTotalAttribute(): float { return (float) $this->unit_price * $this->quantity; }
 }

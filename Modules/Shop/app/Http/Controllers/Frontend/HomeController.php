@@ -20,6 +20,7 @@ use Modules\Shop\Models\Section;
 use Modules\Shop\Models\ShopSetting;
 use Modules\Shop\Support\Storefront;
 use Modules\Shop\Support\Cart;
+use Modules\Shop\Support\ProductOptions;
 use Modules\Shop\Support\ShopTenancy;
 
 /**
@@ -90,6 +91,7 @@ class HomeController extends Controller
             'product'     => 'required|string',
             'quantity'    => 'nullable|integer|min:1|max:1000',
             'attribute'   => 'nullable|array',
+            'custom'      => 'nullable|array',
             'button_type' => 'nullable|in:add_to_cart,order_now',
         ]);
 
@@ -98,6 +100,12 @@ class HomeController extends Controller
         $product   = Product::with('purchaseOrderItems', 'stockOutLines')->find($productId);
         if (! $product) {
             return back()->with('error', 'This product is no longer available.');
+        }
+
+        // Quick "Add to Cart" buttons on product cards can't fill in the order form: send them to the product page.
+        if (! $request->has('custom') && ProductOptions::hasRequired($product)) {
+            return redirect()->route('shop.front.product', [$product->category->slug, $product->slug])
+                ->with('error', "Please choose the options for \"{$product->name}\" first.");
         }
 
         $quantity = (int) ($data['quantity'] ?? 1);
@@ -116,6 +124,9 @@ class HomeController extends Controller
                 }
             }
         }
+
+        // Order form answers (colour, RAM, text to print...), checked against the product's fields.
+        $attributes = array_merge($attributes, ProductOptions::fromCustomerInput($product, (array) $request->input('custom', [])));
 
         Cart::add($product, $quantity, $attributes);
 

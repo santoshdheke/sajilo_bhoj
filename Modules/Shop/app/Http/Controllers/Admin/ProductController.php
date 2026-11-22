@@ -17,6 +17,7 @@ use Modules\Shop\Models\ProductAttributeValue;
 use Modules\Shop\Models\ProductImage;
 use Modules\Shop\Models\ProductPrice;
 use Modules\Shop\Models\ProductTag;
+use Modules\Shop\Support\ProductOptions;
 use Modules\Shop\Support\ShopTenancy;
 
 /**
@@ -155,6 +156,13 @@ class ProductController extends Controller
             'price_per_order.*.min_qty'  => ['required_with:price_per_order', 'integer', 'min:1'],
             'price_per_order.*.max_qty'  => ['nullable', 'integer', 'gte:price_per_order.*.min_qty'],
             'price_per_order.*.price'    => ['required_with:price_per_order', 'numeric', 'min:0'],
+            'custom_fields'              => ['nullable', 'array', 'max:'.ProductOptions::MAX_FIELDS],
+            'custom_fields.*.label'      => ['nullable', 'string', 'max:100'],
+            'custom_fields.*.type'       => ['required_with:custom_fields.*.label', Rule::in(array_keys(ProductOptions::TYPES))],
+            'custom_fields.*.options'    => ['nullable', 'array', 'max:50'],
+            'custom_fields.*.options.*'  => ['nullable', 'string', 'max:100'],
+            'custom_fields.*.placeholder' => ['nullable', 'string', 'max:150'],
+            'custom_fields.*.required'   => ['nullable', 'boolean'],
         ], [
             'product_image.required' => 'Add at least one product image.',
             'brand_id.required'      => 'Choose a brand (use "Local" for unbranded goods).',
@@ -164,6 +172,7 @@ class ProductController extends Controller
         $data['category_id']   = ($data['category_id'] ?? null) ?: $data['parent_category_id'];
         $data['tax_rate']      = $data['tax_rate'] ?? 0;
         $data['minimum_stock'] = $data['minimum_stock'] ?? 5;
+        $data['custom_fields'] = ProductOptions::fromAdminInput($data['custom_fields'] ?? []) ?: null;
 
         return collect($data)->except(['parent_category_id', 'tags', 'product_image', 'attributes', 'price_per_order'])->all();
     }

@@ -5,6 +5,11 @@
 @php
     $tiers = old('price_per_order', $product->exists ? $product->productPricePerOrders->map->only(['min_qty', 'max_qty', 'price'])->values()->all() : []);
     $tags  = old('tags', $product->exists ? $product->productTags->pluck('title')->implode(', ') : '');
+    // Order form rows for the builder: options as "a, b, c" text.
+    $customFields = old('custom_fields', collect($product->custom_fields ?? [])->map(fn ($f) => [
+        'label' => $f['label'], 'type' => $f['type'], 'required' => $f['required'] ? 1 : 0,
+        'options' => array_values($f['options'] ?? []), 'placeholder' => $f['placeholder'] ?? '',
+    ])->all());
 @endphp
 
 <div class="page-head mb-4">
@@ -70,6 +75,28 @@
                 </div>
             </div>
 
+            <div class="card-soft mb-4">
+                <div class="card-header d-flex align-items-center gap-2">
+                    <h5 class="mb-0">Customer order form</h5>
+                    <span class="text-muted small ms-1 d-none d-md-inline">Fields the customer fills in when buying</span>
+                    <button type="button" class="btn btn-sm btn-outline-primary ms-auto" id="addField"><i class="bi bi-plus-lg me-1"></i>Add field</button>
+                </div>
+                <div class="card-body">
+                    <div id="fieldRows"></div>
+                    <div id="fieldEmpty" class="text-center text-muted small py-3">
+                        <i class="bi bi-ui-checks d-block fs-3 mb-1"></i>
+                        No fields yet. Add one to ask for things like colour, RAM size, a name to print, or a delivery date.
+                        <div class="mt-2 d-flex flex-wrap justify-content-center gap-1">
+                            <button type="button" class="btn btn-sm btn-light" data-preset="color">+ Colour</button>
+                            <button type="button" class="btn btn-sm btn-light" data-preset="ram">+ RAM</button>
+                            <button type="button" class="btn btn-sm btn-light" data-preset="text">+ Text to print</button>
+                            <button type="button" class="btn btn-sm btn-light" data-preset="date">+ Delivery date</button>
+                        </div>
+                    </div>
+                    <div class="form-text">For dropdowns, choice buttons, colours and checkboxes, type an option and press Enter or comma. Options show to the customer in the order you add them. Colours can be names or hex codes, e.g. <code>Red</code>, <code>Navy</code>, <code>#ff9900</code>.</div>
+                </div>
+            </div>
+
             <div class="card-soft">
                 <div class="card-header"><h5 class="mb-0">Images</h5></div>
                 <div class="card-body">
@@ -128,7 +155,18 @@
 </form>
 @endsection
 
+@push('css')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
+<style>
+    /* Hint shown in the tag dropdown while typing an option. */
+    .cf-options .select2-results__option.select2-results__message { font-size: .8rem; }
+</style>
+@endpush
+
 @push('js')
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
 (function () {
     var parent = document.getElementById('parentCategory'), child = document.getElementById('childCategory'),
@@ -180,6 +218,72 @@
         if (this.checked && !rows.children.length) addTier();
     });
     if (!document.getElementById('tierToggle').checked) rows.querySelectorAll('input').forEach(function (inp) { inp.disabled = true; });
+
+    // Customer order form builder.
+    var types = @json(\Modules\Shop\Support\ProductOptions::TYPES),
+        choiceTypes = @json(\Modules\Shop\Support\ProductOptions::CHOICE_TYPES),
+        maxFields = @json(\Modules\Shop\Support\ProductOptions::MAX_FIELDS),
+        fieldRows = document.getElementById('fieldRows'), fieldEmpty = document.getElementById('fieldEmpty'), f = 0,
+        presets = {
+            color: { label: 'Colour', type: 'color', required: 1, options: 'Black, White, Red, Blue' },
+            ram:   { label: 'RAM', type: 'radio', required: 1, options: '4 GB, 8 GB, 16 GB' },
+            text:  { label: 'Name to print', type: 'text', required: 0, placeholder: 'e.g. Happy Birthday Sita' },
+            date:  { label: 'Delivery date', type: 'date', required: 0 }
+        };
+
+    function syncFields() {
+        fieldEmpty.classList.toggle('d-none', fieldRows.children.length > 0);
+        document.getElementById('addField').disabled = fieldRows.children.length >= maxFields;
+    }
+
+    function addField(d) {
+        if (fieldRows.children.length >= maxFields) return;
+        d = d || {};
+        var i = f++, row = document.createElement('div'), opts = '';
+        for (var k in types) opts += '<option value="' + k + '">' + types[k] + '</option>';
+        row.className = 'border rounded-3 p-3 mb-2 bg-light-subtle cf-row';
+        row.innerHTML = '<div class="row g-2 align-items-end">'
+            + '<div class="col-md-4"><label class="form-label small fw-semibold mb-1">Label</label><input class="form-control form-control-sm" name="custom_fields[' + i + '][label]" maxlength="100" placeholder="e.g. Colour" required></div>'
+            + '<div class="col-md-4"><label class="form-label small fw-semibold mb-1">Type</label><select class="form-select form-select-sm" name="custom_fields[' + i + '][type]">' + opts + '</select></div>'
+            + '<div class="col-md-3"><div class="form-check form-switch mb-1"><input type="hidden" name="custom_fields[' + i + '][required]" value="0"><input class="form-check-input" type="checkbox" value="1" name="custom_fields[' + i + '][required]" id="cfReq' + i + '"><label class="form-check-label small" for="cfReq' + i + '">Required</label></div></div>'
+            + '<div class="col-md-1 text-end"><button type="button" class="btn btn-sm btn-link text-danger p-0 mb-1" title="Remove field"><i class="bi bi-trash"></i></button></div>'
+            + '<div class="col-12 cf-options"><label class="form-label small fw-semibold mb-1">Options</label><select class="form-select form-select-sm" multiple name="custom_fields[' + i + '][options][]"></select></div>'
+            + '<div class="col-12 cf-placeholder"><label class="form-label small fw-semibold mb-1">Hint text</label><input class="form-control form-control-sm" name="custom_fields[' + i + '][placeholder]" maxlength="150" placeholder="Shown inside the empty box (optional)"></div>'
+            + '</div>';
+        var type = row.querySelector('[name$="[type]"]'), options = row.querySelector('[name$="[options][]"]');
+        row.querySelector('[name$="[label]"]').value = d.label || '';
+        type.value = types[d.type] ? d.type : 'text';
+        row.querySelector('[type=checkbox]').checked = String(d.required) === '1' || d.required === true;
+        // Existing options (array, or "a, b" text from presets) become selected tags.
+        (Array.isArray(d.options) ? d.options : String(d.options || '').split(',')).map(function (o) { return String(o).trim(); })
+            .filter(function (o, idx, all) { return o && all.indexOf(o) === idx; })
+            .forEach(function (o) { options.add(new Option(o, o, true, true)); });
+        row.querySelector('[name$="[placeholder]"]').value = d.placeholder || '';
+
+        function toggle() {
+            var isChoice = choiceTypes.indexOf(type.value) !== -1;
+            row.querySelector('.cf-options').classList.toggle('d-none', !isChoice);
+            row.querySelector('.cf-placeholder').classList.toggle('d-none', isChoice || type.value === 'date' || type.value === 'time');
+            options.required = isChoice; $(options).prop('disabled', !isChoice).trigger('change.select2');
+        }
+        row.querySelector('.btn-link').addEventListener('click', function () { row.remove(); syncFields(); });
+        fieldRows.appendChild(row);
+
+        // Options as Select2 tags: type, then Enter or comma.
+        $(options).select2({
+            theme: 'bootstrap-5', width: '100%', tags: true, tokenSeparators: [','],
+            placeholder: 'Type an option, then press Enter (e.g. 8 GB)',
+            dropdownParent: $(row),
+            language: { noResults: function () { return 'Type an option and press Enter'; } }
+        });
+        $(type).on('change', toggle); toggle();
+        syncFields();
+    }
+
+    (@json(array_values($customFields))).forEach(addField);
+    document.getElementById('addField').addEventListener('click', function () { addField(); });
+    document.querySelectorAll('[data-preset]').forEach(function (b) { b.addEventListener('click', function () { addField(presets[b.dataset.preset]); }); });
+    syncFields();
 })();
 </script>
 @endpush

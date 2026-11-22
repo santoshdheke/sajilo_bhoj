@@ -232,6 +232,7 @@
                                      onerror="this.style.background='#f3f4f6'">
                                 <div style="flex:1; min-width:0;">
                                     <div class="ck-item-name">{{ $cart['product']['name'] }}</div>
+                                    @include('shop::partials.line-options', ['attributes' => $cart['attribute'] ?? []])
                                     <div class="ck-item-meta">
                                         Qty: {{ $cart['quantity'] }} &nbsp;·&nbsp;
                                         Rs. {{ number_format($cart['product']['price']) }} each

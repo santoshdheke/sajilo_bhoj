@@ -65,6 +65,7 @@
                                      style="width:70px;height:70px;object-fit:cover;border-radius:3px;border:1px solid var(--border);flex-shrink:0;">
                                 <div style="flex:1;min-width:0;">
                                     <div style="font-size:14px;font-weight:600;color:var(--dark);">{{ $cart['product']['name'] }}</div>
+                                    @include('shop::partials.line-options', ['attributes' => $cart['attribute'] ?? []])
                                     <div style="font-size:12px;color:var(--muted);">Qty: {{ $cart['quantity'] }} &nbsp;·&nbsp; Rs. {{ number_format($cart['product']['price']) }}</div>
                                 </div>
                                 <div style="font-size:15px;font-weight:700;color:var(--dark);white-space:nowrap;">Rs. {{ number_format($cart['product']['price'] * $cart['quantity']) }}</div>

@@ -225,6 +225,7 @@
                     @endif
                     <div style="flex:1;min-width:0;">
                         <div class="od-item-name">{{ $op->product->name }}</div>
+                        @include('shop::partials.line-options', ['attributes' => $op->attribute_description])
                         <div class="od-item-meta">Rs. {{ number_format($op->unit_price) }} × {{ $op->quantity }}</div>
                     </div>
                     <div class="od-item-total">Rs. {{ number_format($op->unit_price * $op->quantity) }}</div>

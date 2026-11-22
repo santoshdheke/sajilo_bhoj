@@ -127,6 +127,8 @@
                             </div>
                         @endif
 
+                        @include('shop::partials.product-options', ['product' => $product])
+
                         <div class="d-flex align-items-center gap-3 mb-3">
                             <span class="small text-muted">Quantity:</span>
                             <div class="input-group input-group-sm pd-qty w-auto">
