@@ -1,4 +1,4 @@
-{{-- Header chip beside the bell: trial days left, or remaining balance (red when it has run out). Links to Balance & Top-up. --}}
+{{-- Header chip beside the bell: trial days left, or remaining balance (red when it has run out). Links to Balance & Subscription. --}}
 @php
     $chipCompany = \Modules\Restaurant\Support\Tenancy::company();
     $chipSub     = $chipCompany?->currentSubscription();
@@ -20,7 +20,7 @@
                    . ($chipRunway !== null ? ' · ~' . ($chipRunway >= 1 ? floor($chipRunway) . 'd' : max(1, floor($chipRunway * 24)) . 'h') . ' left' : '');
     }
 @endphp
-<a href="{{ route('admin.subscription.topup') }}" class="sub-chip {{ $chipState }}" title="{{ $chipSub->plan?->name }} plan — balance &amp; top-up">
+<a href="{{ route('admin.subscription.topup') }}" class="sub-chip {{ $chipState }}" title="{{ $chipSub->plan?->name }} plan — balance &amp; subscription">
     <i class="bi {{ $chipIcon }}"></i><span>{{ $chipText }}</span>
 </a>
 @once

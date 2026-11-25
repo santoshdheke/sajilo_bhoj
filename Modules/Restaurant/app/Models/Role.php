@@ -23,7 +23,6 @@ class Role extends Model
         'kitchen.manage'         => 'Kitchen Display',
         'tables.manage'          => 'Tables & Bookings',
         'billing.view'           => 'Billing',
-        'payments.manage'        => 'Payments',
         'customers.manage'       => 'Customers',
         'menu.manage'            => 'Menu',
         'inventory.manage'       => 'Inventory',

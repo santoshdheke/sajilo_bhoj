@@ -8,8 +8,8 @@ use Modules\Restaurant\Http\Controllers\Admin\InventoryController;
 use Modules\Restaurant\Http\Controllers\Admin\KitchenController;
 use Modules\Restaurant\Http\Controllers\Admin\MenuCategoryController;
 use Modules\Restaurant\Http\Controllers\Admin\OrderController;
-use Modules\Restaurant\Http\Controllers\Admin\PaymentController;
 use Modules\Restaurant\Http\Controllers\Admin\PurchaseOrderController;
+use Modules\Restaurant\Http\Controllers\Admin\ReferralController;
 use Modules\Restaurant\Http\Controllers\Admin\SupplierController;
 use Modules\Restaurant\Http\Controllers\Admin\TableController;
 use Modules\Restaurant\Http\Controllers\Admin\MenuController;
@@ -46,6 +46,10 @@ Route::withoutMiddleware([EnsureSubscriptionChosen::class, EnsureSubscriptionAct
         Route::get('subscription/top-up/khalti/return', [SubscriptionController::class, 'khaltiReturn'])->name('subscription.topup.khalti.return');
         Route::get('subscription/top-up/esewa/success', [SubscriptionController::class, 'esewaSuccess'])->name('subscription.topup.esewa.success');
         Route::get('subscription/top-up/esewa/failure', [SubscriptionController::class, 'esewaFailure'])->name('subscription.topup.esewa.failure');
+
+        // Refer & Earn: add client restaurants, earn a bonus on each of their top-ups.
+        Route::get('subscription/refer-and-earn', [ReferralController::class, 'index'])->name('subscription.referrals.index');
+        Route::post('subscription/refer-and-earn', [ReferralController::class, 'store'])->middleware('throttle:10,1')->name('subscription.referrals.store');
     });
 });
 
@@ -185,9 +189,3 @@ Route::middleware('permission:customers.manage')->group(function () {
     Route::delete('customers/{customer}', [CustomerController::class, 'destroy'])->name('customer.destroy');
 });
 
-Route::middleware('permission:payments.manage')->group(function () {
-    Route::get('payments', [PaymentController::class, 'index'])->name('payment.index');
-    Route::post('payments', [PaymentController::class, 'store'])->name('payment.store');
-    Route::put('payments/{payment}', [PaymentController::class, 'update'])->name('payment.update');
-    Route::get('payments-orders-without-payment', [PaymentController::class, 'ordersWithoutPayment'])->name('payment.orders_without_payment');
-});

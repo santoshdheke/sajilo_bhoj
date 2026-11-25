@@ -21,7 +21,7 @@ class PlanSeeder extends Seeder
     ];
 
     /** + get paid and know your guests and numbers. */
-    private const BUSINESS = ['billing.view', 'payments.manage', 'customers.manage', 'reports.view'];
+    private const BUSINESS = ['billing.view', 'customers.manage', 'reports.view'];
 
     /** + back-of-house: stock, suppliers and purchasing. */
     private const PROFESSIONAL = ['inventory.manage', 'suppliers.manage', 'purchase_orders.manage'];

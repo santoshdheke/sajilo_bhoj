@@ -78,14 +78,11 @@
             @if(auth()->user()?->hasPermission('customers.manage'))
             <a class="nav-link{{ Request::is('admin/customers') ? ' active' : '' }}" href="{{ route('admin.customer.index') }}"><i class="bi bi-person-hearts"></i> Customers</a>
             @endif
-            @if(auth()->user()?->hasPermission('payments.manage'))
-            <a class="nav-link{{ Request::is('admin/payments*') ? ' active' : '' }}" href="{{ route('admin.payment.index') }}"><i class="bi bi-credit-card"></i> Payments</a>
-            @endif
             @if(auth()->user()?->hasPermission('users.manage'))
             <a class="nav-link{{ Request::is('admin/user') ? ' active' : '' }}" href="{{ route("admin.user.index") }}"><i class="bi bi-people"></i> Users &amp; Roles</a>
             @endif
             @if(auth()->user()?->hasPermission('users.manage'))
-            <a class="nav-link{{ request()->routeIs('admin.subscription.*') ? ' active' : '' }}" href="{{ route('admin.subscription.topup') }}"><i class="bi bi-wallet2"></i> Balance &amp; Top-up</a>
+            <a class="nav-link{{ request()->routeIs('admin.subscription.*') ? ' active' : '' }}" href="{{ route('admin.subscription.topup') }}"><i class="bi bi-wallet2"></i> Balance &amp; Subscription</a>
             @endif
             <a class="nav-link{{ Request::is('admin/profile') ? ' active' : '' }}" href="{{ route("admin.profile.index") }}"><i class="bi bi-person-circle"></i> Profile</a>
             @if(auth()->user()?->hasPermission('settings.manage'))
@@ -238,7 +235,7 @@
             'bookings': 'Booking', 'chairs': 'Chair', 'customers': 'Customer',
             'inventory-categories': 'Category', 'inventory-items': 'Inventory item', 'kitchen/columns': 'Column',
             'kitchen/orders': 'Order', 'menu': 'Menu item', 'menu-category': 'Category', 'orders': 'Order',
-            'payments': 'Payment', 'purchase-orders': 'Purchase order', 'rooms': 'Room', 'settings/navigation': 'Menu link',
+            'purchase-orders': 'Purchase order', 'rooms': 'Room', 'settings/navigation': 'Menu link',
             'suppliers': 'Supplier', 'table-photos': 'Photo', 'tables': 'Table', 'user': 'User'
         };
         var PENDING = 'admin-pending-toast';

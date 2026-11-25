@@ -23,7 +23,7 @@ class Company extends Model
 
     protected $table = 'companies';
 
-    protected $fillable = ['name', 'slug', 'company_type', 'email', 'phone', 'address', 'logo', 'status'];
+    protected $fillable = ['name', 'slug', 'company_type', 'referred_by_company_id', 'email', 'phone', 'address', 'logo', 'status'];
 
     protected $casts = ['status' => 'boolean', 'balance' => 'decimal:2'];
 

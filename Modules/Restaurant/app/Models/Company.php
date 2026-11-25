@@ -53,6 +53,18 @@ class Company extends BaseCompany
         return $this->hasMany(Order::class);
     }
 
+    /** Client companies this company added (Refer & Earn). */
+    public function clients(): HasMany
+    {
+        return $this->hasMany(self::class, 'referred_by_company_id');
+    }
+
+    /** The company that added this one, if any. */
+    public function referrer(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(self::class, 'referred_by_company_id');
+    }
+
     public function subscriptions(): HasMany
     {
         return $this->hasMany(Subscription::class);

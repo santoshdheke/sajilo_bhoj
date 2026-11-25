@@ -116,7 +116,7 @@
         <header class="head">
             @if ($changing)
                 @php
-                    // Back to where they came from (usually Balance & Top-up); dashboard if that was this page or another site.
+                    // Back to where they came from (usually Balance & Subscription); dashboard if that was this page or another site.
                     $back = url()->previous();
                     if ($back === url()->current() || ! str_starts_with($back, url('/'))) $back = route('admin.dashboard.index');
                 @endphp

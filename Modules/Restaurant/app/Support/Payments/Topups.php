@@ -45,8 +45,10 @@ class Topups
             }
 
             $payment->update(['status' => 'completed', 'gateway_txn_id' => $txnId, 'response' => $response, 'completed_at' => now()]);
-            Billing::topUp(Company::find($payment->company_id), (float) $payment->amount,
-                $payment->gatewayName() . ($txnId ? " · {$txnId}" : ''));
+            $company = Company::find($payment->company_id);
+            Billing::topUp($company, (float) $payment->amount, $payment->gatewayName() . ($txnId ? " · {$txnId}" : ''));
+            // Refer & Earn: the company that added this one gets its bonus in the same transaction.
+            Billing::referralBonus($company, (float) $payment->amount);
 
             return true;
         });

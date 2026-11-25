@@ -9,6 +9,10 @@ return [
     // Credit allowed below zero: the plan keeps running until the balance reaches -credit_limit (Nrs).
     'credit_limit' => 100,
 
+    // Refer & Earn: when a client company (added by another company) tops up, the company
+    // that added it gets this percentage of the amount on its own balance, automatically.
+    'referral_bonus_percent' => 10,
+
     /*
      * Payment gateways for balance top-ups. Balance is only added after the gateway confirms the payment.
      * Mode "test" uses the gateways' sandbox; "live" takes real money. A gateway without credentials is hidden.

@@ -80,13 +80,13 @@ class Billing
     }
 
     /** Add money to the balance; an expired subscription starts running again right away. */
-    public static function topUp(Company $company, float $amount, string $note = 'Top-up'): void
+    public static function topUp(Company $company, float $amount, string $note = 'Top-up', string $type = 'topup', ?int $sourceCompanyId = null): void
     {
-        DB::transaction(function () use ($company, $amount, $note) {
+        DB::transaction(function () use ($company, $amount, $note, $type, $sourceCompanyId) {
             $company = Company::lockForUpdate()->find($company->id);
             $company->balance = round((float) $company->balance + $amount, 2);
             $company->save();
-            self::log($company, 'topup', $amount, $note);
+            self::log($company, $type, $amount, $note, $sourceCompanyId);
 
             $sub = Subscription::withoutGlobalScope('company')->with('plan')
                 ->where('company_id', $company->id)->latest('id')->first();
@@ -94,6 +94,32 @@ class Billing
                 $sub->update(['status' => 'active', 'last_charged_at' => now(), 'ends_at' => null]);
             }
         });
+    }
+
+    /** Bonus percentage a company earns on its clients' top-ups (0 = Refer & Earn is off). */
+    public static function referralPercent(): float
+    {
+        return max(0, (float) config('restaurant.billing.referral_bonus_percent', 0));
+    }
+
+    /**
+     * Refer & Earn: a client paid $paid, so the company that added it gets its percentage as a bonus.
+     * Returns the bonus amount (0 when there is no referrer or the bonus is off).
+     */
+    public static function referralBonus(Company $client, float $paid): float
+    {
+        $bonus = round($paid * self::referralPercent() / 100, 2);
+        $referrer = $client->referred_by_company_id ? Company::find($client->referred_by_company_id) : null;
+
+        if (! $referrer || $bonus <= 0) {
+            return 0;
+        }
+
+        self::topUp($referrer, $bonus,
+            "{$client->name} paid Nrs " . number_format($paid, 2) . ' · ' . rtrim(rtrim(number_format(self::referralPercent(), 2), '0'), '.') . '%',
+            'bonus', $client->id);
+
+        return $bonus;
     }
 
     /**
@@ -156,14 +182,15 @@ class Billing
         return $rate > 0 ? max(0, self::spendable($company)) / $rate / 24 : null;
     }
 
-    private static function log(Company $company, string $type, float $amount, string $note): void
+    private static function log(Company $company, string $type, float $amount, string $note, ?int $sourceCompanyId = null): void
     {
         WalletTransaction::withoutGlobalScopes()->create([
-            'company_id'    => $company->id,
-            'type'          => $type,
-            'amount'        => $amount,
-            'balance_after' => $company->balance,
-            'note'          => $note,
+            'company_id'        => $company->id,
+            'type'              => $type,
+            'source_company_id' => $sourceCompanyId,
+            'amount'            => $amount,
+            'balance_after'     => $company->balance,
+            'note'              => $note,
         ]);
     }
 }

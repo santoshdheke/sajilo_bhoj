@@ -13,14 +13,14 @@ class DefaultRoles
 {
     public const ROLES = [
         'Manager' => ['Runs the restaurant day to day: everything except staff accounts and website settings.', [
-            'dashboard.view', 'orders.manage', 'kitchen.manage', 'tables.manage', 'billing.view', 'payments.manage',
+            'dashboard.view', 'orders.manage', 'kitchen.manage', 'tables.manage', 'billing.view',
             'customers.manage', 'menu.manage', 'inventory.manage', 'suppliers.manage', 'purchase_orders.manage', 'reports.view',
         ]],
         'Waiter' => ['Takes orders at the tables and sends them to the kitchen.', [
             'dashboard.view', 'orders.manage', 'kitchen.manage', 'tables.manage',
         ]],
         'Receptionist' => ['Welcomes guests, handles bookings, bills and payments.', [
-            'dashboard.view', 'tables.manage', 'orders.manage', 'billing.view', 'payments.manage', 'customers.manage',
+            'dashboard.view', 'tables.manage', 'orders.manage', 'billing.view', 'customers.manage',
         ]],
         'Chef' => ['Cooks the orders, keeps the menu and stock up to date.', [
             'dashboard.view', 'kitchen.manage', 'menu.manage', 'inventory.manage',
