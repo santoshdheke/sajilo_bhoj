@@ -205,6 +205,19 @@ body{color:var(--text)}
 .cw-foot input{flex:1;border:1px solid #e5e9e7;border-radius:12px;padding:9px 13px;font-size:.9rem;background:#fff;min-width:0}
 .cw-foot input:focus{outline:none;border-color:var(--primary)}
 .cw-foot button{width:44px;height:44px;border:0;border-radius:12px;color:#fff;font-size:1.05rem;background:linear-gradient(135deg,var(--primary),color-mix(in srgb,var(--primary) 72%,black))}
+.cw-msg .bubble p{margin:0 0 6px}.cw-msg .bubble p:last-of-type{margin-bottom:0}
+.cw-msg .bubble ul{margin:2px 0 6px;padding-left:18px}.cw-msg .bubble li{margin:1px 0}
+.cw-msg .bubble a{color:var(--primary);font-weight:600;text-decoration:underline}
+.cw-msg .bubble code{font-size:.82em;background:rgba(0,0,0,.05);padding:1px 4px;border-radius:4px}
+.cw-typing{display:inline-flex;gap:4px;padding:6px 2px 8px}
+.cw-typing i{width:7px;height:7px;border-radius:50%;background:var(--primary);opacity:.35;animation:cwDot 1.2s infinite}
+.cw-typing i:nth-child(2){animation-delay:.2s}.cw-typing i:nth-child(3){animation-delay:.4s}
+@keyframes cwDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+.cw-foot button:disabled,.cw-chips button:disabled{opacity:.55}
+.cw-fab{touch-action:none;cursor:grab}.cw-dragging .cw-fab{cursor:grabbing;transform:scale(1.08)}
+.cw-dragging .cw-panel{display:none}
+.cw.cw-left .cw-panel{right:auto;left:0}
+.cw.cw-below .cw-panel{bottom:auto;top:76px}
 @media (max-width:575px){.cw{right:14px;bottom:14px}.cw-fab{width:54px;height:54px}.cw-panel{bottom:68px;height:70vh}}
 .btn-link{color:var(--primary)}.btn-link:hover{color:color-mix(in srgb,var(--primary) 75%,black)}
 

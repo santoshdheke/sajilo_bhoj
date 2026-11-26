@@ -1,5 +1,6 @@
 <?php
 
+use Modules\Restaurant\Http\Controllers\Admin\AssistantController;
 use Modules\Restaurant\Http\Controllers\Admin\AuthController;
 use Modules\Restaurant\Http\Controllers\Admin\BillingController;
 use Modules\Restaurant\Http\Controllers\Admin\CustomerController;
@@ -50,8 +51,14 @@ Route::withoutMiddleware([EnsureSubscriptionChosen::class, EnsureSubscriptionAct
         // Refer & Earn: add client restaurants, earn a bonus on each of their top-ups.
         Route::get('subscription/refer-and-earn', [ReferralController::class, 'index'])->name('subscription.referrals.index');
         Route::post('subscription/refer-and-earn', [ReferralController::class, 'store'])->middleware('throttle:10,1')->name('subscription.referrals.store');
+        Route::post('subscription/refer-and-earn/to-balance', [ReferralController::class, 'moveToBalance'])->middleware('throttle:10,1')->name('subscription.referrals.to_balance');
+        Route::post('subscription/refer-and-earn/withdraw', [ReferralController::class, 'withdraw'])->middleware('throttle:5,1')->name('subscription.referrals.withdraw');
     });
 });
+
+// AI chat support (floating chat button). Every signed-in person; data look-ups follow their own permissions.
+Route::post('assistant/chat', [AssistantController::class, 'chat'])
+    ->middleware('throttle:' . config('restaurant.assistant.per_minute', 10) . ',1')->name('assistant.chat');
 
 Route::get('profile', [ProfileController::class, 'index'])->name('profile.index');
 Route::put('profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -59,7 +66,6 @@ Route::put('profile/password', [ProfileController::class, 'updatePassword'])->na
 
 Route::middleware('permission:dashboard.view')->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
-    Route::get('dashboard/chat-facts', [DashboardController::class, 'chatFacts'])->name('dashboard.chat_facts');
 });
 
 // Table floor-plan management

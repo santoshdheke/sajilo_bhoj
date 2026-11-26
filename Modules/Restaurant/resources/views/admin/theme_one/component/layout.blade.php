@@ -114,6 +114,20 @@
                 </g>
             </svg>
         </div>
+        <script>
+        // Keep the sidebar's scroll position across page loads (runs right away, so it doesn't jump).
+        (function () {
+            var sb = document.getElementById('sidebar'), KEY = 'admin-sidebar-scroll', ticking = false;
+            try { sb.scrollTop = +localStorage.getItem(KEY) || 0; } catch (e) {}
+            function save() { try { localStorage.setItem(KEY, String(Math.round(sb.scrollTop))); } catch (e) {} }
+            sb.addEventListener('scroll', function () {
+                if (ticking) return;
+                ticking = true;
+                requestAnimationFrame(function () { save(); ticking = false; });
+            }, { passive: true });
+            window.addEventListener('pagehide', save);
+        })();
+        </script>
         {{-- Soft background decoration: leaves + cooking items --}}
         <div class="admin-deco" aria-hidden="true">
             <svg class="d-wave-br" viewBox="0 0 800 300" preserveAspectRatio="none"><path d="M0 300C200 220 420 260 800 120V300z"/><path class="w2" d="M200 300C380 250 560 270 800 200V300z"/></svg>
@@ -323,61 +337,68 @@
     })();
     </script>
 
-    {{-- ── Floating Chat Support (all admin pages) ── --}}
-    @if (auth()->user()?->hasPermission('dashboard.view'))
+    {{-- ── Floating Chat Support: AI assistant (all admin pages) ── --}}
+    @auth
     <div class="cw" id="chatWidget">
         <div class="cw-panel" id="cwPanel" role="dialog" aria-label="Chat Support" hidden>
             <div class="cw-head">
-                <h5><i class="bi bi-chat-dots-fill"></i>Chat Support</h5>
+                <h5><i class="bi bi-robot"></i>AI Assistant</h5>
                 <button type="button" id="cwClose" aria-label="Close chat">&minus;</button>
             </div>
-            <div class="cw-body" id="cwBody">
+            <div class="cw-body" id="cwBody" aria-live="polite">
                 <div class="cw-msg bot">
                     <span class="av"><i class="bi bi-robot"></i></span>
-                    <div class="bubble">Hello! 👋<br>How can I help you today?<time id="cwHelloTime"></time></div>
+                    <div class="bubble">Hello {{ \Illuminate\Support\Str::before(auth()->user()->name, ' ') }}! 👋<br>Ask me anything about your restaurant or how to use SajiloBhoj.<time id="cwHelloTime"></time></div>
                 </div>
             </div>
             <div class="cw-chips" id="cwChips">
-                <button type="button">Today's sales</button>
-                <button type="button">Orders today</button>
-                <button type="button">Tables</button>
-                <button type="button">Kitchen</button>
-                <button type="button">Top items</button>
+                @foreach (array_filter([
+                    auth()->user()->hasPermission('dashboard.view') ? "How are today's sales?" : null,
+                    auth()->user()->hasPermission('kitchen.manage') ? "What's in the kitchen now?" : null,
+                    auth()->user()->hasPermission('inventory.manage') ? 'Which items are low on stock?' : null,
+                    auth()->user()->hasPermission('users.manage') ? 'How long will my balance last?' : null,
+                    'How do I add a menu item?',
+                ]) as $chip)
+                    <button type="button">{{ $chip }}</button>
+                @endforeach
             </div>
             <form class="cw-foot" id="cwForm" autocomplete="off">
-                <input type="text" id="cwInput" placeholder="Type a message..." aria-label="Message">
-                <button type="submit" aria-label="Send"><i class="bi bi-send-fill"></i></button>
+                <input type="text" id="cwInput" placeholder="Type a message..." aria-label="Message" maxlength="1000">
+                <button type="submit" id="cwSend" aria-label="Send"><i class="bi bi-send-fill"></i></button>
             </form>
         </div>
-        <button type="button" class="cw-fab" id="cwFab" aria-label="Open chat support" aria-expanded="false">
-            <i class="bi bi-chat-dots-fill cw-ico-open"></i><i class="bi bi-x-lg cw-ico-close"></i>
+        <button type="button" class="cw-fab" id="cwFab" aria-label="Open AI assistant (drag to move)" title="AI Assistant — drag to move" aria-expanded="false">
+            <i class="bi bi-robot cw-ico-open"></i><i class="bi bi-x-lg cw-ico-close"></i>
         </button>
     </div>
     <script>
     (function () {
-        var factsUrl = @json(route('admin.dashboard.chat_facts'));
+        var chatUrl = @json(route('admin.assistant.chat'));
+        var csrf = document.querySelector('meta[name="csrf-token"]')?.content || @json(csrf_token());
         var initials = @json(auth()->user()?->initials ?: 'U');
         var widget = document.getElementById('chatWidget'), panel = document.getElementById('cwPanel'),
-            fab = document.getElementById('cwFab'), body = document.getElementById('cwBody'), facts = null;
+            fab = document.getElementById('cwFab'), body = document.getElementById('cwBody'),
+            input = document.getElementById('cwInput'), send = document.getElementById('cwSend');
+        var history = [], busy = false, STORE = 'admin-chat-history';
 
         function esc(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
         function time() { return new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); }
         document.getElementById('cwHelloTime').textContent = time();
 
-        function loadFacts() {
-            return fetch(factsUrl, { headers: { 'Accept': 'application/json' } })
-                .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-                .then(function (d) { facts = d; return d; });
+        // Small, safe Markdown: escape first, then **bold**, `code`, links to this site, "- " lists, paragraphs.
+        function md(text) {
+            var html = esc(text)
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/`([^`]+)`/g, '<code>$1</code>')
+                .replace(/\[([^\]]+)\]\((\/[^\s)]*)\)/g, '<a href="$2">$1</a>');
+            return html.split(/\n{2,}/).map(function (block) {
+                var lines = block.split('\n');
+                if (lines.every(function (l) { return /^\s*[-*•] /.test(l); })) {
+                    return '<ul>' + lines.map(function (l) { return '<li>' + l.replace(/^\s*[-*•] /, '') + '</li>'; }).join('') + '</ul>';
+                }
+                return '<p>' + lines.join('<br>') + '</p>';
+            }).join('');
         }
-        function setOpen(open) {
-            widget.classList.toggle('open', open);
-            panel.hidden = !open;
-            fab.setAttribute('aria-expanded', open ? 'true' : 'false');
-            if (open) { loadFacts().catch(function () {}); setTimeout(function () { document.getElementById('cwInput').focus(); }, 50); }
-        }
-        fab.addEventListener('click', function () { setOpen(!widget.classList.contains('open')); });
-        document.getElementById('cwClose').addEventListener('click', function () { setOpen(false); });
-        document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && widget.classList.contains('open')) setOpen(false); });
 
         function add(who, html) {
             var el = document.createElement('div');
@@ -386,36 +407,121 @@
                          + '<div class="bubble">' + html + '<time>' + time() + '</time></div>';
             body.appendChild(el);
             body.scrollTop = body.scrollHeight;
+            return el;
         }
-        function big(label, value) { return label + '<span class="big">' + esc(String(value)) + '</span>'; }
 
-        // Answers simple questions from today's live numbers.
-        function reply(q, f) {
-            q = q.toLowerCase();
-            if (/sale|revenue|earn|income/.test(q)) return /month/.test(q) ? big("This month's revenue is:", f.month) : big("Today's sales is:", f.sales);
-            if (/order/.test(q))                 return big('Orders today:', f.orders);
-            if (/table|occup|seat/.test(q))      return big('Occupied tables:', f.tables);
-            if (/kitchen|pending|cook|queue/.test(q)) return big('Orders pending in the kitchen:', f.kitchen);
-            if (/top|best|popular|item/.test(q)) return f.top ? 'Top selling items: ' + esc(f.top) : 'No sales data yet.';
-            if (/average|avg|bill/.test(q))      return big('Average bill:', f.avgBill);
-            if (/customer/.test(q))              return big('New customers this month:', f.customers);
-            if (/^(hi|hello|hey|namaste)\b/.test(q)) return 'Hi! Ask me about sales, orders, tables, kitchen or top items.';
-            return "Sorry, I can only answer about today's sales, orders, tables, kitchen, top items, average bill and customers.";
+        // Keep the conversation while moving between admin pages (this browser tab only).
+        function save() { try { sessionStorage.setItem(STORE, JSON.stringify(history.slice(-24))); } catch (e) {} }
+        try { history = JSON.parse(sessionStorage.getItem(STORE) || '[]') || []; } catch (e) { history = []; }
+        history.forEach(function (t) { add(t.role === 'user' ? 'me' : 'bot', t.role === 'user' ? esc(t.content) : md(t.content)); });
+
+        function setOpen(open) {
+            widget.classList.toggle('open', open);
+            panel.hidden = !open;
+            fab.setAttribute('aria-expanded', open ? 'true' : 'false');
+            if (open) { body.scrollTop = body.scrollHeight; setTimeout(function () { input.focus(); }, 50); }
         }
-        function ask(text) {
-            text = text.trim(); if (!text) return;
-            add('me', esc(text));
-            // Always fetch fresh numbers so answers stay current.
-            loadFacts().then(function (f) { add('bot', reply(text, f)); })
-                       .catch(function () { add('bot', 'Sorry, I could not load the latest numbers. Please try again.'); });
-        }
-        document.getElementById('cwForm').addEventListener('submit', function (e) {
-            e.preventDefault(); var i = document.getElementById('cwInput'); ask(i.value); i.value = '';
+        fab.addEventListener('click', function () {
+            if (dragged) { dragged = false; return; } // it was a drag, not a tap
+            setOpen(!widget.classList.contains('open'));
         });
+
+        // ── Drag the button anywhere; the place is remembered (distance from the right/bottom edges). ──
+        var POS = 'admin-chat-position', GAP = 12, dragged = false;
+        function place(r, b) {
+            var w = fab.offsetWidth, h = fab.offsetHeight;
+            r = Math.min(Math.max(GAP, r), window.innerWidth - w - GAP);
+            b = Math.min(Math.max(GAP, b), window.innerHeight - h - GAP);
+            widget.style.right = r + 'px'; widget.style.bottom = b + 'px';
+            // Open the panel towards the side with more room.
+            var rect = fab.getBoundingClientRect(), above = rect.top, below = window.innerHeight - rect.bottom;
+            var left = rect.left + w / 2 < window.innerWidth / 2;
+            widget.classList.toggle('cw-left', left);
+            widget.classList.toggle('cw-below', below > above);
+            // Keep the panel inside the screen even when the button sits near the middle.
+            var pw = Math.min(370, window.innerWidth - 32), shift;
+            panel.style.left = panel.style.right = '';
+            if (left && (shift = rect.left + pw - (window.innerWidth - 16)) > 0) panel.style.left = -shift + 'px';
+            if (!left && (shift = 16 - (rect.right - pw)) > 0) panel.style.right = -shift + 'px';
+            panel.style.maxHeight = Math.max(260, Math.min(520, Math.max(above, below) - GAP - 16)) + 'px';
+            return { r: r, b: b };
+        }
+        var saved = null;
+        try { saved = JSON.parse(localStorage.getItem(POS) || 'null'); } catch (e) {}
+        var pos = saved && isFinite(saved.r) && isFinite(saved.b) ? place(saved.r, saved.b) : null;
+        if (pos) widget.classList.add('cw-moved'); else place(parseFloat(getComputedStyle(widget).right), parseFloat(getComputedStyle(widget).bottom));
+        window.addEventListener('resize', function () { if (pos) pos = place(pos.r, pos.b); });
+
+        fab.addEventListener('pointerdown', function (e) {
+            if (e.button !== 0) return;
+            var startX = e.clientX, startY = e.clientY,
+                r0 = parseFloat(widget.style.right) || parseFloat(getComputedStyle(widget).right),
+                b0 = parseFloat(widget.style.bottom) || parseFloat(getComputedStyle(widget).bottom), moving = false;
+            function move(ev) {
+                var dx = ev.clientX - startX, dy = ev.clientY - startY;
+                if (!moving && Math.abs(dx) + Math.abs(dy) < 6) return; // small wobble = still a tap
+                if (!moving) { moving = true; widget.classList.add('cw-dragging', 'cw-moved'); fab.setPointerCapture(e.pointerId); }
+                pos = place(r0 - dx, b0 - dy);
+            }
+            function up() {
+                fab.removeEventListener('pointermove', move);
+                fab.removeEventListener('pointerup', up);
+                fab.removeEventListener('pointercancel', up);
+                if (moving) {
+                    dragged = true;
+                    widget.classList.remove('cw-dragging');
+                    try { localStorage.setItem(POS, JSON.stringify(pos)); } catch (er) {}
+                }
+            }
+            fab.addEventListener('pointermove', move);
+            fab.addEventListener('pointerup', up);
+            fab.addEventListener('pointercancel', up);
+        });
+        // Double-click the button to put it back in the corner.
+        fab.addEventListener('dblclick', function () {
+            try { localStorage.removeItem(POS); } catch (e) {}
+            widget.style.right = widget.style.bottom = '';
+            widget.classList.remove('cw-moved'); pos = null;
+            place(parseFloat(getComputedStyle(widget).right), parseFloat(getComputedStyle(widget).bottom));
+        });
+        document.getElementById('cwClose').addEventListener('click', function () { setOpen(false); });
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && widget.classList.contains('open')) setOpen(false); });
+
+        function setBusy(on) {
+            busy = on; send.disabled = on;
+            document.querySelectorAll('#cwChips button').forEach(function (b) { b.disabled = on; });
+        }
+
+        function ask(text) {
+            text = text.trim(); if (!text || busy) return;
+            add('me', esc(text));
+            var typing = add('bot', '<span class="cw-typing" aria-label="Typing"><i></i><i></i><i></i></span>');
+            setBusy(true);
+            fetch(chatUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf, 'X-Silent-Toast': '1' },
+                body: JSON.stringify({ message: text, history: history.slice(-12) })
+            })
+            .then(function (r) {
+                if (r.status === 429) return { reply: 'You’re asking quickly! Please wait a moment and try again.' };
+                if (r.status === 419) return { reply: 'Your session expired. Please refresh the page.' };
+                return r.json().catch(function () { return { reply: 'Sorry, something went wrong. Please try again.' }; })
+                    .then(function (d) { d.ok = r.ok; return d; });
+            })
+            .then(function (d) {
+                typing.remove();
+                var reply = d.reply || (d.message ? String(d.message) : 'Sorry, something went wrong. Please try again.');
+                add('bot', md(reply));
+                if (d.ok) { history.push({ role: 'user', content: text }, { role: 'assistant', content: reply }); save(); }
+            })
+            .catch(function () { typing.remove(); add('bot', 'Sorry, I couldn’t reach the server. Please check your connection and try again.'); })
+            .finally(function () { setBusy(false); input.focus(); });
+        }
+        document.getElementById('cwForm').addEventListener('submit', function (e) { e.preventDefault(); ask(input.value); input.value = ''; });
         document.querySelectorAll('#cwChips button').forEach(function (b) { b.addEventListener('click', function () { ask(b.textContent); }); });
     })();
     </script>
-    @endif
+    @endauth
     <script>
     // Phones: list tables turn into one card per row. Give every cell its column name
     // (data-label) so the CSS can show it beside the value. Rows added later by page scripts are labelled too.

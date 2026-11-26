@@ -14,6 +14,7 @@ use Illuminate\Routing\Router;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
+use Modules\Restaurant\Console\Commands\ReferralWithdrawals;
 use Modules\Restaurant\Console\Commands\SettleBilling;
 use Modules\Restaurant\Http\Controllers\Admin\SettingController;
 use Modules\Restaurant\Http\Middleware\EnsureUserHasPermission;
@@ -45,6 +46,7 @@ class RestaurantServiceProvider extends ModuleServiceProvider
      */
     protected array $commands = [
         SettleBilling::class,
+        ReferralWithdrawals::class,
     ];
 
     /**

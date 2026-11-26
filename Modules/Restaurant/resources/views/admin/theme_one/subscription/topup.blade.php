@@ -68,7 +68,7 @@
             </div>
             <div class="tp-card-body">
                 @forelse ($transactions as $tx)
-                @php [$txIcon, $txTitle] = ['topup' => ['bi-plus-lg', 'Top-up'], 'bonus' => ['bi-gift', 'Referral bonus']][$tx->type] ?? ['bi-dash-lg', 'Plan charge']; @endphp
+                @php [$txIcon, $txTitle] = ['topup' => ['bi-plus-lg', 'Top-up'], 'bonus' => ['bi-gift', 'Referral earnings']][$tx->type] ?? ['bi-dash-lg', 'Plan charge']; @endphp
                 <div class="tp-tx">
                     <span class="ic {{ $tx->type }}"><i class="bi {{ $txIcon }}"></i></span>
                     <div style="min-width:0;">
@@ -140,7 +140,7 @@
         <span class="tp-promo-ic"><i class="bi bi-gift"></i></span>
         <span class="tp-promo-text">
             <b>Refer &amp; Earn</b>
-            <small>Add client restaurants and get {{ rtrim(rtrim(number_format($referralPercent, 2), '0'), '.') }}% of every top-up they make, straight into your balance.</small>
+            <small>Add client restaurants and earn {{ rtrim(rtrim(number_format($referralPercent, 2), '0'), '.') }}% of every top-up they make — add it to your balance or withdraw it.</small>
         </span>
         <span class="tp-promo-go">My clients <i class="bi bi-arrow-right"></i></span>
     </a>

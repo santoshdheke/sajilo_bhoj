@@ -25,7 +25,7 @@ class Company extends Model
 
     protected $fillable = ['name', 'slug', 'company_type', 'referred_by_company_id', 'email', 'phone', 'address', 'logo', 'status'];
 
-    protected $casts = ['status' => 'boolean', 'balance' => 'decimal:2'];
+    protected $casts = ['status' => 'boolean', 'balance' => 'decimal:2', 'referral_earnings' => 'decimal:2'];
 
     /**
      * Per company type: how to tell that a sign-up is finished (e.g. the owner verified

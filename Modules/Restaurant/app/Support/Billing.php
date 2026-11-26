@@ -103,7 +103,8 @@ class Billing
     }
 
     /**
-     * Refer & Earn: a client paid $paid, so the company that added it gets its percentage as a bonus.
+     * Refer & Earn: a client paid $paid, so the company that added it gets its percentage as a bonus
+     * in its earnings wallet (it then chooses: move to plan balance, or withdraw — see ReferralEarnings).
      * Returns the bonus amount (0 when there is no referrer or the bonus is off).
      */
     public static function referralBonus(Company $client, float $paid): float
@@ -115,9 +116,8 @@ class Billing
             return 0;
         }
 
-        self::topUp($referrer, $bonus,
-            "{$client->name} paid Nrs " . number_format($paid, 2) . ' · ' . rtrim(rtrim(number_format(self::referralPercent(), 2), '0'), '.') . '%',
-            'bonus', $client->id);
+        ReferralEarnings::credit($referrer, $bonus, $client,
+            "{$client->name} paid Nrs " . number_format($paid, 2) . ' · ' . rtrim(rtrim(number_format(self::referralPercent(), 2), '0'), '.') . '%');
 
         return $bonus;
     }

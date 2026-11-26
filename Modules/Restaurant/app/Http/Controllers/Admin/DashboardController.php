@@ -120,32 +120,4 @@ class DashboardController extends Controller
             'floorTables', 'reservations', 'topToday', 'capacityPct', 'customers', 'customersTotal'
         ));
     }
-
-    /**
-     * Live numbers for the floating Chat Support widget (shown on every admin page).
-     */
-    public function chatFacts(): \Illuminate\Http\JsonResponse
-    {
-        $today = today();
-        $now   = Carbon::now();
-
-        $tablesTotal    = FloorTable::count();
-        $tablesOccupied = FloorTable::where('status', 'occupied')->count();
-
-        $top = OrderItem::select('name', DB::raw('SUM(quantity) as qty'))
-            ->whereHas('order', fn ($q) => $q->where('status', 'served'))
-            ->groupBy('name')->orderByDesc('qty')->limit(4)->get()
-            ->map(fn ($i) => $i->name . ' (' . $i->qty . ')')->implode(', ');
-
-        return response()->json([
-            'sales'     => number_format(Order::where('status', 'served')->whereDate('created_at', $today)->sum('grand_total'), 2),
-            'orders'    => Order::whereDate('created_at', $today)->count(),
-            'tables'    => $tablesOccupied . ' of ' . $tablesTotal,
-            'kitchen'   => Order::whereNotIn('status', ['served', 'cancelled'])->count(),
-            'month'     => number_format(Order::where('status', 'served')->whereYear('created_at', $now->year)->whereMonth('created_at', $now->month)->sum('grand_total'), 2),
-            'avgBill'   => number_format(round(Order::where('status', 'served')->avg('grand_total') ?? 0, 2), 2),
-            'customers' => Customer::whereYear('created_at', $now->year)->whereMonth('created_at', $now->month)->count(),
-            'top'       => $top,
-        ]);
-    }
 }

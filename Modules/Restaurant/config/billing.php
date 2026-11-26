@@ -12,6 +12,12 @@ return [
     // Refer & Earn: when a client company (added by another company) tops up, the company
     // that added it gets this percentage of the amount on its own balance, automatically.
     'referral_bonus_percent' => 10,
+    // Bonuses collect in a separate earnings wallet. The company moves them into its plan balance,
+    // or withdraws them (at least this much per request, Nrs); the SajiloBhoj team pays withdrawals
+    // out and marks them paid with: php artisan referrals:withdrawals
+    'referral_min_withdrawal' => 100,
+    // Optional: email the SajiloBhoj team when a withdrawal is requested.
+    'payout_notify_email' => env('REFERRAL_PAYOUT_EMAIL'),
 
     /*
      * Payment gateways for balance top-ups. Balance is only added after the gateway confirms the payment.
