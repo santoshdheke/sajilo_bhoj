@@ -95,6 +95,8 @@ body{background:linear-gradient(160deg,color-mix(in srgb,var(--primary) 7%,white
 @media (max-width:575px){.topbar .search-box{display:none}.top-actions{gap:8px}.top-actions .icon-btn+.icon-btn{display:none}.user-chip{padding:4px 10px 4px 4px}}
 /* Sidebar drawing: always pinned to the bottom */
 .sidebar{display:flex;flex-direction:column;padding-bottom:0}
+/* Scrolling the sidebar never scrolls the page behind it (no scroll chaining at the ends). */
+.sidebar{overscroll-behavior:contain}
 .sidebar>*{flex-shrink:0}
 .sidebar-deco{position:sticky;bottom:0;margin:auto -14px 0;width:calc(100% + 28px);height:110px}
 /* Sidebar business logo on a light card */

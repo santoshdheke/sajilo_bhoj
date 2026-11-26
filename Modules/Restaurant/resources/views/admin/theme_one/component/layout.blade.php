@@ -116,6 +116,7 @@
         </div>
         <script>
         // Keep the sidebar's scroll position across page loads (runs right away, so it doesn't jump).
+        // Only the sidebar is saved; the page's own scrolling is left alone.
         (function () {
             var sb = document.getElementById('sidebar'), KEY = 'admin-sidebar-scroll', ticking = false;
             try { sb.scrollTop = +localStorage.getItem(KEY) || 0; } catch (e) {}
